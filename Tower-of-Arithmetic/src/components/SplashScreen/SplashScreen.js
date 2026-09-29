@@ -6,7 +6,7 @@ import { VideoView, useVideoPlayer } from 'expo-video';
 import styles from './SplashScreen.styles';
 
 // Keeping your existing path since the video is loading with it
-const splashVideo = require('../../../assets/vidoes/splashScreen.mp4');
+const splashVideo = require('../../../assets/vidoes/splashScreen_seamless.mp4');
 
 export default function SplashScreen() {
   const player = useVideoPlayer(splashVideo, (p) => {
