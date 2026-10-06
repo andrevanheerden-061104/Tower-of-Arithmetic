@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from '../../../components/AppText';
 import { colors, fonts } from '../../../theme/theme';
 
 // A titled panel that holds a list of setting rows.

@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import Text from '../../../components/AppText';
 import Toggle from './Toggle';
 import { colors, fonts } from '../../../theme/theme';
 

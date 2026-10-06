@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from '../../../components/AppText';
 import Icon from '../../../components/Icon';
 import DeckSlots from './DeckSlots';
 import SpellCard from './SpellCard';

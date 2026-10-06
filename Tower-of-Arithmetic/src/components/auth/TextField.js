@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import Text from '../AppText';
+import { useTextScale } from '../../context/TextSizeContext';
 import Icon from '../Icon';
 import { colors, fonts } from '../../theme/theme';
 
 // A labelled text input with an icon. Set `secure` for passwords:
 // it hides the text and adds a show / hide button.
 export default function TextField({ label, placeholder, icon, value, onChangeText, secure = false, ...inputProps }) {
+  // The typed text follows the Text size setting too
+  const textScale = useTextScale();
   const [hidden, setHidden] = useState(secure);
   const [focused, setFocused] = useState(false);
 
@@ -17,7 +21,7 @@ export default function TextField({ label, placeholder, icon, value, onChangeTex
         <Icon name={icon} size={20} color={colors.mute} />
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, { fontSize: 15 * textScale }]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}

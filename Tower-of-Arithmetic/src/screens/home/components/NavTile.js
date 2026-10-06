@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import Text from '../../../components/AppText';
 import Icon from '../../../components/Icon';
 import { colors, fonts } from '../../../theme/theme';
 
@@ -12,7 +13,9 @@ export default function NavTile({ label, icon, onPress }) {
       style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
     >
       <Icon name={icon} size={28} color={colors.gold} strokeWidth={1.8} />
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label} maxScale={1.08}>
+        {label}
+      </Text>
 
       {/* Three corner dots, matching the main button */}
       <View style={styles.dots} pointerEvents="none">

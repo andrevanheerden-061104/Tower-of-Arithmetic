@@ -1,4 +1,5 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
+import Text from '../AppText';
 import { colors, fonts } from '../../theme/theme';
 
 const logo = require('../../assets/logo/logoWhite.png');

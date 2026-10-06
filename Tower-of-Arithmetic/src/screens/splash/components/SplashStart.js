@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Animated, Easing, StyleSheet, Text } from 'react-native';
+import { Animated, Easing, StyleSheet } from 'react-native';
+import Text from '../../../components/AppText';
 import PrimaryButton from '../../../components/PrimaryButton';
 import SplashLoading from './SplashLoading';
 import { colors, fonts } from '../../../theme/theme';

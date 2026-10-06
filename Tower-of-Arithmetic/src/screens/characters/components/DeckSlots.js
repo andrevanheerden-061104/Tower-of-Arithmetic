@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from '../../../components/AppText';
 import { colors, fonts } from '../../../theme/theme';
 
 // "Deck · 1 of 5 spells" with a row of slots, filled ones first.

@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from '../../../components/AppText';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { colors, fonts } from '../../../theme/theme';
 
@@ -52,10 +53,11 @@ const styles = StyleSheet.create({
   // numbers line up across the row however long each label is.
   tile: {
     flex: 1,
-    height: 100,
+    minHeight: 100, // grows if Large text needs more room
     alignItems: 'center',
     paddingTop: 26, // room for the icon sticking in from the top
     paddingHorizontal: 6,
+    paddingBottom: 10, // keeps the label clear of the coloured line
     borderRadius: 16,
     borderWidth: 1.5,
     backgroundColor: '#2A1F4A',

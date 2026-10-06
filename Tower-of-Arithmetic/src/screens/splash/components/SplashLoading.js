@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
+import Text from '../../../components/AppText';
 import { colors, fonts } from '../../../theme/theme';
 
 const LOAD_TIME = 1000; // ms the bar takes to fill

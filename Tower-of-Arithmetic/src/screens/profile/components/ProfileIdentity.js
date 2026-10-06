@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from '../../../components/AppText';
 import Svg, { Circle } from 'react-native-svg';
 import CharacterPortrait from '../../../components/CharacterPortrait';
 import { colors, fonts } from '../../../theme/theme';

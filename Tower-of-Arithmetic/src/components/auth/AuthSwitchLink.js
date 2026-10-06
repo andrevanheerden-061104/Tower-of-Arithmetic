@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
+import Text from '../AppText';
 import { colors, fonts } from '../../theme/theme';
 
 // "Already an apprentice? Log in" style line under the main button.

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import Text from '../../components/AppText';
 import PrimaryButton from '../../components/PrimaryButton';
 import Shade from '../../components/Shade';
 import ScreenBackground from '../../components/ScreenBackground';

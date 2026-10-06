@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
+import Text from '../../../components/AppText';
 import { colors, fonts } from '../../../theme/theme';
 
 // Does nothing yet: password reset needs the backend.

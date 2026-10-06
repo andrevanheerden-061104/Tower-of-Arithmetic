@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from '../../../components/AppText';
 import GradeChip from './GradeChip';
 import { colors, fonts } from '../../../theme/theme';
 

@@ -9,6 +9,7 @@ import { Montserrat_400Regular } from '@expo-google-fonts/montserrat/400Regular'
 import { Montserrat_500Medium } from '@expo-google-fonts/montserrat/500Medium';
 import { Montserrat_600SemiBold } from '@expo-google-fonts/montserrat/600SemiBold';
 import { Montserrat_700Bold } from '@expo-google-fonts/montserrat/700Bold';
+import { TEXT_SCALES, TextSizeProvider } from './src/context/TextSizeContext';
 import { DEFAULT_CHARACTER_ID, getCharacter } from './src/data/characters';
 import { DEFAULT_SETTINGS } from './src/data/settings';
 import Characters from './src/screens/characters/Characters';
@@ -63,7 +64,8 @@ export default function App() {
   const Screen = SCREENS[screen] ?? Splash;
 
   return (
-    <>
+    // Everything inside reads the text size chosen in Settings
+    <TextSizeProvider value={TEXT_SCALES[settings.textSize] ?? 1}>
       {/* Full screen on every page: hide the top status bar (clock, battery)
           and Android's back / home / recent-apps bar. The player swipes in
           from the top or bottom edge to bring them back for a moment. */}
@@ -78,6 +80,6 @@ export default function App() {
         settings={settings}
         onSettingChange={changeSetting}
       />
-    </>
+    </TextSizeProvider>
   );
 }

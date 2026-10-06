@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Text from '../../../components/AppText';
 import { colors, fonts } from '../../../theme/theme';
 
 // "HIGHEST FLOOR 7 · RUNS COMPLETED 12" line above the menu.
@@ -17,7 +18,12 @@ export default function RunStats({ highestFloor, runsCompleted }) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 },
+  wrap: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    // Wraps onto two lines when the text is set to Large
+    flexWrap: 'wrap',
+    columnGap: 12,
+    rowGap: 2,
+  },
   label: { fontFamily: fonts.semibold, fontSize: 12, letterSpacing: 1.1, color: colors.mute },
   value: { color: colors.gold },
   dot: { width: 3, height: 3, borderRadius: 2, backgroundColor: colors.mute },

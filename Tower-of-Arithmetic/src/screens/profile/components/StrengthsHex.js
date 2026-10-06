@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import Text from '../../../components/AppText';
+import { useTextScale } from '../../../context/TextSizeContext';
 import Svg, { Circle, Line, Polygon } from 'react-native-svg';
 import { colors, fonts, spacing } from '../../../theme/theme';
 
@@ -24,6 +26,10 @@ export default function StrengthsHex({ strengths }) {
   const width = Math.min(screenWidth - spacing.gutter * 2, 420);
   const scale = width / BASE_WIDTH;
 
+  // Bigger text needs more room above and below the chart
+  const textScale = useTextScale();
+  const extra = Math.max(0, 34 * (textScale - 1));
+
   const rings = [1 / 3, 2 / 3, 1].map((k) => toPoints(strengths.map((_, i) => point(i, RADIUS * k))));
   const shape = strengths.map((s, i) => point(i, (RADIUS * s.value) / 100));
 
@@ -31,7 +37,8 @@ export default function StrengthsHex({ strengths }) {
     <View style={styles.wrap}>
       <Text style={styles.heading}>Strengths by dungeon type</Text>
 
-      <View style={[styles.card, { height: BASE_HEIGHT * scale }]}>
+      <View style={[styles.card, { height: BASE_HEIGHT * scale + extra * 2 }]}>
+        <View style={{ height: BASE_HEIGHT * scale, marginTop: extra }}>
         <Svg width="100%" height="100%" viewBox={`0 0 ${BASE_WIDTH} ${BASE_HEIGHT}`}>
           {rings.map((points, i) => (
             <Polygon key={i} points={points} stroke={colors.border} strokeWidth={1} fill="none" />
@@ -61,7 +68,7 @@ export default function StrengthsHex({ strengths }) {
           const rightSide = i === 1 || i === 2;
           const labelWidth = 90 * scale;
           const left = centred ? x * scale - labelWidth / 2 : rightSide ? x * scale + 4 : x * scale - labelWidth - 4;
-          const top = i === 0 ? y * scale - 36 : i === 3 ? y * scale + 2 : y * scale - 17;
+          const top = i === 0 ? y * scale - 4 - 32 * textScale : i === 3 ? y * scale + 2 : y * scale - 17 * textScale;
 
           return (
             <Text
@@ -77,6 +84,7 @@ export default function StrengthsHex({ strengths }) {
             </Text>
           );
         })}
+        </View>
       </View>
     </View>
   );
