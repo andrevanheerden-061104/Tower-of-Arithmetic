@@ -2,11 +2,9 @@ import { Image, StyleSheet, View } from 'react-native';
 import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { colors } from '../../../theme/theme';
 
-const character = require('../../../assets/charaters/sorceress1-F-front.png');
-
 // The player's character in the middle of the home screen,
 // standing in front of a soft violet glow.
-export default function CharacterStage() {
+export default function CharacterStage({ character }) {
   return (
     <View style={styles.wrap}>
       <Svg width="100%" height="100%" style={StyleSheet.absoluteFill} pointerEvents="none">
@@ -20,10 +18,10 @@ export default function CharacterStage() {
       </Svg>
 
       <Image
-        source={character}
+        source={character.image}
         style={styles.image}
         resizeMode="contain"
-        accessibilityLabel="Your character, Shadow the sorceress"
+        accessibilityLabel={`Your character, ${character.name}`}
       />
     </View>
   );

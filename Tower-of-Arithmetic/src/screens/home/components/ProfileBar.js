@@ -1,31 +1,27 @@
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import CharacterPortrait from '../../../components/CharacterPortrait';
 import { colors, fonts } from '../../../theme/theme';
 
-const portrait = require('../../../assets/charaters/sorceress1-F-front.png');
-
 // Portrait, name, rank and XP progress at the top of the home screen.
-export default function ProfileBar({ player, onPress }) {
+export default function ProfileBar({ player, character, onPress }) {
   const progress = Math.min(player.xp / player.xpToNext, 1);
 
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${player.name}, level ${player.level} ${player.rank}, ${player.xp} of ${player.xpToNext} XP. Open profile`}
+      accessibilityLabel={`${character.name}, level ${player.level} ${player.rank}, ${player.xp} of ${player.xpToNext} XP. Open profile`}
       style={styles.wrap}
     >
       <View style={styles.avatar}>
-        <View style={styles.portrait}>
-          {/* The sprite is larger than the frame so only the face shows */}
-          <Image source={portrait} style={styles.portraitImage} />
-        </View>
+        <CharacterPortrait character={character} size={68} radius={18} />
         <View style={styles.levelTag}>
           <Text style={styles.levelText}>LV {player.level}</Text>
         </View>
       </View>
 
       <View style={styles.info}>
-        <Text style={styles.name}>{player.name}</Text>
+        <Text style={styles.name}>{character.name}</Text>
         <Text style={styles.rank}>{player.rank}</Text>
         <View style={styles.xpTrack}>
           <View style={[styles.xpFill, { width: `${progress * 100}%` }]} />
@@ -41,16 +37,6 @@ export default function ProfileBar({ player, onPress }) {
 const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatar: { width: 68, height: 76 },
-  portrait: {
-    width: 68,
-    height: 68,
-    borderRadius: 18,
-    borderWidth: 2,
-    borderColor: colors.gold,
-    backgroundColor: colors.indigo,
-    overflow: 'hidden',
-  },
-  portraitImage: { position: 'absolute', width: 190, height: 190, left: -63, top: -18 },
   levelTag: {
     position: 'absolute',
     bottom: 0,

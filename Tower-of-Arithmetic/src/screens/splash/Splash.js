@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { View } from 'react-native';
 import Shade from '../../components/Shade';
 import ScreenBackground from '../../components/ScreenBackground';
@@ -7,6 +8,9 @@ import styles from './Splash.styles';
 
 // First screen: the tower artwork with the game title and a start button.
 export default function Splash({ navigate }) {
+  // Called once the loading bar has filled
+  const goToSignup = useCallback(() => navigate('signup'), [navigate]);
+
   return (
     <View style={styles.screen}>
       <ScreenBackground />
@@ -15,7 +19,7 @@ export default function Splash({ navigate }) {
 
       <View style={styles.content}>
         <SplashBrand />
-        <SplashStart onStart={() => navigate('signup')} />
+        <SplashStart onStart={goToSignup} />
       </View>
     </View>
   );

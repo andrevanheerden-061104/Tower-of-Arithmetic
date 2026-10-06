@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text } from 'react-native';
 import PrimaryButton from '../../../components/PrimaryButton';
+import SplashLoading from './SplashLoading';
 import { colors, fonts } from '../../../theme/theme';
 
 const SHOW_DELAY = 1200; // ms before the button fades in
 
-// The start button at the bottom of the splash screen.
+// The bottom of the splash screen: the start button, which is swapped
+// for a loading bar once it has been pressed.
 export default function SplashStart({ onStart }) {
   // useState keeps the same animated value for the life of the component
   const [opacity] = useState(() => new Animated.Value(0));
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const animation = Animated.sequence([
@@ -24,10 +27,20 @@ export default function SplashStart({ onStart }) {
     return () => animation.stop();
   }, [opacity]);
 
+  // useCallback keeps the same function between renders, so the loading
+  // bar's animation is not restarted.
+  const handleLoaded = useCallback(() => onStart(), [onStart]);
+
   return (
     <Animated.View style={[styles.wrap, { opacity }]}>
-      <PrimaryButton label="Start game" onPress={onStart} />
-      <Text style={styles.hint}>Climb the tower. Cast spells with maths.</Text>
+      {loading ? (
+        <SplashLoading onDone={handleLoaded} />
+      ) : (
+        <>
+          <PrimaryButton label="Start game" onPress={() => setLoading(true)} />
+          <Text style={styles.hint}>Climb the tower. Cast spells with maths.</Text>
+        </>
+      )}
     </Animated.View>
   );
 }
