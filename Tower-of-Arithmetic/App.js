@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { useFonts } from 'expo-font';
+import { NavigationBar } from 'expo-navigation-bar';
+import { StatusBar } from 'expo-status-bar';
 // Each weight is imported from its own folder so only these four font files
 // are bundled (importing from the package root would pull in all 18).
 import { Montserrat_400Regular } from '@expo-google-fonts/montserrat/400Regular';
@@ -46,5 +48,14 @@ export default function App() {
 
   const Screen = SCREENS[screen] ?? Splash;
 
-  return <Screen navigate={setScreen} grade={grade} onGradeChosen={setGrade} />;
+  return (
+    <>
+      {/* Full screen on every page: hide the top status bar (clock, battery)
+          and Android's back / home / recent-apps bar. The player swipes in
+          from the top or bottom edge to bring them back for a moment. */}
+      <StatusBar hidden />
+      <NavigationBar hidden />
+      <Screen navigate={setScreen} grade={grade} onGradeChosen={setGrade} />
+    </>
+  );
 }

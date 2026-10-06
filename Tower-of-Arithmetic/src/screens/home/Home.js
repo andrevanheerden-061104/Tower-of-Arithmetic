@@ -1,5 +1,4 @@
 import { View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import PrimaryButton from '../../components/PrimaryButton';
 import Shade from '../../components/Shade';
 import ScreenBackground from '../../components/ScreenBackground';
@@ -29,7 +28,6 @@ export default function Home({ navigate }) {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="light" />
       <ScreenBackground opacity={0.3} />
       <Shade stops={[[0, 0.85], [0.3, 0.45], [0.58, 0.8], [0.72, 1], [1, 1]]} />
 

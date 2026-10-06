@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import PrimaryButton from '../../components/PrimaryButton';
 import Shade from '../../components/Shade';
 import ScreenBackground from '../../components/ScreenBackground';
@@ -28,7 +27,6 @@ export default function Onboarding({ navigate, onGradeChosen }) {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="light" />
       <ScreenBackground opacity={0.22} />
       <Shade stops={[[0, 0.55], [0.45, 0.9], [1, 1]]} />
 

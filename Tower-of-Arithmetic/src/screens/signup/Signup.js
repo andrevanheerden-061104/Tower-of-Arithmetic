@@ -1,5 +1,4 @@
 import { View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthLayout from '../../components/auth/AuthLayout';
 import AuthTabs from '../../components/auth/AuthTabs';
@@ -11,7 +10,6 @@ import styles from './Signup.styles';
 export default function Signup({ navigate }) {
   return (
     <AuthLayout>
-      <StatusBar style="light" />
       <AuthHeader
         title="Begin your apprenticeship"
         subtitle="Create an account so the tower remembers your progress."

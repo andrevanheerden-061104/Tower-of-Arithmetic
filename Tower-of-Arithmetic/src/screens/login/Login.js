@@ -1,5 +1,4 @@
 import { View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthLayout from '../../components/auth/AuthLayout';
 import AuthTabs from '../../components/auth/AuthTabs';
@@ -10,7 +9,6 @@ import styles from './Login.styles';
 export default function Login({ navigate }) {
   return (
     <AuthLayout>
-      <StatusBar style="light" />
       <AuthHeader title="Welcome back, apprentice" subtitle="Log in to continue your climb." />
 
       <View style={styles.form}>
