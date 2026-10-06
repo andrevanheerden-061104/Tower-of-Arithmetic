@@ -1,30 +1,26 @@
-import { useId } from 'react';
 import { StyleSheet } from 'react-native';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/theme';
+
+// '#0D0D0D' + 0.5 -> 'rgba(13,13,13,0.5)'
+function withOpacity(hex, opacity) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${opacity})`;
+}
 
 // A top-to-bottom gradient laid over a background so text stays readable.
 // stops = [[position 0-1, opacity 0-1], ...]
+//
+// Uses expo-linear-gradient (a normal native view) rather than an SVG:
+// on Android the SVG didn't stretch when the navigation bar hid and the
+// screen grew, leaving an unshaded strip at the bottom.
 export default function Shade({ stops, color = colors.bg, style }) {
-  // Each gradient needs its own id or two on one screen would clash.
-  const id = `shade${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
-
   return (
-    <Svg
-      width="100%"
-      height="100%"
+    <LinearGradient
+      colors={stops.map(([, opacity]) => withOpacity(color, opacity))}
+      locations={stops.map(([offset]) => offset)}
       style={[StyleSheet.absoluteFill, style]}
       pointerEvents="none"
-      preserveAspectRatio="none"
-    >
-      <Defs>
-        <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-          {stops.map(([offset, opacity], i) => (
-            <Stop key={i} offset={offset} stopColor={color} stopOpacity={opacity} />
-          ))}
-        </LinearGradient>
-      </Defs>
-      <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
-    </Svg>
+    />
   );
 }
