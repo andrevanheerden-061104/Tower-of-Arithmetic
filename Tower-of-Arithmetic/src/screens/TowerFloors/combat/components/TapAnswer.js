@@ -3,35 +3,46 @@ import Text from '../../../../components/AppText';
 import Icon from '../../../../components/Icon';
 import DotPicture from './DotPicture';
 import QuestionBox from './QuestionBox';
+import SheetBody from './SheetBody';
 import { colors, fonts } from '../../../../theme/theme';
 
-// Junior: the sum with dots to count, then three big answers to tap.
+// Junior: the sum with dots to count (scrolls if needed), then three big
+// answers and "Help me", which always stay at the bottom.
 export default function TapAnswer({ question, onSubmit, onHelp }) {
   return (
-    <>
-      <QuestionBox question={question}>
-        <DotPicture picture={question.picture} />
-      </QuestionBox>
-
-      <View style={styles.answers} accessibilityRole="radiogroup">
-        {question.choices.map((choice) => (
+    <SheetBody
+      scroll={
+        <QuestionBox question={question}>
+          <DotPicture picture={question.picture} />
+        </QuestionBox>
+      }
+      footer={
+        <>
+          <View style={styles.answers} accessibilityRole="radiogroup">
+            {question.choices.map((choice) => (
+              <Pressable
+                key={choice}
+                onPress={() => onSubmit(choice)}
+                accessibilityRole="button"
+                accessibilityLabel={`Answer ${choice}`}
+                style={({ pressed }) => [styles.answer, pressed && styles.pressed]}
+              >
+                <Text style={styles.answerText}>{choice}</Text>
+              </Pressable>
+            ))}
+          </View>
           <Pressable
-            key={choice}
-            onPress={() => onSubmit(choice)}
+            onPress={onHelp}
             accessibilityRole="button"
-            accessibilityLabel={`Answer ${choice}`}
-            style={({ pressed }) => [styles.answer, pressed && styles.pressed]}
+            accessibilityLabel="Help me"
+            style={({ pressed }) => [styles.help, pressed && styles.pressed]}
           >
-            <Text style={styles.answerText}>{choice}</Text>
+            <Icon name="lightbulb" size={20} color={colors.gold} />
+            <Text style={styles.helpText}>Help me</Text>
           </Pressable>
-        ))}
-      </View>
-
-      <Pressable onPress={onHelp} accessibilityRole="button" accessibilityLabel="Help me" style={({ pressed }) => [styles.help, pressed && styles.pressed]}>
-        <Icon name="lightbulb" size={20} color={colors.gold} />
-        <Text style={styles.helpText}>Help me</Text>
-      </Pressable>
-    </>
+        </>
+      }
+    />
   );
 }
 

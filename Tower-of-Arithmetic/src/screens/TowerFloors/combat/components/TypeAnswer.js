@@ -6,12 +6,13 @@ import PrimaryButton from '../../../../components/PrimaryButton';
 import NumberPad from '../../../../components/run/NumberPad';
 import BreakdownPicture from './BreakdownPicture';
 import QuestionBox from './QuestionBox';
+import SheetBody from './SheetBody';
 import { colors, fonts } from '../../../../theme/theme';
 
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'ok'];
 
-// Intermediate: work it out, type the final answer on the keypad.
-// "Show me a picture" breaks the sum into smaller parts.
+// Intermediate: work it out, type the final answer. The sum, answer box and
+// picture scroll; the keypad and Cast spell always stay at the bottom.
 export default function TypeAnswer({ question, onSubmit }) {
   const [answer, setAnswer] = useState('');
   const [picture, setPicture] = useState(false);
@@ -23,29 +24,34 @@ export default function TypeAnswer({ question, onSubmit }) {
   };
 
   return (
-    <>
-      <QuestionBox question={question} />
-
-      <View style={styles.field} accessible accessibilityLabel={`Your answer: ${answer || 'empty'}`}>
-        <Text style={styles.fieldLabel}>Your answer</Text>
-        <Text style={styles.fieldValue}>{answer}|</Text>
-      </View>
-
-      <Pressable
-        onPress={() => setPicture((p) => !p)}
-        accessibilityRole="button"
-        accessibilityState={{ expanded: picture }}
-        accessibilityLabel={picture ? 'Hide the picture' : 'Show me a picture'}
-        style={({ pressed }) => [styles.pictureButton, pressed && styles.pressed]}
-      >
-        <Icon name="image" size={20} color={colors.gold} />
-        <Text style={styles.pictureText}>{picture ? 'Hide the picture' : 'Show me a picture'}</Text>
-      </Pressable>
-      {picture && <BreakdownPicture picture={question.picture} />}
-
-      <NumberPad keys={KEYS} columns={3} onKey={press} />
-      <PrimaryButton label="Cast spell" disabled={!answer} onPress={() => onSubmit(answer)} />
-    </>
+    <SheetBody
+      header={<QuestionBox question={question} compact />}
+      scroll={
+        <>
+          <View style={styles.field} accessible accessibilityLabel={`Your answer: ${answer || 'empty'}`}>
+            <Text style={styles.fieldLabel}>Your answer</Text>
+            <Text style={styles.fieldValue}>{answer}|</Text>
+          </View>
+          <Pressable
+            onPress={() => setPicture((p) => !p)}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: picture }}
+            accessibilityLabel={picture ? 'Hide the picture' : 'Show me a picture'}
+            style={({ pressed }) => [styles.pictureButton, pressed && styles.pressed]}
+          >
+            <Icon name="image" size={20} color={colors.gold} />
+            <Text style={styles.pictureText}>{picture ? 'Hide the picture' : 'Show me a picture'}</Text>
+          </Pressable>
+          {picture && <BreakdownPicture picture={question.picture} />}
+        </>
+      }
+      footer={
+        <>
+          <NumberPad keys={KEYS} columns={3} onKey={press} keyHeight={44} />
+          <PrimaryButton label="Cast spell" disabled={!answer} onPress={() => onSubmit(answer)} />
+        </>
+      }
+    />
   );
 }
 

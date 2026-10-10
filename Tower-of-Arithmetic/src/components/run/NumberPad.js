@@ -20,7 +20,7 @@ const NAMES = {
 
 // The on-screen keypad. Pass the keys in reading order and how many columns
 // to use. Special keys: "⌫" deletes, "next" starts a new step, "ok" submits.
-export default function NumberPad({ keys, columns = 3, onKey }) {
+export default function NumberPad({ keys, columns = 3, onKey, keyHeight = 48 }) {
   const rows = [];
   for (let i = 0; i < keys.length; i += columns) rows.push(keys.slice(i, i + columns));
 
@@ -36,7 +36,7 @@ export default function NumberPad({ keys, columns = 3, onKey }) {
                 onPress={() => onKey(key)}
                 accessibilityRole="button"
                 accessibilityLabel={NAMES[key] ?? key}
-                style={({ pressed }) => [styles.key, action && styles.action, pressed && styles.pressed]}
+                style={({ pressed }) => [styles.key, { height: keyHeight }, action && styles.action, pressed && styles.pressed]}
               >
                 {key === '⌫' ? (
                   <Icon name="backspace" size={22} />

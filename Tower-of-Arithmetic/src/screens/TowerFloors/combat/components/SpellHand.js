@@ -8,7 +8,7 @@ import { colors, fonts } from '../../../../theme/theme';
 // The spell cards in hand. Tap a card to cast it.
 // Standard: three cards fanned out at the bottom, the chosen one raised.
 // Junior: three cards in a row, each with a tag saying what sum it casts.
-export default function SpellHand({ hand, version, dungeonTypeId, selected, onPick }) {
+export default function SpellHand({ hand, version, dungeonTypeId, selected, disabled, onPick }) {
   if (version.id === 'junior') {
     return (
       <View style={styles.juniorRow}>
@@ -20,9 +20,11 @@ export default function SpellHand({ hand, version, dungeonTypeId, selected, onPi
             <Pressable
               key={`${id}-${i}`}
               onPress={() => onPick(i)}
+              disabled={disabled}
               accessibilityRole="button"
+              accessibilityState={{ disabled }}
               accessibilityLabel={`${spell.name}: ${op?.label ?? ''}. Tap to cast`}
-              style={({ pressed }) => [styles.juniorCard, on && styles.juniorOn, pressed && styles.pressed]}
+              style={({ pressed }) => [styles.juniorCard, on && styles.juniorOn, disabled && styles.waiting, pressed && styles.pressed]}
             >
               <SpellCardImage spellId={id} cardSet="junior" width={100} />
               {op && (
@@ -55,12 +57,15 @@ export default function SpellHand({ hand, version, dungeonTypeId, selected, onPi
           <Pressable
             key={`${id}-${i}`}
             onPress={() => onPick(i)}
+            disabled={disabled}
             accessibilityRole="button"
+            accessibilityState={{ disabled }}
             accessibilityLabel={`${spell.name}, ${spell.element.toLowerCase()} spell. Tap to cast`}
             style={({ pressed }) => [
               styles.fanCard,
               { left: place.left, bottom: place.bottom + (on ? 14 : 0), transform: [{ rotate: place.rotate }] },
               on && styles.fanOn,
+              disabled && styles.waiting,
               pressed && styles.pressed,
             ]}
           >
@@ -84,6 +89,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   pressed: { opacity: 0.85 },
+  waiting: { opacity: 0.55 },
   juniorRow: { flexDirection: 'row', justifyContent: 'center', gap: 12, paddingBottom: 28 },
   juniorCard: { borderRadius: 9, borderWidth: 3, borderColor: 'transparent' },
   juniorOn: { borderColor: colors.gold },

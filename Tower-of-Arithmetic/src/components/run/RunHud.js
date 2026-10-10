@@ -23,7 +23,7 @@ export default function RunHud({ run, navigate, floor, floorLabel, style }) {
         accessibilityLabel="Open menu"
         style={({ pressed }) => [styles.box, styles.menu, pressed && styles.pressed]}
       >
-        <Icon name="menu" size={22} />
+        <Icon name="menu" size={22} color={colors.gold} />
       </Pressable>
 
       <View style={styles.right}>
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     backgroundColor: 'rgba(23,20,31,0.92)',
   },
-  menu: { paddingHorizontal: 0, width: 44, borderColor: colors.border },
+  menu: { paddingHorizontal: 0, width: 44, borderColor: colors.gold },
   pressed: { opacity: 0.8 },
   coins: { fontFamily: fonts.bold, fontSize: 14, color: colors.gold },
   floor: { fontFamily: fonts.semibold, fontSize: 14, color: colors.white },

@@ -17,6 +17,11 @@ export function createRandom(seed) {
   };
 }
 
+// Roll a normal six-sided die: 1 to 6, each equally likely.
+export function rollDie() {
+  return 1 + Math.floor(Math.random() * 6);
+}
+
 // A fresh seed for a new run.
 export function newSeed() {
   return Math.floor(Math.random() * 2 ** 31);

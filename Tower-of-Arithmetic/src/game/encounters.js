@@ -5,7 +5,9 @@ export const ENEMIES = {
   slime: {
     id: 'slime',
     name: 'Slime',
-    hearts: 3,
+    // 2 hearts = 4 spell hits. With 3 hearts the slime's script only loses to
+    // a player who never gets a sum wrong (see src/game/enemyAI.js).
+    hearts: 2,
     image: require('../assets/enemys/slime.png'),
   },
   morvath: {

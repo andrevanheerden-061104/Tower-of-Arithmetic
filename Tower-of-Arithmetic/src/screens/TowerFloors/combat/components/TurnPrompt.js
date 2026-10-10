@@ -4,9 +4,11 @@ import Icon from '../../../../components/Icon';
 import { MAX_DECK } from '../../../../game/spells';
 import { colors, fonts, spacing } from '../../../../theme/theme';
 
-// "Your turn · choose a spell" above the hand. Junior mode shows a bigger,
-// friendlier "Pick a spell!" with a read-aloud button instead.
-export default function TurnPrompt({ version, deckSize, message }) {
+// "Your turn · choose a spell" above the hand (or "Slime's turn…" while the
+// enemy acts). Junior mode shows a bigger, friendlier "Pick a spell!" with a
+// read-aloud button instead.
+export default function TurnPrompt({ version, deckSize, waiting, enemyName }) {
+  const message = waiting ? `${enemyName}’s turn…` : null;
   if (version.id === 'junior') {
     return (
       <View style={styles.juniorWrap}>
@@ -46,7 +48,7 @@ const styles = StyleSheet.create({
   },
   prompt: { fontFamily: fonts.semibold, fontSize: 16, color: colors.white },
   deck: { fontFamily: fonts.semibold, fontSize: 13, color: colors.gold },
-  messageText: { color: '#FF9B8F' },
+  messageText: { color: colors.mute },
   juniorWrap: { alignItems: 'center' },
   juniorPill: {
     flexDirection: 'row',

@@ -1,23 +1,60 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Text from '../../../../components/AppText';
 import Icon from '../../../../components/Icon';
 import PrimaryButton from '../../../../components/PrimaryButton';
 import ArchmageHint from '../../../../components/run/ArchmageHint';
+import { hearts } from '../../../../game/enemyAI';
 import QuestionBox from './QuestionBox';
+import SheetBody from './SheetBody';
 import StepsAnswer from './StepsAnswer';
 import TapAnswer from './TapAnswer';
 import TypeAnswer from './TypeAnswer';
 import { colors, fonts, spacing } from '../../../../theme/theme';
 
-// The sheet that slides up when a spell is cast: the sum, a way to answer
-// that fits the player's version, and the Archmage's hints.
+const MIN_SHEET = 600; // the sheet never gets shorter than this
+const HIGHEST = spacing.top + 44 + 8; // just under the menu button
+
+// Where the potion / item columns end (they start under the top bar).
+function suppliesBottom(potionSlots, itemCount) {
+  const slots = Math.max(potionSlots, itemCount);
+  if (!slots) return spacing.top + 44; // just the top bar
+  return spacing.top + 60 + 24 + slots * 52;
+}
+
+// The sheet that opens when a spell is cast: the sum, a way to answer that
+// fits the player's version, and the Archmage's hints.
 //   junior        tap one of three answers (TapAnswer)
 //   intermediate  type the final answer (TypeAnswer)
 //   senior        write each step (StepsAnswer)
-export default function CastSheet({ version, spell, question, enemyName, onSubmit, onHint, onClose }) {
-  const [panel, setPanel] = useState(null); // null | 'wrong' | 'hit' | 'hint'
+//
+// It opens in a Modal so it always draws over the whole fight. The top bar,
+// potions and items are drawn on top of its dark backdrop in the same
+// places, so they don't move and can still be used. The sheet starts below
+// them (on short phones it starts higher and covers the lowest slots).
+//
+// A right answer closes the sheet (the spell hits). A wrong answer shows a
+// hint; "Continue" closes it and the enemy takes its turn. Hints asked for
+// with the light bulb are free and don't use up the turn.
+export default function CastSheet({
+  version,
+  spell,
+  question,
+  spellDamage,
+  potionSlots,
+  itemCount,
+  hud,
+  supplies,
+  onSubmit,
+  onFizzled,
+  onHint,
+  onClose,
+}) {
+  const { height } = useWindowDimensions();
+  const [panel, setPanel] = useState(null); // null | 'wrong' | 'hint'
   const [hintIndex, setHintIndex] = useState(-1);
+  const [grow, setGrow] = useState(0); // how far the sheet has risen to fit more steps
+  const junior = version.id === 'junior';
 
   const nextHint = () => {
     setHintIndex((i) => Math.min(i + 1, question.hints.length - 1));
@@ -25,12 +62,10 @@ export default function CastSheet({ version, spell, question, enemyName, onSubmi
   };
 
   const submit = (answer) => {
-    const result = onSubmit(answer);
-    if (result !== 'right') {
+    if (onSubmit(answer) === 'wrong') {
       nextHint();
-      setPanel(result);
+      setPanel('wrong');
     }
-    return result === 'right';
   };
 
   const showHint = () => {
@@ -38,24 +73,37 @@ export default function CastSheet({ version, spell, question, enemyName, onSubmi
     setPanel('hint');
   };
 
+  const baseTop = Math.max(HIGHEST, Math.min(suppliesBottom(potionSlots, itemCount) + 8, height - MIN_SHEET));
+  const top = baseTop - grow;
+
+  // When the steps no longer fit, raise the sheet by the overflow (never
+  // above HIGHEST, never below where it started). Past that they scroll.
+  const onOverflow = (extra) => {
+    if (Math.abs(extra) < 1) return;
+    setGrow((g) => Math.max(0, Math.min(baseTop - HIGHEST, g + extra)));
+  };
   const Body = version.answerMode === 'tap' ? TapAnswer : version.answerMode === 'type' ? TypeAnswer : StepsAnswer;
 
   return (
-    <View style={styles.scrim}>
-      <View style={styles.sheet} accessibilityViewIsModal>
+    <Modal visible transparent animationType="slide" statusBarTranslucent navigationBarTranslucent onRequestClose={panel === 'wrong' ? onFizzled : onClose}>
+      <View style={styles.backdrop} />
+      {supplies}
+      {hud}
+
+      <View style={[styles.sheet, { top }]} accessibilityViewIsModal>
         <View style={styles.header}>
           <View style={styles.headerText}>
-            <Text style={styles.casting}>CASTING</Text>
+            <Text style={styles.casting}>CASTING · {hearts(spellDamage).toUpperCase()}</Text>
             <Text style={styles.spell} accessibilityRole="header">
-              {version.id === 'junior' ? `${spell.name} spell` : spell.name}
+              {junior ? `${spell.name} spell` : spell.name}
             </Text>
           </View>
-          {version.id !== 'junior' && panel === null && (
+          {!junior && panel === null && (
             <Pressable onPress={showHint} accessibilityRole="button" accessibilityLabel="Get a hint" style={styles.iconButton}>
               <Icon name="lightbulb" size={22} color={colors.gold} />
             </Pressable>
           )}
-          {version.id === 'junior' && (
+          {junior && (
             <Pressable
               onPress={() => console.log('Read aloud (placeholder)')}
               accessibilityRole="button"
@@ -65,63 +113,71 @@ export default function CastSheet({ version, spell, question, enemyName, onSubmi
               <Icon name="volume" size={22} color={colors.bg} />
             </Pressable>
           )}
-          <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" style={styles.iconButton}>
-            <Icon name="x" size={22} />
-          </Pressable>
+          {panel !== 'wrong' && (
+            <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" style={styles.iconButton}>
+              <Icon name="x" size={22} />
+            </Pressable>
+          )}
         </View>
 
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          {panel ? (
-            <>
-              <QuestionBox question={question} compact />
-              {panel === 'wrong' && (
-                <Text style={styles.wrong} accessibilityLiveRegion="assertive">
-                  Not quite. No hearts lost, take your time.
-                </Text>
-              )}
-              {panel === 'hit' && (
-                <Text style={styles.wrong} accessibilityLiveRegion="assertive">
-                  Not quite, and the {enemyName} strikes back! You lose ½ heart.
-                </Text>
-              )}
-              <ArchmageHint hint={question.hints[hintIndex]} index={hintIndex} total={question.hints.length} />
-              <PrimaryButton label="Try again" onPress={() => setPanel(null)} />
-              {hintIndex < question.hints.length - 1 && (
-                <PrimaryButton label="Show another hint" variant="secondary" onPress={nextHint} />
-              )}
-            </>
-          ) : (
-            <Body question={question} onSubmit={submit} onHelp={showHint} />
-          )}
-        </ScrollView>
+        {panel ? (
+          <SheetBody
+            header={<QuestionBox question={question} compact />}
+            scroll={
+              <>
+                {panel === 'wrong' && (
+                  <Text style={styles.wrong} accessibilityLiveRegion="assertive">
+                    Not quite. Your spell fizzles, so it’s the enemy’s turn. Here’s a hint for next time:
+                  </Text>
+                )}
+                <ArchmageHint hint={question.hints[hintIndex]} index={hintIndex} total={question.hints.length} />
+              </>
+            }
+            footer={
+              panel === 'wrong' ? (
+                <PrimaryButton label="Continue" onPress={onFizzled} />
+              ) : (
+                <>
+                  <PrimaryButton label="Back to my answer" onPress={() => setPanel(null)} />
+                  {hintIndex < question.hints.length - 1 && (
+                    <PrimaryButton label="Show another hint" variant="secondary" onPress={nextHint} />
+                  )}
+                </>
+              )
+            }
+          />
+        ) : (
+          <Body question={question} onSubmit={submit} onHelp={showHint} onOverflow={onOverflow} />
+        )}
       </View>
-    </View>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  scrim: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(13,13,13,0.72)',
-    zIndex: 10,
-  },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(13,13,13,0.72)' },
   sheet: {
-    maxHeight: '86%',
-    paddingTop: 22,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingTop: 16,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderWidth: 1,
     borderBottomWidth: 0,
     borderColor: '#8C82A3',
     backgroundColor: '#1E1A2B',
+    overflow: 'hidden',
+    zIndex: 5,
+    elevation: 5,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     paddingHorizontal: spacing.gutter,
-    marginBottom: 14,
+    marginBottom: 10,
   },
   headerText: { flex: 1 },
   casting: { fontFamily: fonts.semibold, fontSize: 12, letterSpacing: 1.2, color: colors.mute },
@@ -136,6 +192,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   speaker: { backgroundColor: colors.gold, borderColor: colors.gold, borderRadius: 22 },
-  body: { gap: 12, paddingHorizontal: spacing.gutter, paddingBottom: spacing.bottom },
-  wrong: { fontFamily: fonts.semibold, fontSize: 14, color: '#FF9B8F' },
+  wrong: { fontFamily: fonts.semibold, fontSize: 14, lineHeight: 20, color: '#FF9B8F' },
 });

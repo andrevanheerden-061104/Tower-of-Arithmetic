@@ -8,7 +8,7 @@ const TOUCH = 48;
 
 // One room on the map.
 //   current    where the player is (gold, tick, "You are here")
-//   reachable  a room they can pick next (purple with a gold ring)
+//   reachable  a room they can pick next (purple; gold ring once selected)
 //   cleared    a room already done (faded, tick)
 //   locked     a room further up the tower
 export default function MapNode({ node, x, y, state, selected, onPress }) {
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   locked: { opacity: 0.85 },
   cleared: { opacity: 0.6, borderColor: colors.line },
-  reachable: { borderWidth: 2, borderColor: colors.gold, backgroundColor: colors.indigo },
+  reachable: { backgroundColor: colors.indigo },
   current: { borderColor: colors.gold, backgroundColor: colors.gold },
   selected: {
     borderWidth: 3,
