@@ -12,6 +12,7 @@ const SHOW_FOR = 3000; // ms; the player can close it sooner with X
 // only clue.
 const TONES = {
   hit: { icon: 'sparkles', color: colors.gold },
+  crit: { icon: 'sparkles', color: '#FF8A3D' },
   win: { icon: 'sparkles', color: colors.gold },
   hurt: { icon: 'heart', color: '#FF9B8F' },
   boost: { icon: 'swords', color: '#FFB86B' },

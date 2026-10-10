@@ -2,20 +2,45 @@
 // wares and the ghost's gifts. Numbers are not balanced yet.
 
 export const ENEMIES = {
+  // Level 1: lower floors, fixed attack patterns (see src/game/enemyAI.js)
   slime: {
     id: 'slime',
     name: 'Slime',
-    // 2 hearts = 4 spell hits. With 3 hearts the slime's script only loses to
-    // a player who never gets a sum wrong (see src/game/enemyAI.js).
+    level: 1,
     hearts: 2,
     image: require('../assets/enemys/slime.png'),
   },
+  pumpkin: {
+    id: 'pumpkin',
+    name: 'Pumpkin',
+    level: 1,
+    hearts: 2,
+    image: require('../assets/enemys/pumken.png'),
+  },
+  // Level 2: higher floors, random attacks, heal once per fight
+  darkOwl: {
+    id: 'darkOwl',
+    name: 'Dark Owl',
+    level: 2,
+    // Same hearts as level 1, but they hit harder. With 2.5 hearts a
+    // player still using ½-heart spells almost never won (balance test).
+    hearts: 2,
+    image: require('../assets/enemys/darkowl.png'),
+  },
+  fireLizard: {
+    id: 'fireLizard',
+    name: 'Fire Lizard',
+    level: 2,
+    hearts: 2,
+    image: require('../assets/enemys/fireLizard.png'),
+  },
+  // Boss: top floor
   morvath: {
     id: 'morvath',
     name: 'Morvath',
     title: 'the Shadow Warden',
     hearts: 5,
-    image: require('../assets/enemys/boss1.png'),
+    image: require('../assets/boss/boss1.png'),
   },
 };
 

@@ -47,7 +47,7 @@ export default function HealthPanel({ side, name, hearts, max, boss, active, aur
         <HeartRow hearts={hearts} max={max} size={18} gap={3} />
         <View style={styles.divider} />
         <Text style={styles.count}>
-          {formatHearts(hearts)} / {max}
+          {formatHearts(hearts)}
         </Text>
       </View>
       <View style={[styles.name, active && [styles.nameActive, glowBox]]}>

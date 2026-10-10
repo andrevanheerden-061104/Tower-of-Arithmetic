@@ -1,4 +1,5 @@
 import { ENEMIES, ITEMS } from './encounters';
+import { pickEnemyId } from './enemyAI';
 import { generateMap } from './mapGenerator';
 import { newSeed } from './random';
 import { REWARD_ROOMS, ROOMS } from './rooms';
@@ -14,7 +15,7 @@ import { VERSIONS } from './versions';
 // or a server yet, so a run is lost when the app closes.
 // ---------------------------------------------------------------------------
 
-export function createRun({ version, dungeonTypeId }) {
+export function createRun({ version, dungeonTypeId, character }) {
   const seed = newSeed();
   return {
     versionId: version.id,
@@ -27,8 +28,9 @@ export function createRun({ version, dungeonTypeId }) {
     maxHearts: version.hearts,
     coins: version.startCoins,
     xp: 0,
-    // Placeholder starting kit (so every screen has something to show)
-    deck: ['flashflame', 'shadowShard', 'flashFreeze'],
+    // The player starts with only their character's level 1 card and
+    // collects the rest on the way up.
+    deck: [character?.starter ?? 'shadowShard'],
     potions: version.usesPotions ? ['heal', 'power'] : [],
     items: version.usesCurses ? ['luckyGem', 'hauntedRing'] : version.usesCoins ? ['luckyGem'] : [],
     cleansed: [],   // items whose curse was removed at a campfire
@@ -51,8 +53,10 @@ export function screenForRoom(type) {
   return ROOMS[type]?.screen ?? 'pathMap';
 }
 
-export function enemyForRoom(type) {
-  return type === 'boss' ? ENEMIES.morvath : ENEMIES.slime;
+// The enemy in the room the player is in (level depends on the floor,
+// see pickEnemyId in src/game/enemyAI.js).
+export function enemyForRun(run) {
+  return ENEMIES[pickEnemyId(run.seed, currentRoom(run), run.map.floors)];
 }
 
 export function enterRoom(run, roomId) {

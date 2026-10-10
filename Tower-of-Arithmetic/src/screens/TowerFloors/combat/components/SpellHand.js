@@ -9,6 +9,8 @@ import { colors, fonts } from '../../../../theme/theme';
 // Standard: three cards fanned out at the bottom, the chosen one raised.
 // Junior: three cards in a row, each with a tag saying what sum it casts.
 export default function SpellHand({ hand, version, dungeonTypeId, selected, disabled, onPick }) {
+  // Junior cards shrink a little when there are more than 3 so they fit
+  const juniorWidth = Math.min(100, (360 - 12 * (hand.length - 1)) / hand.length);
   if (version.id === 'junior') {
     return (
       <View style={styles.juniorRow}>
@@ -26,7 +28,7 @@ export default function SpellHand({ hand, version, dungeonTypeId, selected, disa
               accessibilityLabel={`${spell.name}: ${op?.label ?? ''}. Tap to cast`}
               style={({ pressed }) => [styles.juniorCard, on && styles.juniorOn, disabled && styles.waiting, pressed && styles.pressed]}
             >
-              <SpellCardImage spellId={id} cardSet="junior" width={100} />
+              <SpellCardImage spellId={id} cardSet="junior" width={juniorWidth} />
               {op && (
                 <View style={[styles.tag, on && styles.tagOn]}>
                   <Text style={[styles.tagText, on && styles.tagTextOn]} numberOfLines={1}>
@@ -41,17 +43,20 @@ export default function SpellHand({ hand, version, dungeonTypeId, selected, disa
     );
   }
 
-  const fan = [
-    { rotate: '-6deg', left: 12, bottom: -18 },
-    { rotate: '0deg', left: 134, bottom: 10 },
-    { rotate: '6deg', left: 256, bottom: -4 },
-  ];
+  // Spread the cards across the screen: 1 card sits in the middle; more
+  // cards fan out and overlap (up to 5).
+  const n = hand.length;
+  const fan = hand.map((_, i) => {
+    const t = n === 1 ? 0.5 : i / (n - 1); // 0 = far left, 1 = far right
+    const tilt = (t - 0.5) * 12;
+    return { rotate: `${tilt}deg`, left: 12 + t * 244, bottom: 10 - Math.abs(t - 0.5) * 40 };
+  });
 
   return (
     <View style={styles.fan}>
       {hand.map((id, i) => {
         const spell = getSpell(id);
-        const place = fan[i] ?? fan[1];
+        const place = fan[i];
         const on = selected === i;
         return (
           <Pressable

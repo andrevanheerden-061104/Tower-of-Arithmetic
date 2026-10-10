@@ -33,7 +33,7 @@ export default function CharacterInfo({ character, chosen }) {
       </View>
 
       <Text style={styles.name} accessibilityRole="header">
-        {character.name}
+        {character.locked ? '???' : character.name}
       </Text>
       <Text style={styles.title}>{character.title}</Text>
     </View>

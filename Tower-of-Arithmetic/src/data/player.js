@@ -2,7 +2,7 @@
 // Home and Profile both read from here so they always agree.
 
 export const PLAYER = {
-  name: 'Shadow',
+  name: 'Nyxara',
   rank: 'Apprentice',
   level: 3,
   xp: 640,

@@ -31,8 +31,8 @@ export const COLUMNS = 4; // rooms side by side (fits a phone screen)
 
 // How often each room type is picked when the rules allow it.
 const WEIGHTS = {
-  combat: 45,
-  puzzle: 22,
+  combat: 36,
+  puzzle: 31,
   mystery: 18,
   shop: 10,
   rest: 4,

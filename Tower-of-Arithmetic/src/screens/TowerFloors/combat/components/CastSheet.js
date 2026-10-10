@@ -41,6 +41,7 @@ export default function CastSheet({
   spell,
   question,
   spellDamage,
+  healing,
   potionSlots,
   itemCount,
   hud,
@@ -93,7 +94,7 @@ export default function CastSheet({
       <View style={[styles.sheet, { top }]} accessibilityViewIsModal>
         <View style={styles.header}>
           <View style={styles.headerText}>
-            <Text style={styles.casting}>CASTING · {hearts(spellDamage).toUpperCase()}</Text>
+            <Text style={styles.casting}>{healing ? 'HEALING' : 'CASTING'} · {hearts(spellDamage).toUpperCase()}</Text>
             <Text style={styles.spell} accessibilityRole="header">
               {junior ? `${spell.name} spell` : spell.name}
             </Text>

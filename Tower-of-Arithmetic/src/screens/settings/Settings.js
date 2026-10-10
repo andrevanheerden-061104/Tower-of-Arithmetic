@@ -3,6 +3,7 @@ import ScreenHeader from '../../components/ScreenHeader';
 import Shade from '../../components/Shade';
 import ScreenBackground from '../../components/ScreenBackground';
 import LinkRow from './components/LinkRow';
+import MusicCredits from './components/MusicCredits';
 import SettingsGroup from './components/SettingsGroup';
 import TextSizePicker from './components/TextSizePicker';
 import ToggleRow from './components/ToggleRow';
@@ -10,7 +11,7 @@ import styles from './Settings.styles';
 
 // Accessibility, sound and account settings. The choices are remembered
 // in App.js while the app is open; they don't change the game yet.
-export default function Settings({ navigate, settings, onSettingChange, grade }) {
+export default function Settings({ navigate, goBack, settings, onSettingChange, grade }) {
   const toggle = (key) => (value) => onSettingChange(key, value);
 
   return (
@@ -19,7 +20,7 @@ export default function Settings({ navigate, settings, onSettingChange, grade })
       <Shade stops={[[0, 0.8], [0.3, 0.92], [1, 1]]} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenHeader title="Settings" onBack={() => navigate('home')} />
+        <ScreenHeader title="Settings" onBack={goBack ?? (() => navigate('home'))} />
 
         <SettingsGroup title="Accessibility">
           <TextSizePicker value={settings.textSize} onChange={toggle('textSize')} />
@@ -58,6 +59,10 @@ export default function Settings({ navigate, settings, onSettingChange, grade })
             onChange={toggle('soundEffects')}
             last
           />
+        </SettingsGroup>
+
+        <SettingsGroup title="Music credits">
+          <MusicCredits />
         </SettingsGroup>
 
         <SettingsGroup title="Account">

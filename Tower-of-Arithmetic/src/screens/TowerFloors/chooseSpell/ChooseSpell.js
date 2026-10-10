@@ -6,17 +6,19 @@ import PrimaryButton from '../../../components/PrimaryButton';
 import ScreenBackground from '../../../components/ScreenBackground';
 import Shade from '../../../components/Shade';
 import RunTitle from '../../../components/run/RunTitle';
-import { runVersion } from '../../../game/run';
-import { MAX_DECK, SPELL_IDS } from '../../../game/spells';
+import { currentRoom, runVersion } from '../../../game/run';
+import { MAX_DECK, spellOffers } from '../../../game/spells';
 import CardCarousel from './components/CardCarousel';
 import PagerDots from './components/PagerDots';
 import styles from './ChooseSpell.styles';
 
-// Pick one of three spell cards to add to the deck (or skip).
+// Pick one of three spell cards to add to the deck (or skip). Cards the
+// player already has aren't offered, and higher floors offer stronger cards
+// (see spellOffers in src/game/spells.js).
 export default function ChooseSpell({ run, onDone }) {
   const version = runVersion(run);
-  const [index, setIndex] = useState(1);
-  const offers = SPELL_IDS; // placeholder: one of each spell
+  const [offers] = useState(() => spellOffers(run.deck, currentRoom(run).floor / run.map.floors));
+  const [index, setIndex] = useState(Math.min(1, offers.length - 1));
   const full = run.deck.length >= MAX_DECK;
 
   return (

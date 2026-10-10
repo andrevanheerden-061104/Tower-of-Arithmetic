@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useFonts } from 'expo-font';
 import { NavigationBar } from 'expo-navigation-bar';
@@ -10,6 +10,7 @@ import { Montserrat_500Medium } from '@expo-google-fonts/montserrat/500Medium';
 import { Montserrat_600SemiBold } from '@expo-google-fonts/montserrat/600SemiBold';
 import { Montserrat_700Bold } from '@expo-google-fonts/montserrat/700Bold';
 import { TEXT_SCALES, TextSizeProvider } from './src/context/TextSizeContext';
+import { setMusic } from './src/audio/music';
 import { DEFAULT_CHARACTER_ID, getCharacter } from './src/data/characters';
 import { DEFAULT_SETTINGS } from './src/data/settings';
 import { ITEMS } from './src/game/encounters';
@@ -80,6 +81,23 @@ const SCREENS = {
   deck: Deck,
 };
 
+// Background music for each screen (see src/audio/music.js).
+//   menu    Magic Forest      splash, sign up, log in, onboarding, home,
+//                             characters, profile (and settings from there)
+//   battle  Future Gladiator  fights and the boss fight
+//   tower   Thunderbird       every other screen in the tower
+// Settings keeps whatever was already playing, so opening it from the run
+// menu doesn't switch the tower music off.
+const MENU_MUSIC = ['splash', 'signup', 'login', 'onboarding', 'home', 'characters', 'profile'];
+const BATTLE_MUSIC = ['combat', 'boss'];
+
+function musicFor(screen, playing) {
+  if (screen === 'settings') return playing ?? 'menu';
+  if (MENU_MUSIC.includes(screen)) return 'menu';
+  if (BATTLE_MUSIC.includes(screen)) return 'battle';
+  return 'tower';
+}
+
 // Screens that only make sense during a run.
 const RUN_SCREENS = [
   'pathMap',
@@ -143,7 +161,7 @@ export default function App() {
 
   const runActions = {
     onStartRun: (dungeonTypeId) => {
-      setRun(createRun({ version: versionForGrade(grade), dungeonTypeId }));
+      setRun(createRun({ version: versionForGrade(grade), dungeonTypeId, character: getCharacter(characterId) }));
       navigate('pathMap');
     },
     onEnterRoom: (roomId) => {
@@ -213,6 +231,15 @@ export default function App() {
       navigate('dungeonType');
     },
   };
+
+  // Keep the right music playing. The same track carries on between
+  // screens; a different track starts from the beginning.
+  const musicRef = useRef(null);
+  const shownScreen = RUN_SCREENS.includes(screen) && !run ? 'home' : screen;
+  useEffect(() => {
+    musicRef.current = musicFor(shownScreen, musicRef.current);
+    setMusic(musicRef.current, settings.music);
+  }, [shownScreen, settings.music]);
 
   if (!fontsLoaded) {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;

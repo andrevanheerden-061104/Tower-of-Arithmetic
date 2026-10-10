@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import RunBackground from '../../../components/run/RunBackground';
 import RunHud from '../../../components/run/RunHud';
-import { createEnemyState, hearts, hitEnemy, rollForFirstTurn, takeTurn } from '../../../game/enemyAI';
+import { createEnemyState, hearts, hitEnemy, rollForFirstTurn, spellDamage, takeTurn } from '../../../game/enemyAI';
 import { getQuestion, isCorrect } from '../../../game/questions';
-import { currentRoom, damage, drinkPotion, enemyForRoom, recordAnswer, runVersion } from '../../../game/run';
-import { getSpell } from '../../../game/spells';
+import { currentRoom, damage, drinkPotion, enemyForRun, heal, recordAnswer, runVersion } from '../../../game/run';
+import { baseDamage, getSpell } from '../../../game/spells';
 import BattleStage from './components/BattleStage';
 import BattleToast from './components/BattleToast';
 import CastSheet from './components/CastSheet';
@@ -44,7 +44,7 @@ export default function Combat({
 }) {
   const version = runVersion(run);
   const room = currentRoom(run);
-  const enemy = enemyForRoom(room.type);
+  const enemy = enemyForRun(run);
   const boss = room.type === 'boss';
 
   const [foe, setFoe] = useState(() => createEnemyState(enemy));
@@ -55,11 +55,15 @@ export default function Combat({
   const [toast, setToast] = useState(null); // { id, text, tone }
   const closeToast = useRef(null); // resolves the message on screen
 
-  const hand = run.deck.slice(0, 3);
+  const hand = run.deck; // up to 5 cards
   const spell = selected != null ? getSpell(hand[selected]) : null;
   const question = spell ? getQuestion(version, run.dungeonTypeId, Math.max(1, room.floor), spell) : null;
+  const healing = spell?.kind === 'heal';
   // The haunted ring makes every attack spell stronger
-  const spellDamage = spell ? spell.damage + (run.items.includes('hauntedRing') ? 0.5 : 0) : 0;
+  const bonus = run.items.includes('hauntedRing') ? 0.5 : 0;
+  // What the cast sheet shows. Weaknesses are secret, so it shows the
+  // normal amount; a weakness only shows up as a "Critical hit!".
+  const castAmount = !spell ? 0 : healing ? spell.heal : baseDamage(spell) + bonus;
 
   // Show a battle message and wait until it's gone (3 s, or closed with X).
   const announce = (text, tone) =>
@@ -80,12 +84,13 @@ export default function Combat({
 
   // The enemy's turn. `foeNow` is passed in because state from this render
   // may already be out of date (the spell just hit it).
-  const enemyTurn = async (foeNow) => {
+  // `heartsNow` is passed in when the player's hearts just changed (heal).
+  const enemyTurn = async (foeNow, heartsNow = run.hearts) => {
     setPhase('enemy');
     await wait(ENEMY_DELAY);
     const result = takeTurn(foeNow, enemy.name);
     setFoe(result.state);
-    const heartsLeft = run.hearts - result.damage;
+    const heartsLeft = heartsNow - result.damage;
     if (result.damage > 0) updateRun((r) => damage(r, result.damage));
     await announce(result.message, result.damage > 0 ? 'hurt' : result.action.kind);
 
@@ -104,11 +109,33 @@ export default function Combat({
     if (!right) return 'wrong'; // the sheet shows a hint, then calls fizzled()
 
     setHintsUsed(0);
-    const hit = hitEnemy(foe, spellDamage);
-    setFoe(hit);
     setPhase('enemy');
+
+    // Healing spell: heal the player, then it's the enemy's turn
+    if (healing) {
+      const after = Math.min(run.maxHearts, run.hearts + spell.heal);
+      updateRun((r) => heal(r, spell.heal));
+      (async () => {
+        await announce(
+          after > run.hearts ? `${spell.name} heals you for ${hearts(after - run.hearts)}.` : `${spell.name} glows, but your hearts are already full.`,
+          'heal',
+        );
+        enemyTurn(foe, after);
+      })();
+      return 'right';
+    }
+
+    // Attack spell: double damage if the enemy is weak to its element
+    const { amount, crit } = spellDamage(spell, enemy.id, bonus);
+    const hit = hitEnemy(foe, amount);
+    setFoe(hit);
     (async () => {
-      await announce(`${spell.name} hits! ${enemy.name} loses ${hearts(spellDamage)}.`, 'hit');
+      await announce(
+        crit
+          ? `Critical hit! ${spell.name} hits hard! ${enemy.name} loses ${hearts(amount)}.`
+          : `${spell.name} hits! ${enemy.name} loses ${hearts(amount)}.`,
+        crit ? 'crit' : 'hit',
+      );
       if (hit.hearts <= 0) {
         setPhase('over');
         await announce(`${enemy.name} defeated!`, 'win');
@@ -193,7 +220,8 @@ export default function Combat({
           version={version}
           spell={spell}
           question={question}
-          spellDamage={spellDamage}
+          spellDamage={castAmount}
+          healing={healing}
           potionSlots={version.usesPotions ? 4 : 0}
           itemCount={run.items.length}
           // The top bar, potions and items are drawn again on top of the
