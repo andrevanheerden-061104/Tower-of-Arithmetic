@@ -40,7 +40,7 @@ export default function MenuDrawer({ visible, onClose, run, navigate }) {
           </View>
 
           <MenuRow icon="home" title="Main menu" detail="Your run is saved" onPress={() => go('home')} />
-          <MenuRow icon="layers" title="Deck" detail={`${run.deck.length} of ${MAX_DECK} spells`} onPress={() => go('deck')} />
+          <MenuRow icon="layers" title="Deck" detail={`${run.deck.length} of ${MAX_DECK} in deck${run.stash.length ? ` · ${run.stash.length} in stash` : ''}`} onPress={() => go('deck')} />
           <MenuRow icon="settings" title="Settings" detail="Text size, speech, sound" onPress={() => go('settings')} />
 
           <View style={styles.spacer} />

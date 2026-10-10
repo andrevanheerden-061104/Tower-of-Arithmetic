@@ -4,10 +4,12 @@ import { colors, fonts, spacing } from '../../../theme/theme';
 export default StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   content: {
-    gap: 16,
+    gap: 24,
     paddingTop: spacing.top,
-    paddingBottom: spacing.bottom,
+    paddingBottom: 24,
     paddingHorizontal: spacing.gutter,
   },
-  count: { fontFamily: fonts.semibold, fontSize: 14, color: colors.gold, textAlign: 'center' },
+  section: { gap: 8 },
+  heading: { fontFamily: fonts.bold, fontSize: 16, color: colors.gold },
+  detail: { fontFamily: fonts.medium, fontSize: 13, lineHeight: 19, color: colors.mute, marginBottom: 4 },
 });

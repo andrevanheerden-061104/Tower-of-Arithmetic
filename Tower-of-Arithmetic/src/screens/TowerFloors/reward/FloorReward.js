@@ -22,6 +22,9 @@ export default function FloorReward({ navigate, run, character }) {
   const total = run.map.floors;
   const { solved, errors, hints } = run.stats;
   const next = reward.towerCleared ? 'runStats' : 'pathMap';
+  // A spell card has to be picked before moving on
+  const mustPick = reward.spellChoice && !reward.spellTaken;
+  const continueLabel = reward.towerCleared ? 'See run stats' : junior ? 'Next floor' : 'Continue';
 
   return (
     <View style={styles.screen}>
@@ -57,7 +60,7 @@ export default function FloorReward({ navigate, run, character }) {
             <RewardRow
               icon="card"
               title={reward.spellTaken ? 'New spell added' : junior ? 'New spell!' : 'Spell +1'}
-              detail={reward.spellTaken ? 'In your deck' : 'Tap to choose 1 of 3 spells'}
+              detail={reward.spellTaken ? (reward.spellPlace === 'stash' ? 'In your stash' : 'In your deck') : 'Tap to choose 1 of 3 spells'}
               done={reward.spellTaken}
               highlight={!reward.spellTaken}
               onPress={reward.spellTaken ? undefined : () => navigate('chooseSpell')}
@@ -69,7 +72,11 @@ export default function FloorReward({ navigate, run, character }) {
           {junior ? `You solved ${solved} ${solved === 1 ? 'sum' : 'sums'}!` : `${solved} / ${solved + errors} correct  ·  ${hints} ${hints === 1 ? 'hint' : 'hints'} used`}
         </Text>
 
-        <PrimaryButton label={reward.towerCleared ? 'See run stats' : junior ? 'Next floor' : 'Continue'} onPress={() => navigate(next)} />
+        <PrimaryButton
+          label={mustPick ? 'Choose a spell first' : continueLabel}
+          disabled={mustPick}
+          onPress={() => navigate(next)}
+        />
       </ScrollView>
     </View>
   );

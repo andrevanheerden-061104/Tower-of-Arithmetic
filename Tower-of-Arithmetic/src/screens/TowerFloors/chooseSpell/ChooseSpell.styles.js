@@ -23,7 +23,7 @@ export default StyleSheet.create({
     justifyContent: 'center',
   },
   count: { fontFamily: fonts.bold, fontSize: 14, color: colors.gold },
-  footer: { marginTop: 'auto', gap: 6 },
-  skip: { height: 44, alignItems: 'center', justifyContent: 'center' },
-  skipText: { fontFamily: fonts.semibold, fontSize: 15, color: colors.gold },
+  spacer: { width: 50, height: 44 },
+  footer: { marginTop: 'auto', gap: 12 },
+  note: { fontFamily: fonts.medium, fontSize: 14, lineHeight: 20, color: colors.pink, textAlign: 'center' },
 });

@@ -25,8 +25,12 @@ import {
   enterRoom,
   grantReward,
   heal,
+  makeSpellOffers,
+  moveToDeck,
+  moveToStash,
   removeCurse,
   screenForRoom,
+  swapSpell,
 } from './src/game/run';
 import { versionForGrade } from './src/game/versions';
 import Characters from './src/screens/characters/Characters';
@@ -182,10 +186,13 @@ export default function App() {
     // Ghost event
     onAccept: (giftId) => {
       if (giftId === 'spell') {
-        updateRun(clearRoom);
-        setSpellReturn('pathMap');
-        navigate('chooseSpell');
-        return;
+        const offers = makeSpellOffers(run);
+        if (offers.length) {
+          updateRun((r) => ({ ...clearRoom(r), offers }));
+          setSpellReturn('pathMap');
+          navigate('chooseSpell');
+          return;
+        }
       }
       finishRoomToMap((r) => {
         if (giftId === 'coins') return addCoins(r, 30);
@@ -208,19 +215,28 @@ export default function App() {
         return next;
       }),
     onLeave: () => finishRoomToMap(),
-    // Spell picker (spellId is null when skipped)
+    // Spell picker. A card must be picked: it goes into the deck, or the
+    // stash when the deck is full.
+    spellFrom: spellReturn,
     onDone: (spellId) => {
       const fromReward = spellReturn === 'reward';
       updateRun((r) => {
-        let next = spellId ? addSpell(r, spellId) : r;
+        let next = { ...addSpell(r, spellId), offers: null };
         if (fromReward && next.reward) {
-          next = { ...next, reward: { ...next.reward, spellTaken: Boolean(spellId), spellChoice: Boolean(spellId) } };
+          const place = next.stash.includes(spellId) ? 'stash' : 'deck';
+          next = { ...next, reward: { ...next.reward, spellTaken: true, spellPlace: place } };
         }
         return next;
       });
       setSpellReturn('reward');
       navigate(fromReward ? 'reward' : 'pathMap');
     },
+    // Back from the spell picker to the victory screen (still unpicked)
+    onSpellBack: () => navigate('reward'),
+    // Deck screen
+    onSwapSpell: (deckIndex, stashIndex) => updateRun((r) => swapSpell(r, deckIndex, stashIndex)),
+    onMoveToStash: (deckIndex) => updateRun((r) => moveToStash(r, deckIndex)),
+    onMoveToDeck: (stashIndex) => updateRun((r) => moveToDeck(r, stashIndex)),
     // Leaving a finished run
     onEndRun: () => {
       setRun(null);

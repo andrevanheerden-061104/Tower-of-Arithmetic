@@ -1,30 +1,61 @@
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Text from '../../../../components/AppText';
-import SpellCardImage from '../../../../components/run/SpellCardImage';
 import { colors, fonts, spacing } from '../../../../theme/theme';
+import PickableCard from './PickableCard';
 
-// The deck as cards, two across, with dashed empty slots for the rest.
-export default function DeckGrid({ deck, cardSet, slots }) {
+export const GRID_GAP = 8;
+
+// Card width for three cards across (the card's ring adds 10 px).
+export function useCardWidth() {
   const { width } = useWindowDimensions();
-  const cardWidth = (Math.min(width, 440) - spacing.gutter * 2 - 14) / 2;
+  return (Math.min(width, 440) - spacing.gutter * 2 - GRID_GAP * 2) / 3 - 10;
+}
+
+// The deck: up to 5 cards, three across, with dashed empty slots.
+// An empty slot can be tapped when a stash card is picked.
+export default function DeckGrid({ deck, cardSet, slots, picked, locked, onPick, onEmptySlot }) {
+  const cardWidth = useCardWidth();
   const empty = Math.max(0, slots - deck.length);
 
   return (
     <View style={styles.grid}>
       {deck.map((id, i) => (
-        <SpellCardImage key={`${id}-${i}`} spellId={id} cardSet={cardSet} width={cardWidth} />
+        <PickableCard
+          key={`${id}-${i}`}
+          spellId={id}
+          cardSet={cardSet}
+          width={cardWidth}
+          picked={picked === i}
+          disabled={locked}
+          where={`deck slot ${i + 1}`}
+          onPress={() => onPick(i)}
+        />
       ))}
       {Array.from({ length: empty }, (_, i) => (
-        <View key={`empty-${i}`} style={[styles.empty, { width: cardWidth, height: cardWidth * 1.4 }]}>
-          <Text style={styles.emptyText}>Empty slot</Text>
-        </View>
+        <Pressable
+          key={`empty-${i}`}
+          onPress={onEmptySlot}
+          disabled={!onEmptySlot}
+          accessibilityRole="button"
+          accessibilityLabel={onEmptySlot ? 'Empty deck slot. Tap to move the picked card here' : 'Empty deck slot'}
+          accessibilityState={{ disabled: !onEmptySlot }}
+          style={[
+            styles.empty,
+            { width: cardWidth + 10, height: cardWidth * 1.4 + 10 },
+            onEmptySlot && styles.emptyActive,
+          ]}
+        >
+          <Text style={[styles.emptyText, onEmptySlot && styles.emptyTextActive]}>
+            {onEmptySlot ? 'Move here' : 'Empty slot'}
+          </Text>
+        </Pressable>
       ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: GRID_GAP },
   empty: {
     borderRadius: 12,
     borderWidth: 1.5,
@@ -33,5 +64,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emptyText: { fontFamily: fonts.medium, fontSize: 13, color: colors.mute },
+  emptyActive: { borderColor: colors.gold, backgroundColor: 'rgba(242,234,121,0.08)' },
+  emptyText: { fontFamily: fonts.medium, fontSize: 13, color: colors.mute, textAlign: 'center' },
+  emptyTextActive: { fontFamily: fonts.semibold, color: colors.gold },
 });

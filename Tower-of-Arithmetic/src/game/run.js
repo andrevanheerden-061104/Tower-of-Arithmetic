@@ -3,7 +3,7 @@ import { pickEnemyId } from './enemyAI';
 import { generateMap } from './mapGenerator';
 import { newSeed } from './random';
 import { REWARD_ROOMS, ROOMS } from './rooms';
-import { MAX_DECK } from './spells';
+import { MAX_DECK, spellOffers } from './spells';
 import { VERSIONS } from './versions';
 
 // ---------------------------------------------------------------------------
@@ -29,8 +29,12 @@ export function createRun({ version, dungeonTypeId, character }) {
     coins: version.startCoins,
     xp: 0,
     // The player starts with only their character's level 1 card and
-    // collects the rest on the way up.
+    // collects the rest on the way up. Up to 5 cards are in the deck (used
+    // in fights); any more go to the stash and can be swapped in on the
+    // Deck screen. Cards belong to this run only and are gone when it ends.
     deck: [character?.starter ?? 'shadowShard'],
+    stash: [],
+    offers: null,   // the spells on offer in the spell picker
     potions: version.usesPotions ? ['heal', 'power'] : [],
     items: version.usesCurses ? ['luckyGem', 'hauntedRing'] : version.usesCoins ? ['luckyGem'] : [],
     cleansed: [],   // items whose curse was removed at a campfire
@@ -82,9 +86,55 @@ export function addCoins(run, amount) {
   return { ...run, coins: Math.max(0, run.coins + amount) };
 }
 
+// Every card the player has this run (deck + stash).
+export function collectedSpells(run) {
+  return [...run.deck, ...run.stash];
+}
+
+// A new card goes into the deck, or into the stash when the deck is full.
 export function addSpell(run, spellId) {
+  if (collectedSpells(run).includes(spellId)) return run;
+  if (run.deck.length < MAX_DECK) return { ...run, deck: [...run.deck, spellId] };
+  return { ...run, stash: [...run.stash, spellId] };
+}
+
+// Three cards to choose from (cards already collected are left out).
+export function makeSpellOffers(run) {
+  return spellOffers(collectedSpells(run), currentRoom(run).floor / run.map.floors);
+}
+
+// Deck screen: swap a deck card with a stash card.
+export function swapSpell(run, deckIndex, stashIndex) {
+  const deck = [...run.deck];
+  const stash = [...run.stash];
+  [deck[deckIndex], stash[stashIndex]] = [stash[stashIndex], deck[deckIndex]];
+  return { ...run, deck, stash };
+}
+
+// Deck screen: move a card out of the deck (the deck keeps at least 1).
+export function moveToStash(run, deckIndex) {
+  if (run.deck.length <= 1) return run;
+  return {
+    ...run,
+    deck: run.deck.filter((_, i) => i !== deckIndex),
+    stash: [...run.stash, run.deck[deckIndex]],
+  };
+}
+
+// Deck screen: move a stash card into a free deck slot.
+export function moveToDeck(run, stashIndex) {
   if (run.deck.length >= MAX_DECK) return run;
-  return { ...run, deck: [...run.deck, spellId] };
+  return {
+    ...run,
+    deck: [...run.deck, run.stash[stashIndex]],
+    stash: run.stash.filter((_, i) => i !== stashIndex),
+  };
+}
+
+// The deck can't be changed in the middle of a fight.
+export function deckLocked(run) {
+  const room = currentRoom(run);
+  return (room.type === 'combat' || room.type === 'boss') && !run.cleared.includes(run.currentId);
 }
 
 export function addItem(run, itemId) {
@@ -162,6 +212,11 @@ export function grantReward(run, roomType) {
   let next = { ...clearRoom(run), reward, xp: run.xp + reward.xp };
   next = addCoins(next, reward.coins);
   if (reward.potion) next = addPotion(next, reward.potion);
+  if (reward.spellChoice) {
+    // Picked now so the cards don't change if the player looks away
+    next.offers = makeSpellOffers(next);
+    if (!next.offers.length) next.reward = { ...reward, spellChoice: false }; // every card collected
+  }
   if (reward.towerCleared) next.status = 'won';
   return next;
 }

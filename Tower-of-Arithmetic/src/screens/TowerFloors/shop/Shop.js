@@ -6,7 +6,7 @@ import RunHud from '../../../components/run/RunHud';
 import RunTitle from '../../../components/run/RunTitle';
 import { BACKGROUNDS } from '../../../components/run/RunBackground';
 import { SHOP_WARES } from '../../../game/encounters';
-import { currentRoom } from '../../../game/run';
+import { collectedSpells, currentRoom } from '../../../game/run';
 import WareGrid from './components/WareGrid';
 import styles from './Shop.styles';
 
@@ -14,13 +14,16 @@ import styles from './Shop.styles';
 // with gold. Placeholder prices in src/game/encounters.js.
 export default function Shop({ navigate, run, onBuy, onLeave }) {
   const [selectedId, setSelectedId] = useState(SHOP_WARES[0].id);
-  const [sold, setSold] = useState([]);
+  const [bought, setBought] = useState([]);
+  // Spell cards the player already has count as sold (no doubles)
+  const owned = SHOP_WARES.filter((w) => w.kind === 'spell' && collectedSpells(run).includes(w.spellId)).map((w) => w.id);
+  const sold = [...bought, ...owned];
   const selected = SHOP_WARES.find((w) => w.id === selectedId);
   const canBuy = selected && !sold.includes(selected.id) && run.coins >= selected.price;
 
   const buy = () => {
     onBuy(selected);
-    setSold((s) => [...s, selected.id]);
+    setBought((s) => [...s, selected.id]);
   };
 
   return (
@@ -42,7 +45,15 @@ export default function Shop({ navigate, run, onBuy, onLeave }) {
         <WareGrid wares={SHOP_WARES} coins={run.coins} sold={sold} selectedId={selectedId} onSelect={setSelectedId} />
 
         <PrimaryButton
-          label={!selected ? 'Choose a ware' : sold.includes(selected.id) ? 'Sold' : `Buy ${selected.name}`}
+          label={
+            !selected
+              ? 'Choose a ware'
+              : owned.includes(selected.id) && !bought.includes(selected.id)
+                ? 'You have this card'
+                : sold.includes(selected.id)
+                  ? 'Sold'
+                  : `Buy ${selected.name}`
+          }
           disabled={!canBuy}
           onPress={buy}
         />
