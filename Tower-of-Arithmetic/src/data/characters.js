@@ -5,6 +5,7 @@
 // face    where the face is in the sprite (0-1 across, 0-1 down), used to
 //         crop small portraits
 // locked  locked characters are shown as a black silhouette
+// backImage  the sprite seen from behind, used in fights
 // spell   the attack spell the character starts every run with
 
 export const CHARACTERS = [
@@ -14,14 +15,15 @@ export const CHARACTERS = [
     title: 'shadow apprentice',
     hearts: 3,
     image: require('../assets/charaters/sorceress1-F-front.png'),
+    backImage: require('../assets/charaters/sorceress1-F-back.png'),
     aspect: 1,
     face: { x: 0.5, y: 0.185 },
     locked: false,
     spell: {
-      name: 'Shadow Bolt',
+      name: 'Shadow Shard',
       type: 'Attack spell',
       effect: 'Deals ½ heart of shadow damage',
-      cardImage: null, // no card art yet, a drawn placeholder is used
+      cardImage: require('../assets/cards/Cards-S/shadow/shadow-shard-front.png'),
     },
   },
   {
@@ -30,14 +32,15 @@ export const CHARACTERS = [
     title: 'fire sorceress',
     hearts: 3,
     image: require('../assets/charaters/Fire sorceress2-F-front.png'),
+    backImage: require('../assets/charaters/Fire sorceress2-F-back.png'),
     aspect: 1,
     face: { x: 0.52, y: 0.2 },
     locked: false,
     spell: {
-      name: 'Flame Lance',
+      name: 'Flashflame',
       type: 'Attack spell',
-      effect: 'Deals 1 heart of fire damage',
-      cardImage: require('../assets/cards/flame-lance-front.png'),
+      effect: 'Deals ½ heart of fire damage',
+      cardImage: require('../assets/cards/Cards-S/flame/flashflame-front.png'),
     },
   },
   {
@@ -46,6 +49,7 @@ export const CHARACTERS = [
     title: 'locked',
     hearts: 3,
     image: require('../assets/charaters/WhiteSorceress3-F-front.png'),
+    backImage: require('../assets/charaters/WhiteSorceress3-F-back.png'),
     aspect: 816 / 1285,
     face: { x: 0.54, y: 0.155 },
     locked: true,

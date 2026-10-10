@@ -7,13 +7,16 @@ import ContinueRunCard from './components/ContinueRunCard';
 import NavTiles from './components/NavTiles';
 import ProfileBar from './components/ProfileBar';
 import RunStats from './components/RunStats';
-import { PLAYER, SAVED_RUN } from '../../data/player';
+import { PLAYER } from '../../data/player';
+import { floorsCleared } from '../../game/run';
 import styles from './Home.styles';
 
 // The main menu. Player numbers are placeholders from src/data/player.js.
-// Continue run and New run don't lead anywhere yet.
-export default function Home({ navigate, character }) {
-  const notBuiltYet = (name) => () => console.log(`${name} pressed (screen not built yet)`);
+// New run starts a climb; Continue run appears while a run is going.
+export default function Home({ navigate, character, run }) {
+  const savedRun = run && run.status === 'active'
+    ? { floor: Math.max(1, floorsCleared(run)), totalFloors: run.map.floors, hearts: run.hearts, maxHearts: run.maxHearts }
+    : null;
 
   return (
     <View style={styles.screen}>
@@ -27,8 +30,8 @@ export default function Home({ navigate, character }) {
 
         <View style={styles.menu}>
           <RunStats highestFloor={PLAYER.highestFloor} runsCompleted={PLAYER.runsCompleted} />
-          <ContinueRunCard run={SAVED_RUN} onPress={notBuiltYet('Continue run')} />
-          <PrimaryButton label="New run" onPress={notBuiltYet('New run')} />
+          {savedRun && <ContinueRunCard run={savedRun} onPress={() => navigate('pathMap')} />}
+          <PrimaryButton label="New run" onPress={() => navigate('dungeonType')} />
           <NavTiles
             onCharacters={() => navigate('characters')}
             onProfile={() => navigate('profile')}
