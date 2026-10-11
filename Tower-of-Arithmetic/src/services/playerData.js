@@ -24,6 +24,12 @@ export async function signUp({ username, email, password, grade }) {
       options: { data: { username, grade: grade ?? '' } },
     }),
   );
+  // Supabase pretends a sign-up worked when the email already has an account
+  // (so strangers can't check who plays). It sends NO email in that case; the
+  // only clue is an empty identities list.
+  if (data.user && !data.session && (data.user.identities ?? []).length === 0) {
+    throw new Error('User already registered');
+  }
   // No session means Supabase wants the email confirmed first (with the
   // code it just emailed)
   return { session: data.session, needsConfirmation: !data.session };

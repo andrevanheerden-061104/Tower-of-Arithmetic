@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { colors } from '../theme/theme';
 
@@ -135,6 +136,12 @@ const ICONS = {
 
 // Icons are decorative: the button or row they sit in carries the label
 // for screen readers, so the SVG itself is hidden from them.
+// Icons are decoration: hide them from screen readers. The web build only
+// understands aria-hidden; the phone props make it throw an error there.
+const HIDDEN = Platform.OS === 'web'
+  ? { 'aria-hidden': true }
+  : { accessibilityElementsHidden: true, importantForAccessibility: 'no' };
+
 export default function Icon({ name, size = 20, color = colors.white, strokeWidth = 2, fill = 'none' }) {
   const shapes = ICONS[name];
   if (!shapes) return null;
@@ -148,7 +155,7 @@ export default function Icon({ name, size = 20, color = colors.white, strokeWidt
   };
 
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" accessibilityElementsHidden importantForAccessibility="no">
+    <Svg width={size} height={size} viewBox="0 0 24 24" {...HIDDEN}>
       {shapes.map((s, i) => {
         if (s.p) return <Path key={i} d={s.p} {...common} />;
         if (s.c) return <Circle key={i} cx={s.c[0]} cy={s.c[1]} r={s.c[2]} {...common} />;
