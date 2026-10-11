@@ -5,6 +5,7 @@ import Icon from '../../../components/Icon';
 import PrimaryButton from '../../../components/PrimaryButton';
 import ScreenBackground from '../../../components/ScreenBackground';
 import Shade from '../../../components/Shade';
+import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import RunTitle from '../../../components/run/RunTitle';
 import { makeSpellOffers, runVersion } from '../../../game/run';
 import { MAX_DECK } from '../../../game/spells';
@@ -49,7 +50,9 @@ export default function ChooseSpell({ run, onDone, onSpellBack, spellFrom }) {
           </View>
         </View>
 
-        <CardCarousel spells={offers} index={index} onChange={setIndex} cardSet={version.cardSet} />
+        <TutorialTarget id="spellCard">
+          <CardCarousel spells={offers} index={index} onChange={setIndex} cardSet={version.cardSet} />
+        </TutorialTarget>
         <PagerDots count={offers.length} index={index} />
 
         <View style={styles.footer}>

@@ -41,6 +41,7 @@ import Profile from './src/screens/profile/Profile';
 import Settings from './src/screens/settings/Settings';
 import Signup from './src/screens/signup/Signup';
 import Splash from './src/screens/splash/Splash';
+import Tutorial from './src/screens/tutorial/Tutorial';
 import BossRoom from './src/screens/TowerFloors/bossRoom/BossRoom';
 import ChooseSpell from './src/screens/TowerFloors/chooseSpell/ChooseSpell';
 import Combat from './src/screens/TowerFloors/combat/Combat';
@@ -68,6 +69,7 @@ const SCREENS = {
   characters: Characters,
   profile: Profile,
   settings: Settings,
+  tutorial: Tutorial,
   // The tower (src/screens/TowerFloors)
   dungeonType: DungeonType,
   pathMap: PathMap,
@@ -90,13 +92,13 @@ const SCREENS = {
 //                             characters, profile (and settings from there)
 //   battle  Future Gladiator  fights and the boss fight
 //   tower   Thunderbird       every other screen in the tower
-// Settings keeps whatever was already playing, so opening it from the run
-// menu doesn't switch the tower music off.
+// Settings (and the tutorial opened from it) keeps whatever was already
+// playing, so opening it from the run menu doesn't switch the tower music off.
 const MENU_MUSIC = ['splash', 'signup', 'login', 'onboarding', 'home', 'characters', 'profile'];
 const BATTLE_MUSIC = ['combat', 'boss'];
 
 function musicFor(screen, playing) {
-  if (screen === 'settings') return playing ?? 'menu';
+  if (screen === 'settings' || screen === 'tutorial') return playing ?? 'menu';
   if (MENU_MUSIC.includes(screen)) return 'menu';
   if (BATTLE_MUSIC.includes(screen)) return 'battle';
   return 'tower';

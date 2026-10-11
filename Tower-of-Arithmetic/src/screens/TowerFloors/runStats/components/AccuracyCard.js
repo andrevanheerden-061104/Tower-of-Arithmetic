@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2A1F4A',
   },
   ring: { width: SIZE, height: SIZE },
-  ringText: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  ringText: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
   percent: { fontFamily: fonts.bold, fontSize: 24, color: colors.white },
   ringLabel: { fontFamily: fonts.medium, fontSize: 12, color: colors.white },
   list: { flex: 1, gap: 8 },

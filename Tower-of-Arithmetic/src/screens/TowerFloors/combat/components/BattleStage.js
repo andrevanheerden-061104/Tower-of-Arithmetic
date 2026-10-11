@@ -1,4 +1,5 @@
 import { Image, StyleSheet, View, useWindowDimensions } from 'react-native';
+import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 
 // The player (seen from behind, bottom left) facing the enemy (right).
 // Sizes and places come from the 402 x 874 Figma frame and scale with
@@ -36,6 +37,7 @@ export default function BattleStage({ character, enemy, boss, defeated }) {
         resizeMode="contain"
         accessibilityLabel={enemy.name}
       />
+      <TutorialTarget id="enemy" style={{ position: 'absolute', width: enemySize, height: enemySize, left: enemyLeft, bottom: enemyBottom }} />
       <Image
         source={character.backImage ?? character.image}
         style={[styles.sprite, { width: playerSize, height: playerSize, left: -80 * k, bottom: 154 * k }]}

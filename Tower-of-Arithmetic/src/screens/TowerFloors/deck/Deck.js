@@ -4,6 +4,7 @@ import Text from '../../../components/AppText';
 import ScreenBackground from '../../../components/ScreenBackground';
 import ScreenHeader from '../../../components/ScreenHeader';
 import Shade from '../../../components/Shade';
+import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import { deckLocked, runVersion } from '../../../game/run';
 import { MAX_DECK } from '../../../game/spells';
 import DeckGrid from './components/DeckGrid';
@@ -53,15 +54,17 @@ export default function Deck({ run, goBack, onSwapSpell, onMoveToStash, onMoveTo
             Deck · {run.deck.length} of {MAX_DECK}
           </Text>
           <Text style={styles.detail}>These cards are in your hand in every fight.</Text>
-          <DeckGrid
-            deck={run.deck}
-            cardSet={version.cardSet}
-            slots={MAX_DECK}
-            picked={picked?.area === 'deck' ? picked.index : null}
-            locked={locked}
-            onPick={onDeckCard}
-            onEmptySlot={picked?.area === 'stash' ? onEmptySlot : null}
-          />
+          <TutorialTarget id="deckGrid">
+            <DeckGrid
+              deck={run.deck}
+              cardSet={version.cardSet}
+              slots={MAX_DECK}
+              picked={picked?.area === 'deck' ? picked.index : null}
+              locked={locked}
+              onPick={onDeckCard}
+              onEmptySlot={picked?.area === 'stash' ? onEmptySlot : null}
+            />
+          </TutorialTarget>
         </View>
 
         <View style={styles.section}>

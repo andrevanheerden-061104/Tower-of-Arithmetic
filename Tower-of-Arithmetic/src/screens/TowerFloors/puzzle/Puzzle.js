@@ -4,6 +4,7 @@ import Text from '../../../components/AppText';
 import Icon from '../../../components/Icon';
 import ScreenBackground from '../../../components/ScreenBackground';
 import Shade from '../../../components/Shade';
+import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import ArchmageHint from '../../../components/run/ArchmageHint';
 import RunHud from '../../../components/run/RunHud';
 import RunTitle from '../../../components/run/RunTitle';
@@ -81,7 +82,9 @@ export default function Puzzle({ navigate, run, updateRun, onSolved }) {
         {wrong && <Text style={styles.wrong}>Not quite. No hearts lost, take your time.</Text>}
         {hintIndex >= 0 && <ArchmageHint hint={puzzle.hints[hintIndex]} index={hintIndex} total={puzzle.hints.length} />}
 
-        <Body puzzle={puzzle} onCheck={check} />
+        <TutorialTarget id="puzzle">
+          <Body puzzle={puzzle} onCheck={check} />
+        </TutorialTarget>
       </ScrollView>
     </View>
   );

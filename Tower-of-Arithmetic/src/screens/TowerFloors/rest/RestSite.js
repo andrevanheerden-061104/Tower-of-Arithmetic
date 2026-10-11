@@ -5,6 +5,7 @@ import PrimaryButton from '../../../components/PrimaryButton';
 import EventHero from '../../../components/run/EventHero';
 import RunHud from '../../../components/run/RunHud';
 import RunTitle from '../../../components/run/RunTitle';
+import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import { currentRoom, cursedItems, runVersion } from '../../../game/run';
 import RestChoices from './components/RestChoices';
 import styles from './RestSite.styles';
@@ -34,13 +35,15 @@ export default function RestSite({ navigate, run, onRest }) {
           </Text>
         </View>
 
-        <RestChoices
-          run={run}
-          showCurse={version.usesCurses}
-          curseCount={curses.length}
-          selected={choice}
-          onSelect={setChoice}
-        />
+        <TutorialTarget id="restChoices">
+          <RestChoices
+            run={run}
+            showCurse={version.usesCurses}
+            curseCount={curses.length}
+            selected={choice}
+            onSelect={setChoice}
+          />
+        </TutorialTarget>
         <PrimaryButton label={choice === 'rest' ? 'Rest by the fire' : 'Choose a curse'} onPress={go} />
       </ScrollView>
     </View>

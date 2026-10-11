@@ -5,6 +5,7 @@ import PrimaryButton from '../../../components/PrimaryButton';
 import EventHero from '../../../components/run/EventHero';
 import RunHud from '../../../components/run/RunHud';
 import RunTitle from '../../../components/run/RunTitle';
+import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import { currentRoom, cursedItems } from '../../../game/run';
 import CursedList from './components/CursedList';
 import styles from './RemoveCurse.styles';
@@ -27,7 +28,9 @@ export default function RemoveCurse({ navigate, run, onRemove }) {
           <Text style={styles.body}>Choose one cursed thing. The fire burns its curse away for the rest of this run.</Text>
         </View>
 
-        <CursedList items={curses} selectedId={choice} onSelect={setChoice} />
+        <TutorialTarget id="curseList">
+          <CursedList items={curses} selectedId={choice} onSelect={setChoice} />
+        </TutorialTarget>
         <PrimaryButton label="Remove curse" disabled={!choice} onPress={() => onRemove(choice)} />
         <Pressable onPress={() => navigate('rest')} accessibilityRole="button" style={styles.back}>
           <Text style={styles.backText}>Back to the fire</Text>

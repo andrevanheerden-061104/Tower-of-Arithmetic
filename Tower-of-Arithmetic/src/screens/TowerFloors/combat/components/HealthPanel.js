@@ -1,6 +1,7 @@
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Text from '../../../../components/AppText';
 import HeartRow, { formatHearts } from '../../../../components/run/HeartRow';
+import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 import { colors, fonts } from '../../../../theme/theme';
 
 // Glowing aura colours for whoever's turn it is.
@@ -25,7 +26,7 @@ const AURAS = {
 // enemy's floats above its head; the boss's sits level with the player's.
 // The fighter whose turn it is (`active`) gets a glowing aura round both
 // the hearts bar and the name; the one who's waiting has no outline.
-export default function HealthPanel({ side, name, hearts, max, boss, active, aura = 'gold' }) {
+export default function HealthPanel({ side, name, hearts, max, boss, active, aura = 'gold', tutorialId }) {
   const a = AURAS[aura];
   const glowBox = active ? { borderColor: a.edge, backgroundColor: a.fill, boxShadow: a.glow } : styles.idle;
   const { width } = useWindowDimensions();
@@ -43,6 +44,7 @@ export default function HealthPanel({ side, name, hearts, max, boss, active, aur
       accessible
       accessibilityLabel={`${name}: ${formatHearts(hearts)} of ${max} hearts${active ? '. Their turn' : ''}`}
     >
+      {tutorialId && <TutorialTarget id={tutorialId} />}
       <View style={[styles.hearts, glowBox]}>
         <HeartRow hearts={hearts} max={max} size={18} gap={3} />
         <View style={styles.divider} />

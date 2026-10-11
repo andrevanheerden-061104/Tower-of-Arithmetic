@@ -2,6 +2,7 @@ import { ScrollView, View } from 'react-native';
 import Text from '../../../components/AppText';
 import PrimaryButton from '../../../components/PrimaryButton';
 import CoinIcon from '../../../components/run/CoinIcon';
+import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import FloorProgress from '../../../components/run/FloorProgress';
 import { POTIONS } from '../../../game/encounters';
 import { runVersion } from '../../../game/run';
@@ -57,14 +58,16 @@ export default function FloorReward({ navigate, run, character }) {
           {reward.coins > 0 && <RewardRow icon="coin" title={`+${reward.coins} coins`} detail="Collected" done />}
           {reward.potion && <RewardRow icon="potion" potionColor={POTIONS[reward.potion].color} title={`${POTIONS[reward.potion].name} ×1`} detail="Collected" done />}
           {reward.spellChoice && (
-            <RewardRow
-              icon="card"
-              title={reward.spellTaken ? 'New spell added' : junior ? 'New spell!' : 'Spell +1'}
-              detail={reward.spellTaken ? (reward.spellPlace === 'stash' ? 'In your stash' : 'In your deck') : 'Tap to choose 1 of 3 spells'}
-              done={reward.spellTaken}
-              highlight={!reward.spellTaken}
-              onPress={reward.spellTaken ? undefined : () => navigate('chooseSpell')}
-            />
+            <TutorialTarget id="spellReward">
+              <RewardRow
+                icon="card"
+                title={reward.spellTaken ? 'New spell added' : junior ? 'New spell!' : 'Spell +1'}
+                detail={reward.spellTaken ? (reward.spellPlace === 'stash' ? 'In your stash' : 'In your deck') : 'Tap to choose 1 of 3 spells'}
+                done={reward.spellTaken}
+                highlight={!reward.spellTaken}
+                onPress={reward.spellTaken ? undefined : () => navigate('chooseSpell')}
+              />
+            </TutorialTarget>
           )}
         </View>
 

@@ -7,6 +7,7 @@ import ScreenBackground from '../../components/ScreenBackground';
 import { CHARACTERS } from '../../data/characters';
 import CharacterHero from './components/CharacterHero';
 import CharacterInfo from './components/CharacterInfo';
+import CharacterLevel from './components/CharacterLevel';
 import CharacterRoster from './components/CharacterRoster';
 import LockedPanel from './components/LockedPanel';
 import StartingSpell from './components/StartingSpell';
@@ -53,7 +54,14 @@ export default function Characters({ navigate, character, onCharacterChosen }) {
         </View>
 
         <View style={styles.panel}>
-          {viewing.locked ? <LockedPanel hint={viewing.unlockHint} /> : <StartingSpell spell={viewing.spell} />}
+          {viewing.locked ? (
+            <LockedPanel hint={viewing.unlockHint} />
+          ) : (
+            <>
+              <CharacterLevel character={viewing} />
+              <StartingSpell spell={viewing.spell} />
+            </>
+          )}
 
           <PrimaryButton
             label={viewing.locked ? 'Locked' : isChosen ? 'Selected' : 'Confirm character'}

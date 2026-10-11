@@ -5,6 +5,9 @@
 // aspect     sprite width / height, so it can be sized without loading it first
 // face       where the face is in the sprite (0-1 across, 0-1 down), used to
 //            crop small portraits
+// level      the character's own level, 1 to 20 (see characterLevels.js).
+//            Every character is level 1 until the backend saves progress.
+// xp         XP earned towards the next level
 // locked     locked characters are shown as a black silhouette
 // starter    the one spell card the character takes into the tower.
 //            Every other card is collected on the way up.
@@ -32,6 +35,8 @@ export const CHARACTERS = [
     backImage: require('../assets/charaters/nyxara-back.png'),
     aspect: 1,
     face: { x: 0.5, y: 0.185 },
+    level: 1,
+    xp: 0,
     locked: false,
     starter: 'shadowShard',
     spell: starterInfo('shadowShard'),
@@ -45,6 +50,8 @@ export const CHARACTERS = [
     backImage: require('../assets/charaters/ignara-back.png'),
     aspect: 1,
     face: { x: 0.52, y: 0.2 },
+    level: 1,
+    xp: 0,
     locked: false,
     starter: 'flashflame',
     spell: starterInfo('flashflame'),
@@ -58,6 +65,8 @@ export const CHARACTERS = [
     backImage: require('../assets/charaters/lumina-back.png'),
     aspect: 816 / 1285,
     face: { x: 0.54, y: 0.155 },
+    level: 1,
+    xp: 0,
     locked: true,
     unlockHint: 'Keep climbing the tower to unlock this sorceress.',
     starter: 'flash',

@@ -3,17 +3,19 @@ import Text from '../../../../components/AppText';
 import ItemIcon from '../../../../components/run/ItemIcon';
 import { ITEMS, POTIONS } from '../../../../game/encounters';
 import { isCursed } from '../../../../game/run';
+import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 import { colors, fonts, spacing } from '../../../../theme/theme';
 
 const POTION_SLOTS = 4;
 
 // Potions (left, tap to drink) or items (right) down the side of a fight.
-export default function SupplyColumn({ side, title, kind, run, onUse }) {
+export default function SupplyColumn({ side, title, kind, run, onUse, tutorialId }) {
   const potions = kind === 'potions';
   const place = side === 'left' ? { left: 24 } : { right: 24 };
 
   return (
     <View style={[styles.column, place]}>
+      {tutorialId && <TutorialTarget id={tutorialId} />}
       <Text style={styles.title}>{title}</Text>
       {potions
         ? Array.from({ length: POTION_SLOTS }, (_, i) => {

@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 import { spacing } from '../../../../theme/theme';
 
 // Layout for the inside of the cast sheet:
@@ -18,7 +19,12 @@ export default function SheetBody({ header, scroll, footer, stickToEnd = false, 
   };
   return (
     <View style={styles.wrap}>
-      {header ? <View style={styles.header}>{header}</View> : null}
+      {header ? (
+        <View style={styles.header}>
+          {header}
+          <TutorialTarget id="castQuestion" />
+        </View>
+      ) : null}
       <ScrollView
         ref={ref}
         style={styles.scroll}

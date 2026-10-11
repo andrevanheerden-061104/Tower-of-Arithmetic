@@ -37,7 +37,7 @@ export default function CharacterThumb({ character, active, onPress }) {
 const styles = StyleSheet.create({
   pressed: { opacity: 0.8 },
   lock: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },

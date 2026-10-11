@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import PrimaryButton from '../../../components/PrimaryButton';
 import ScreenBackground from '../../../components/ScreenBackground';
 import Shade from '../../../components/Shade';
+import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import RunHud from '../../../components/run/RunHud';
 import RunTitle from '../../../components/run/RunTitle';
 import { currentRoom, runVersion } from '../../../game/run';
@@ -44,7 +45,9 @@ export default function PathMap({ navigate, run, onEnterRoom }) {
             selectedId={selectedId}
             onSelect={setSelectedId}
           />
-          <MapLegend roomTypes={version.rooms} />
+          <TutorialTarget id="mapLegend">
+            <MapLegend roomTypes={version.rooms} />
+          </TutorialTarget>
         </View>
 
         {selected && <SelectedRoom room={selected} />}

@@ -61,6 +61,16 @@ export default function Settings({ navigate, goBack, settings, onSettingChange, 
           />
         </SettingsGroup>
 
+        <SettingsGroup title="How to play">
+          <LinkRow
+            label="Play the tutorial"
+            icon="chevronRight"
+            accessibilityHint="Nyxara shows you how the game works"
+            onPress={() => navigate('tutorial')}
+            last
+          />
+        </SettingsGroup>
+
         <SettingsGroup title="Music credits">
           <MusicCredits />
         </SettingsGroup>

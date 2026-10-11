@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import Text from '../../../../components/AppText';
 import Icon from '../../../../components/Icon';
+import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 import DotPicture from './DotPicture';
 import QuestionBox from './QuestionBox';
 import SheetBody from './SheetBody';
@@ -19,6 +20,7 @@ export default function TapAnswer({ question, onSubmit, onHelp }) {
       footer={
         <>
           <View style={styles.answers} accessibilityRole="radiogroup">
+            <TutorialTarget id="answers" />
             {question.choices.map((choice) => (
               <Pressable
                 key={choice}
@@ -37,6 +39,7 @@ export default function TapAnswer({ question, onSubmit, onHelp }) {
             accessibilityLabel="Help me"
             style={({ pressed }) => [styles.help, pressed && styles.pressed]}
           >
+            <TutorialTarget id="helpMe" />
             <Icon name="lightbulb" size={20} color={colors.gold} />
             <Text style={styles.helpText}>Help me</Text>
           </Pressable>

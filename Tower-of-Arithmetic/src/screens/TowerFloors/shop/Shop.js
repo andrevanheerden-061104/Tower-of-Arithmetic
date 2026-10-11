@@ -1,19 +1,28 @@
 import { useState } from 'react';
-import { Image, Pressable, ScrollView, View } from 'react-native';
+import { Image, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import Text from '../../../components/AppText';
 import PrimaryButton from '../../../components/PrimaryButton';
 import RunHud from '../../../components/run/RunHud';
 import RunTitle from '../../../components/run/RunTitle';
+import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import { BACKGROUNDS } from '../../../components/run/RunBackground';
 import { SHOP_WARES } from '../../../game/encounters';
 import { collectedSpells, currentRoom } from '../../../game/run';
 import WareGrid from './components/WareGrid';
 import styles from './Shop.styles';
 
+const TRADER = require('../../../assets/npc/trader-shop.png');
+const BG_ASPECT = 1103 / 960; // the shop picture (width / height)
+const COUNTER_TOP = 0.885; // where the wooden counter starts in the picture
+
 // The wandering trader (intermediate and senior). Tap a ware, then buy it
 // with gold. Placeholder prices in src/game/encounters.js.
 export default function Shop({ navigate, run, onBuy, onLeave }) {
   const [selectedId, setSelectedId] = useState(SHOP_WARES[0].id);
+  const { width } = useWindowDimensions();
+  const heroHeight = width / BG_ASPECT;
+  const traderHeight = heroHeight * 0.965;
+  const traderWidth = traderHeight * (1536 / 2636);
   const [bought, setBought] = useState([]);
   // Spell cards the player already has count as sold (no doubles)
   const owned = SHOP_WARES.filter((w) => w.kind === 'spell' && collectedSpells(run).includes(w.spellId)).map((w) => w.id);
@@ -28,8 +37,19 @@ export default function Shop({ navigate, run, onBuy, onLeave }) {
 
   return (
     <View style={styles.screen}>
-      <View style={styles.hero}>
+      {/* The shop picture, the trader standing in it, then the front of the
+          counter drawn again on top so she stands behind it */}
+      <View style={[styles.hero, { height: heroHeight }]}>
         <Image source={BACKGROUNDS.shop} style={styles.heroImage} resizeMode="cover" accessibilityLabel="The trader's shop" />
+        <Image
+          source={TRADER}
+          style={[styles.trader, { top: heroHeight * 0.31, left: (width - traderWidth) / 2, height: traderHeight, width: traderWidth }]}
+          resizeMode="contain"
+          accessibilityLabel="The trader, behind her counter"
+        />
+        <View style={[styles.counter, { height: heroHeight * (1 - COUNTER_TOP) }]} pointerEvents="none">
+          <Image source={BACKGROUNDS.shop} style={[styles.counterImage, { height: heroHeight }]} resizeMode="cover" />
+        </View>
         <View style={styles.hud}>
           <RunHud run={run} navigate={navigate} floor={currentRoom(run).floor} />
         </View>
@@ -42,7 +62,9 @@ export default function Shop({ navigate, run, onBuy, onLeave }) {
           <Text style={styles.tap}>Tap to select</Text>
         </View>
 
-        <WareGrid wares={SHOP_WARES} coins={run.coins} sold={sold} selectedId={selectedId} onSelect={setSelectedId} />
+        <TutorialTarget id="wares">
+          <WareGrid wares={SHOP_WARES} coins={run.coins} sold={sold} selectedId={selectedId} onSelect={setSelectedId} />
+        </TutorialTarget>
 
         <PrimaryButton
           label={

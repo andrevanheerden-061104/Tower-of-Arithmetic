@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import RunBackground from '../../../components/run/RunBackground';
 import RunHud from '../../../components/run/RunHud';
+import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import { createEnemyState, hearts, hitEnemy, rollForFirstTurn, spellDamage, takeTurn } from '../../../game/enemyAI';
 import { getQuestion, isCorrect } from '../../../game/questions';
 import { currentRoom, damage, drinkPotion, enemyForRun, heal, recordAnswer, runVersion } from '../../../game/run';
@@ -41,6 +42,10 @@ export default function Combat({
   onDefeat,
   background = 'corridor',
   banner = null,
+  // The tutorial shows this screen frozen at one moment, e.g.
+  // { phase: 'player' } or { phase: 'casting', selected: 0 }. Nothing happens
+  // on its own then (no dice roll or enemy turn).
+  demo = null,
 }) {
   const version = runVersion(run);
   const room = currentRoom(run);
@@ -49,8 +54,8 @@ export default function Combat({
 
   const [foe, setFoe] = useState(() => createEnemyState(enemy));
   const [start] = useState(rollForFirstTurn); // { roll, first }
-  const [phase, setPhase] = useState('intro'); // intro | player | casting | enemy | over
-  const [selected, setSelected] = useState(null); // index in the hand
+  const [phase, setPhase] = useState(demo?.phase ?? 'intro'); // intro | player | casting | enemy | over
+  const [selected, setSelected] = useState(demo?.selected ?? null); // index in the hand
   const [hintsUsed, setHintsUsed] = useState(0);
   const [toast, setToast] = useState(null); // { id, text, tone }
   const closeToast = useRef(null); // resolves the message on screen
@@ -152,6 +157,7 @@ export default function Combat({
 
   // Start of the fight: say who moves first, then hand over to that side.
   useEffect(() => {
+    if (demo) return;
     (async () => {
       await announce(start.first === 'enemy' ? `${enemy.name} moves first!` : 'You move first!', start.first === 'enemy' ? 'boost' : 'hit');
       if (start.first === 'enemy') enemyTurn(foe);
@@ -168,8 +174,8 @@ export default function Combat({
   const playerTurn = phase === 'player' || phase === 'casting';
   const supplies = (
     <>
-      {version.usesPotions && <SupplyColumn side="left" title="Potions" kind="potions" run={run} onUse={onDrink} />}
-      {run.items.length > 0 && <SupplyColumn side="right" title="Items" kind="items" run={run} />}
+      {version.usesPotions && <SupplyColumn side="left" title="Potions" kind="potions" run={run} onUse={onDrink} tutorialId="potions" />}
+      {run.items.length > 0 && <SupplyColumn side="right" title="Items" kind="items" run={run} tutorialId="items" />}
     </>
   );
   const hud = (
@@ -187,7 +193,7 @@ export default function Combat({
       <BattleStage character={character} enemy={enemy} boss={boss} defeated={foe.hearts <= 0} />
 
       {/* Whoever's turn it is gets a glowing aura (gold for the player, purple for the enemy) */}
-      <HealthPanel side="left" name={character.name} hearts={run.hearts} max={run.maxHearts} active={playerTurn} aura="gold" />
+      <HealthPanel side="left" name={character.name} hearts={run.hearts} max={run.maxHearts} active={playerTurn} aura="gold" tutorialId="playerHealth" />
       <HealthPanel
         side="right"
         name={enemy.name}
@@ -196,18 +202,21 @@ export default function Combat({
         boss={boss}
         active={phase === 'enemy' && foe.hearts > 0}
         aura="shadow"
+        tutorialId="enemyHealth"
       />
 
       <View style={styles.bottom}>
         <TurnPrompt version={version} deckSize={run.deck.length} waiting={!playerTurn} enemyName={enemy.name} />
-        <SpellHand
-          hand={hand}
-          version={version}
-          dungeonTypeId={run.dungeonTypeId}
-          selected={phase === 'casting' ? selected : null}
-          disabled={phase !== 'player'}
-          onPick={pickSpell}
-        />
+        <TutorialTarget id="spellHand">
+          <SpellHand
+            hand={hand}
+            version={version}
+            dungeonTypeId={run.dungeonTypeId}
+            selected={phase === 'casting' ? selected : null}
+            disabled={phase !== 'player'}
+            onPick={pickSpell}
+          />
+        </TutorialTarget>
       </View>
 
       {hud}
@@ -232,6 +241,7 @@ export default function Combat({
           onFizzled={fizzled}
           onHint={() => setHintsUsed((n) => n + 1)}
           onClose={() => setPhase('player')}
+          inline={Boolean(demo)}
         />
       )}
     </View>

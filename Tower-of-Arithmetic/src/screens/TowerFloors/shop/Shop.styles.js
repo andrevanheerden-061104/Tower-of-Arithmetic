@@ -3,8 +3,11 @@ import { colors, fonts, spacing } from '../../../theme/theme';
 
 export default StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  hero: { height: 350, overflow: 'hidden' },
+  hero: { overflow: 'hidden' },
   heroImage: { width: '100%', height: '100%' },
+  trader: { position: 'absolute' },
+  counter: { position: 'absolute', left: 0, right: 0, bottom: 0, overflow: 'hidden' },
+  counterImage: { position: 'absolute', left: 0, right: 0, bottom: 0, width: '100%' },
   hud: { position: 'absolute', top: spacing.top, left: spacing.gutter, right: spacing.gutter },
   panel: {
     gap: 12,

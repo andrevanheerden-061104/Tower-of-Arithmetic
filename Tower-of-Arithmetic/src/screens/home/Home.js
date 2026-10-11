@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 import PrimaryButton from '../../components/PrimaryButton';
 import Shade from '../../components/Shade';
+import TutorialTarget from '../../components/tutorial/TutorialTarget';
 import ScreenBackground from '../../components/ScreenBackground';
 import CharacterStage from './components/CharacterStage';
 import ContinueRunCard from './components/ContinueRunCard';
@@ -31,7 +32,9 @@ export default function Home({ navigate, character, run }) {
         <View style={styles.menu}>
           <RunStats highestFloor={PLAYER.highestFloor} runsCompleted={PLAYER.runsCompleted} />
           {savedRun && <ContinueRunCard run={savedRun} onPress={() => navigate('pathMap')} />}
-          <PrimaryButton label="New run" onPress={() => navigate('dungeonType')} />
+          <TutorialTarget id="newRun">
+            <PrimaryButton label="New run" onPress={() => navigate('dungeonType')} />
+          </TutorialTarget>
           <NavTiles
             onCharacters={() => navigate('characters')}
             onProfile={() => navigate('profile')}

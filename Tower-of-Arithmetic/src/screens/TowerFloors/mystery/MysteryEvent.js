@@ -5,6 +5,7 @@ import PrimaryButton from '../../../components/PrimaryButton';
 import EventHero from '../../../components/run/EventHero';
 import RunHud from '../../../components/run/RunHud';
 import RunTitle from '../../../components/run/RunTitle';
+import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import { ghostGifts } from '../../../game/encounters';
 import { currentRoom, runVersion } from '../../../game/run';
 import GiftList from './components/GiftList';
@@ -29,7 +30,9 @@ export default function MysteryEvent({ navigate, run, onAccept }) {
           <Text style={styles.body}>A ghost drifts out of the wall and holds out three gifts. You may take only one.</Text>
         </View>
 
-        <GiftList gifts={gifts} selectedId={choice} onSelect={setChoice} />
+        <TutorialTarget id="gifts">
+          <GiftList gifts={gifts} selectedId={choice} onSelect={setChoice} />
+        </TutorialTarget>
         <PrimaryButton label="Accept gift" onPress={() => onAccept(choice)} />
       </ScrollView>
     </View>

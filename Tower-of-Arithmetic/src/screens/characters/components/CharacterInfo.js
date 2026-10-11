@@ -1,19 +1,28 @@
 import { StyleSheet, View } from 'react-native';
 import Text from '../../../components/AppText';
 import Icon from '../../../components/Icon';
+import { levelBonus } from '../../../data/characterLevels';
 import { colors, fonts } from '../../../theme/theme';
 
 // Hearts, the Selected / Locked tag, then the character's name and title.
 export default function CharacterInfo({ character, chosen }) {
+  // Hearts include any bonus from the character's level
+  const hearts = character.hearts + levelBonus(character.level).maxHearts;
   return (
     <View style={styles.wrap}>
       <View style={styles.meta}>
         {!character.locked && (
-          <View style={styles.hearts} accessibilityLabel={`${character.hearts} hearts`}>
-            {Array.from({ length: character.hearts }, (_, i) => (
+          <View style={styles.hearts} accessibilityLabel={`${hearts} hearts`}>
+            {Array.from({ length: hearts }, (_, i) => (
               <Icon key={i} name="heart" size={14} color={colors.pink} fill={colors.pink} />
             ))}
-            <Text style={styles.heartsText}>{character.hearts} hearts</Text>
+            <Text style={styles.heartsText}>{hearts} hearts</Text>
+          </View>
+        )}
+
+        {!character.locked && (
+          <View style={[styles.tag, styles.tagLevel]}>
+            <Text style={styles.tagText}>Lv {character.level}</Text>
           </View>
         )}
 
@@ -58,6 +67,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.indigo,
   },
   tagLocked: { borderColor: colors.border, backgroundColor: colors.panel },
+  tagLevel: { paddingLeft: 10, borderColor: colors.border, backgroundColor: colors.panel },
   tagText: { fontFamily: fonts.semibold, fontSize: 12, color: colors.white },
   name: { fontFamily: fonts.display, fontSize: 34, lineHeight: 40, color: colors.white },
   title: { fontFamily: fonts.regular, fontSize: 22, lineHeight: 26, color: colors.mute },

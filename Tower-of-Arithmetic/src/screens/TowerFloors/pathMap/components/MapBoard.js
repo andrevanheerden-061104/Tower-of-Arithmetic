@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 import MapEdges from './MapEdges';
 import MapNode from './MapNode';
 
@@ -31,6 +32,17 @@ export default function MapBoard({ map, currentId, cleared, reachable, selectedI
     return 'locked';
   };
 
+  // The tutorial's spotlight: a box round the player's room and the rooms
+  // they can go to next.
+  const nextBox = () => {
+    const spots = [currentId, ...reachable].map((id) => position(map.nodes[id]));
+    const xs = spots.map((p) => p.x);
+    const ys = spots.map((p) => p.y);
+    const left = Math.max(0, Math.min(...xs) - 34);
+    const top = Math.min(...ys) - 34;
+    return { position: 'absolute', left, top, width: Math.min(width, Math.max(...xs) + 34) - left, height: Math.max(...ys) + 34 - top };
+  };
+
   // Start the scroll so the player's room sits in the lower part of the view
   const scrollToPlayer = () => {
     if (!width || !viewHeight) return;
@@ -54,6 +66,7 @@ export default function MapBoard({ map, currentId, cleared, reachable, selectedI
       >
         {width > 0 && (
           <View style={{ width, height }}>
+            <TutorialTarget id="mapNext" style={nextBox()} />
             <MapEdges nodes={nodes} map={map} position={position} width={width} height={height} cleared={cleared} currentId={currentId} />
             {nodes.map((node) => {
               const { x, y } = position(node);

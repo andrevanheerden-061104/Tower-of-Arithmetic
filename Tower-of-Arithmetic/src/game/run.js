@@ -1,3 +1,4 @@
+import { levelBonus } from '../data/characterLevels';
 import { ENEMIES, ITEMS } from './encounters';
 import { pickEnemyId } from './enemyAI';
 import { generateMap } from './mapGenerator';
@@ -17,6 +18,9 @@ import { VERSIONS } from './versions';
 
 export function createRun({ version, dungeonTypeId, character }) {
   const seed = newSeed();
+  // Rewards from the character's level (e.g. +1 heart at level 5)
+  const bonus = levelBonus(character?.level ?? 1);
+  const hearts = version.hearts + bonus.maxHearts;
   return {
     versionId: version.id,
     dungeonTypeId,
@@ -24,8 +28,8 @@ export function createRun({ version, dungeonTypeId, character }) {
     map: generateMap({ floors: version.floors, seed, roomTypes: version.rooms }),
     currentId: 'start',  // the room the player is in (start = tower gate)
     cleared: ['start'],
-    hearts: version.hearts,
-    maxHearts: version.hearts,
+    hearts,
+    maxHearts: hearts,
     coins: version.startCoins,
     xp: 0,
     // The player starts with only their character's level 1 card and

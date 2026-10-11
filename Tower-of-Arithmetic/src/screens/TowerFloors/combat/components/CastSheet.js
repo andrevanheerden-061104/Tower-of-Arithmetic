@@ -4,6 +4,7 @@ import Text from '../../../../components/AppText';
 import Icon from '../../../../components/Icon';
 import PrimaryButton from '../../../../components/PrimaryButton';
 import ArchmageHint from '../../../../components/run/ArchmageHint';
+import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 import { hearts } from '../../../../game/enemyAI';
 import QuestionBox from './QuestionBox';
 import SheetBody from './SheetBody';
@@ -36,6 +37,9 @@ function suppliesBottom(potionSlots, itemCount) {
 // A right answer closes the sheet (the spell hits). A wrong answer shows a
 // hint; "Continue" closes it and the enemy takes its turn. Hints asked for
 // with the light bulb are free and don't use up the turn.
+//
+// `inline` draws it as part of the screen instead of in a Modal (the
+// tutorial uses this so its spotlight can sit on top).
 export default function CastSheet({
   version,
   spell,
@@ -50,6 +54,7 @@ export default function CastSheet({
   onFizzled,
   onHint,
   onClose,
+  inline = false,
 }) {
   const { height } = useWindowDimensions();
   const [panel, setPanel] = useState(null); // null | 'wrong' | 'hint'
@@ -85,14 +90,15 @@ export default function CastSheet({
   };
   const Body = version.answerMode === 'tap' ? TapAnswer : version.answerMode === 'type' ? TypeAnswer : StepsAnswer;
 
-  return (
-    <Modal visible transparent animationType="slide" statusBarTranslucent navigationBarTranslucent onRequestClose={panel === 'wrong' ? onFizzled : onClose}>
+  const content = (
+    <>
       <View style={styles.backdrop} />
       {supplies}
       {hud}
 
       <View style={[styles.sheet, { top }]} accessibilityViewIsModal>
         <View style={styles.header}>
+          <TutorialTarget id="castHeader" />
           <View style={styles.headerText}>
             <Text style={styles.casting}>{healing ? 'HEALING' : 'CASTING'} · {hearts(spellDamage).toUpperCase()}</Text>
             <Text style={styles.spell} accessibilityRole="header">
@@ -101,6 +107,7 @@ export default function CastSheet({
           </View>
           {!junior && panel === null && (
             <Pressable onPress={showHint} accessibilityRole="button" accessibilityLabel="Get a hint" style={styles.iconButton}>
+              <TutorialTarget id="hintButton" />
               <Icon name="lightbulb" size={22} color={colors.gold} />
             </Pressable>
           )}
@@ -111,6 +118,7 @@ export default function CastSheet({
               accessibilityLabel="Read the question aloud"
               style={[styles.iconButton, styles.speaker]}
             >
+              <TutorialTarget id="readAloud" />
               <Icon name="volume" size={22} color={colors.bg} />
             </Pressable>
           )}
@@ -151,12 +159,22 @@ export default function CastSheet({
           <Body question={question} onSubmit={submit} onHelp={showHint} onOverflow={onOverflow} />
         )}
       </View>
+    </>
+  );
+
+  if (inline) return <View style={styles.inline}>{content}</View>;
+  return (
+    <Modal visible transparent animationType="slide" statusBarTranslucent navigationBarTranslucent onRequestClose={panel === 'wrong' ? onFizzled : onClose}>
+      {content}
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(13,13,13,0.72)' },
+  // (written out in full: StyleSheet.absoluteFillObject no longer exists in
+  // React Native 0.86, so spreading it gave nothing on phones)
+  backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(13,13,13,0.72)' },
+  inline: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 30, elevation: 30 },
   sheet: {
     position: 'absolute',
     left: 0,
