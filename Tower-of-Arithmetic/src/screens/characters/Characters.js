@@ -4,7 +4,8 @@ import PrimaryButton from '../../components/PrimaryButton';
 import ScreenHeader from '../../components/ScreenHeader';
 import Shade from '../../components/Shade';
 import ScreenBackground from '../../components/ScreenBackground';
-import { CHARACTERS } from '../../data/characters';
+import { CHARACTERS, withProgress } from '../../data/characters';
+import { usePlayer } from '../../hooks/usePlayer';
 import CharacterHero from './components/CharacterHero';
 import CharacterInfo from './components/CharacterInfo';
 import CharacterLevel from './components/CharacterLevel';
@@ -16,15 +17,18 @@ import styles from './Characters.styles';
 // Browse the characters and choose which one to play.
 // `character` is the one currently chosen (kept in App.js).
 export default function Characters({ navigate, character, onCharacterChosen }) {
+  // Every character, with the player's saved level for each
+  const { characters: progress } = usePlayer();
+  const characters = CHARACTERS.map((c) => withProgress(c, progress));
   // Which character is on screen right now (not chosen until confirmed)
   const [index, setIndex] = useState(() =>
-    Math.max(0, CHARACTERS.findIndex((c) => c.id === character.id))
+    Math.max(0, characters.findIndex((c) => c.id === character.id))
   );
-  const viewing = CHARACTERS[index];
+  const viewing = characters[index];
   const isChosen = viewing.id === character.id;
 
   // Step left / right, wrapping round at the ends
-  const step = (by) => setIndex((i) => (i + by + CHARACTERS.length) % CHARACTERS.length);
+  const step = (by) => setIndex((i) => (i + by + characters.length) % characters.length);
 
   const confirm = () => {
     onCharacterChosen(viewing.id);
@@ -43,14 +47,14 @@ export default function Characters({ navigate, character, onCharacterChosen }) {
           <CharacterHero
             character={viewing}
             index={index}
-            total={CHARACTERS.length}
+            total={characters.length}
             onPrevious={() => step(-1)}
             onNext={() => step(1)}
           />
 
           <CharacterInfo character={viewing} chosen={isChosen} />
 
-          <CharacterRoster characters={CHARACTERS} index={index} onSelect={setIndex} />
+          <CharacterRoster characters={characters} index={index} onSelect={setIndex} />
         </View>
 
         <View style={styles.panel}>

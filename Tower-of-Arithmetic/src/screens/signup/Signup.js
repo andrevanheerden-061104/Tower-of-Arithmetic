@@ -1,13 +1,42 @@
+import { useState } from 'react';
 import { View } from 'react-native';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthLayout from '../../components/auth/AuthLayout';
 import AuthTabs from '../../components/auth/AuthTabs';
+import { usePlayer } from '../../hooks/usePlayer';
+import { checkSignup, friendlyAuthError } from '../../services/authErrors';
 import SignupForm from './components/SignupForm';
 import styles from './Signup.styles';
 
-// Create account screen. There is no backend yet, so the button
-// simply moves on to onboarding without saving anything.
+// Create account. Makes the Supabase account (the database makes the
+// profile from the username), then on to choosing a grade. If Supabase
+// asks for the email to be confirmed first, the player is told to check
+// their inbox. Without Supabase set up, it just moves on as a guest.
 export default function Signup({ navigate }) {
+  const { signUp, online } = usePlayer();
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState(null);
+
+  const submit = async (values) => {
+    const problem = checkSignup(values);
+    if (problem && online) return setMessage({ text: problem, tone: 'error' });
+    setBusy(true);
+    setMessage(null);
+    try {
+      const { needsConfirmation } = await signUp(values);
+      if (needsConfirmation) {
+        setMessage({ text: 'Almost there! We sent you an email: tap the link in it, then log in.', tone: 'info' });
+      } else {
+        navigate('onboarding');
+      }
+    } catch (error) {
+      setMessage({ text: friendlyAuthError(error.message), tone: 'error' });
+    } finally {
+      setBusy(false);
+    }
+    return undefined;
+  };
+
   return (
     <AuthLayout>
       <AuthHeader
@@ -17,7 +46,7 @@ export default function Signup({ navigate }) {
 
       <View style={styles.form}>
         <AuthTabs active="signup" onChange={(tab) => tab === 'login' && navigate('login')} />
-        <SignupForm onSubmit={() => navigate('onboarding')} onSwitch={() => navigate('login')} />
+        <SignupForm onSubmit={submit} onSwitch={() => navigate('login')} busy={busy} message={message} />
       </View>
     </AuthLayout>
   );

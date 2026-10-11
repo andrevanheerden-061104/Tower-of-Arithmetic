@@ -216,13 +216,34 @@ export function typeForFloor(version, dungeonTypeId, floor) {
   return ids[(floor - 1) % ids.length];
 }
 
-// The sum for a fight. Junior spells each cast their own kind of sum in a
-// mixed dungeon (Flashflame adds, Flash Freeze takes away, Shadow Shard times).
+// The maths topic a cast asks. Junior spells each cast their own kind of
+// sum in a mixed dungeon (Flashflame adds, Flash Freeze takes away, Shadow
+// Shard times).
+export function topicFor(version, dungeonTypeId, floor, spell) {
+  if (version.id === 'junior' && dungeonTypeId === 'mixed' && spell?.juniorOp) return spell.juniorOp;
+  return typeForFloor(version, dungeonTypeId, floor);
+}
+
+// The game's own sum for that topic (always available, even offline).
 export function getQuestion(version, dungeonTypeId, floor, spell) {
-  const bank = BANK[version.id];
-  let type = typeForFloor(version, dungeonTypeId, floor);
-  if (version.id === 'junior' && dungeonTypeId === 'mixed' && spell?.juniorOp) type = spell.juniorOp;
-  return { type, ...bank[type] };
+  const type = topicFor(version, dungeonTypeId, floor, spell);
+  return { type, source: 'bank', ...BANK[version.id][type] };
+}
+
+// The next sum to ask in a run: the next unused AI question for the topic
+// if the run has any (see run.questionPool), otherwise the game's own.
+export function pickQuestion(run, version, floor, spell) {
+  const type = topicFor(version, run.dungeonTypeId, floor, spell);
+  const pool = run.questionPool?.[type] ?? [];
+  const used = run.questionsUsed?.[type] ?? 0;
+  if (used < pool.length) return { ...pool[used], type, source: 'ai' };
+  return getQuestion(version, run.dungeonTypeId, floor, spell);
+}
+
+// Every topic a run can ask: one for a focused dungeon, all for mixed.
+export function topicsForRun(version, dungeonTypeId) {
+  const ids = version.dungeonTypes.map((t) => t.id);
+  return ids.includes(dungeonTypeId) ? [dungeonTypeId] : ids;
 }
 
 // Label for the maths a junior card will cast (shown on the card's tag).

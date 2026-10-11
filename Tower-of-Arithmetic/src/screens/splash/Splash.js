@@ -1,15 +1,21 @@
 import { useCallback } from 'react';
 import { View } from 'react-native';
 import Shade from '../../components/Shade';
+import { usePlayer } from '../../hooks/usePlayer';
 import SplashBrand from './components/SplashBrand';
 import SplashStart from './components/SplashStart';
 import SplashVideo from './components/SplashVideo';
 import styles from './Splash.styles';
 
-// First screen: the looping tower video with the game title and a start button.
+// First screen: the looping tower video with the game title and a start
+// button. A player who is still logged in goes straight Home.
 export default function Splash({ navigate }) {
+  const { signedIn, profile } = usePlayer();
   // Called once the loading bar has filled
-  const goToSignup = useCallback(() => navigate('signup'), [navigate]);
+  const start = useCallback(() => {
+    if (!signedIn) navigate('signup');
+    else navigate(profile && !profile.grade ? 'onboarding' : 'home');
+  }, [navigate, signedIn, profile]);
 
   return (
     <View style={styles.screen}>
@@ -19,7 +25,7 @@ export default function Splash({ navigate }) {
 
       <View style={styles.content}>
         <SplashBrand />
-        <SplashStart onStart={goToSignup} />
+        <SplashStart onStart={start} />
       </View>
     </View>
   );

@@ -43,6 +43,14 @@ export function createRun({ version, dungeonTypeId, character }) {
     items: version.usesCurses ? ['luckyGem', 'hauntedRing'] : version.usesCoins ? ['luckyGem'] : [],
     cleansed: [],   // items whose curse was removed at a campfire
     stats: { solved: 0, hints: 0, errors: 0, streak: 0, bestStreak: 0, floors: [] },
+    // Per maths topic: { attempts, correct, timeMs, hints } (for Orrin's
+    // end-of-run summary)
+    topicStats: {},
+    // AI questions for this run, by topic (null until they arrive, or if
+    // the server can't be reached: then the game's own questions are used),
+    // and how many of each topic have been asked
+    questionPool: null,
+    questionsUsed: {},
     reward: null,   // what the reward screen will show
     status: 'active', // 'active' | 'won' | 'lost'
   };
@@ -170,8 +178,14 @@ export function cursedItems(run) {
   return run.items.filter((id) => isCursed(run, id)).map((id) => ITEMS[id]);
 }
 
-// Count answers for the run stats screen.
-export function recordAnswer(run, { correct, hintsUsed = 0 }) {
+// A question of this topic has been asked (the next one comes from
+// further down the pool).
+export function markQuestionUsed(run, topic) {
+  return { ...run, questionsUsed: { ...run.questionsUsed, [topic]: (run.questionsUsed?.[topic] ?? 0) + 1 } };
+}
+
+// Count answers for the run stats screen (and per topic for Orrin's summary).
+export function recordAnswer(run, { correct, hintsUsed = 0, topic, timeMs = 0 }) {
   const floor = currentRoom(run).floor;
   const stats = { ...run.stats };
   stats.hints += hintsUsed;
@@ -191,7 +205,17 @@ export function recordAnswer(run, { correct, hintsUsed = 0 }) {
   if (i >= 0) floors[i] = entry;
   else floors.push(entry);
   stats.floors = floors;
-  return { ...run, stats };
+  const topicStats = { ...run.topicStats };
+  if (topic) {
+    const t = { attempts: 0, correct: 0, timeMs: 0, hints: 0, ...topicStats[topic] };
+    topicStats[topic] = {
+      attempts: t.attempts + 1,
+      correct: t.correct + (correct ? 1 : 0),
+      timeMs: t.timeMs + Math.round(timeMs),
+      hints: t.hints + hintsUsed,
+    };
+  }
+  return { ...run, stats, topicStats };
 }
 
 // Rewards for finishing a fight, puzzle or the boss (placeholder amounts).

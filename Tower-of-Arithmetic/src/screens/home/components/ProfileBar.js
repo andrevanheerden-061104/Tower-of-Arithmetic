@@ -11,7 +11,7 @@ export default function ProfileBar({ player, character, onPress }) {
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${character.name}, level ${player.level} ${player.rank}, ${player.xp} of ${player.xpToNext} XP. Open profile`}
+      accessibilityLabel={`${player.name}, level ${player.level} ${player.rank}, ${player.xp} of ${player.xpToNext} XP. Open profile`}
       style={styles.wrap}
     >
       <View style={styles.avatar}>
@@ -22,7 +22,7 @@ export default function ProfileBar({ player, character, onPress }) {
       </View>
 
       <View style={styles.info}>
-        <Text style={styles.name}>{character.name}</Text>
+        <Text style={styles.name}>{player.name}</Text>
         <Text style={styles.rank}>{player.rank}</Text>
         <View style={styles.xpTrack}>
           <View style={[styles.xpFill, { width: `${progress * 100}%` }]} />

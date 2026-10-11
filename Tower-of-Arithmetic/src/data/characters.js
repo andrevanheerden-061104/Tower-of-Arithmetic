@@ -79,3 +79,10 @@ export const DEFAULT_CHARACTER_ID = 'shadow';
 export function getCharacter(id) {
   return CHARACTERS.find((c) => c.id === id) ?? CHARACTERS[0];
 }
+
+// The character with the player's saved level and XP for it
+// (`progress` is { shadow: { level, xp }, ... } from the database).
+export function withProgress(character, progress) {
+  const saved = progress?.[character.id];
+  return saved ? { ...character, level: saved.level, xp: saved.xp } : character;
+}

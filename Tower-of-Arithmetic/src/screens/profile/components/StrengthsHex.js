@@ -11,9 +11,10 @@ const CENTRE_X = 169;
 const CENTRE_Y = 110;
 const RADIUS = 62;
 
-// Point on the hexagon for strength number `i`, `r` away from the centre.
-function point(i, r) {
-  const angle = ((-90 + i * 60) * Math.PI) / 180;
+// Point for strength number `i` of `n`, `r` away from the centre
+// (6 topics make a hexagon; junior's 4 make a diamond).
+function point(i, r, n = 6) {
+  const angle = ((-90 + (i * 360) / n) * Math.PI) / 180;
   return [CENTRE_X + r * Math.cos(angle), CENTRE_Y + r * Math.sin(angle)];
 }
 
@@ -30,8 +31,8 @@ export default function StrengthsHex({ strengths }) {
   const textScale = useTextScale();
   const extra = Math.max(0, 34 * (textScale - 1));
 
-  const rings = [1 / 3, 2 / 3, 1].map((k) => toPoints(strengths.map((_, i) => point(i, RADIUS * k))));
-  const shape = strengths.map((s, i) => point(i, (RADIUS * s.value) / 100));
+  const rings = [1 / 3, 2 / 3, 1].map((k) => toPoints(strengths.map((_, i) => point(i, RADIUS * k, strengths.length))));
+  const shape = strengths.map((s, i) => point(i, (RADIUS * s.value) / 100, strengths.length));
 
   return (
     <View style={styles.wrap}>
@@ -44,7 +45,7 @@ export default function StrengthsHex({ strengths }) {
             <Polygon key={i} points={points} stroke={colors.border} strokeWidth={1} fill="none" />
           ))}
           {strengths.map((_, i) => {
-            const [x, y] = point(i, RADIUS);
+            const [x, y] = point(i, RADIUS, strengths.length);
             return <Line key={i} x1={CENTRE_X} y1={CENTRE_Y} x2={x} y2={y} stroke={colors.border} strokeWidth={1} />;
           })}
           <Polygon
@@ -63,7 +64,7 @@ export default function StrengthsHex({ strengths }) {
         {/* Labels are normal text placed over the chart so they scale with
             the phone's font settings and are read by screen readers */}
         {strengths.map((s, i) => {
-          const [x, y] = point(i, RADIUS + 10);
+          const [x, y] = point(i, RADIUS + 10, strengths.length);
           const centred = i === 0 || i === 3;
           const rightSide = i === 1 || i === 2;
           const labelWidth = 90 * scale;

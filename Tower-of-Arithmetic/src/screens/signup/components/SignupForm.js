@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import AuthSwitchLink from '../../../components/auth/AuthSwitchLink';
 import PrimaryButton from '../../../components/PrimaryButton';
+import FormMessage from '../../../components/auth/FormMessage';
 import TextField from '../../../components/auth/TextField';
 
-// Username, email and password. The values live only in this component
-// for now; nothing is validated or sent anywhere.
-export default function SignupForm({ onSubmit, onSwitch }) {
+// Username, email and password. "Create account" hands them to the screen,
+// which checks them and makes the account. `message` is { text, tone }.
+export default function SignupForm({ onSubmit, onSwitch, busy = false, message }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,8 +43,14 @@ export default function SignupForm({ onSubmit, onSwitch }) {
         />
       </View>
 
+      <FormMessage text={message?.text} tone={message?.tone} />
+
       <View style={styles.actions}>
-        <PrimaryButton label="Create account" onPress={onSubmit} />
+        <PrimaryButton
+          label={busy ? 'Creating account…' : 'Create account'}
+          disabled={busy}
+          onPress={() => onSubmit({ username: username.trim(), email: email.trim(), password })}
+        />
         <AuthSwitchLink question="Already an apprentice?" action="Log in" onPress={onSwitch} />
       </View>
     </View>

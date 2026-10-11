@@ -1,0 +1,15 @@
+# Secrets: never commit these (the .env.example files are safe to commit)
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Logs
+npm-debug.log*
+*.log

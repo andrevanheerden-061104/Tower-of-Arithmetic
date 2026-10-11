@@ -6,6 +6,7 @@ import ScreenBackground from '../../../components/ScreenBackground';
 import Shade from '../../../components/Shade';
 import { getDungeonType } from '../../../game/versions';
 import { floorsCleared, runVersion } from '../../../game/run';
+import { useRunSummary } from '../../../hooks/useRunSummary';
 import AccuracyCard from './components/AccuracyCard';
 import AdviceCard from './components/AdviceCard';
 import ErrorBreakdown from './components/ErrorBreakdown';
@@ -13,8 +14,10 @@ import FloorBars from './components/FloorBars';
 import styles from './RunStats.styles';
 
 // How the run went: accuracy, hints, errors, accuracy per floor, where the
-// errors came from and the Archmage's advice. Counts come from the run;
-// the error breakdown and advice are placeholders for now.
+// errors came from and Orrin's advice. Counts come from the run; the advice
+// is written by the AI from the run's results per topic (the placeholder
+// advice shows if the server can't be reached). The error breakdown is
+// still a placeholder.
 export default function RunStats({ run, onEndRun, onNewRun }) {
   const version = runVersion(run);
   const dungeon = getDungeonType(version, run.dungeonTypeId);
@@ -22,6 +25,8 @@ export default function RunStats({ run, onEndRun, onNewRun }) {
   const answered = solved + errors;
   const accuracy = answered ? Math.round((solved / answered) * 100) : 0;
   const reached = Math.max(1, floorsCleared(run));
+  const orrin = useRunSummary(run);
+  const focusLabel = version.dungeonTypes.find((t) => t.id === orrin.focusTopic)?.label;
 
   return (
     <View style={styles.screen}>
@@ -38,7 +43,7 @@ export default function RunStats({ run, onEndRun, onNewRun }) {
         <AccuracyCard accuracy={accuracy} solved={solved} hints={hints} errors={errors} bestStreak={bestStreak} />
         <FloorBars floors={floors} />
         <ErrorBreakdown errors={errors} versionId={version.id} />
-        <AdviceCard versionId={version.id} />
+        <AdviceCard versionId={version.id} summary={orrin.summary} focus={focusLabel} loading={orrin.loading} />
 
         <PrimaryButton label="New run" onPress={onNewRun} />
       </ScrollView>

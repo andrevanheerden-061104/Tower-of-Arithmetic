@@ -2,7 +2,7 @@ import { ScrollView, View } from 'react-native';
 import ScreenHeader from '../../components/ScreenHeader';
 import Shade from '../../components/Shade';
 import ScreenBackground from '../../components/ScreenBackground';
-import { PLAYER } from '../../data/player';
+import { usePlayerCard } from '../../hooks/usePlayerCard';
 import BadgeRow from './components/BadgeRow';
 import LevelBar from './components/LevelBar';
 import ProfileIdentity from './components/ProfileIdentity';
@@ -11,8 +11,10 @@ import StrengthsHex from './components/StrengthsHex';
 import styles from './Profile.styles';
 
 // The player's profile: level, a few stats, strengths by maths type
-// and badges. All numbers are placeholders from src/data/player.js.
+// (accuracy per topic) and badges. Numbers come from the saved profile and
+// topic totals; badges are still placeholders (src/data/player.js).
 export default function Profile({ navigate, character, grade }) {
+  const player = usePlayerCard();
   return (
     <View style={styles.screen}>
       <ScreenBackground opacity={0.35} />
@@ -20,15 +22,15 @@ export default function Profile({ navigate, character, grade }) {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ScreenHeader title="Profile" onBack={() => navigate('home')} />
-        <ProfileIdentity player={PLAYER} character={character} grade={grade} />
-        <LevelBar level={PLAYER.level} xp={PLAYER.xp} xpToNext={PLAYER.xpToNext} />
+        <ProfileIdentity player={player} character={character} grade={grade} />
+        <LevelBar level={player.level} xp={player.xp} xpToNext={player.xpToNext} />
         <StatTiles
-          highestFloor={PLAYER.highestFloor}
-          runsCompleted={PLAYER.runsCompleted}
-          accuracy={PLAYER.accuracy}
+          highestFloor={player.highestFloor}
+          runsCompleted={player.runsCompleted}
+          accuracy={player.accuracy}
         />
-        <StrengthsHex strengths={PLAYER.strengths} />
-        <BadgeRow badges={PLAYER.badges} total={PLAYER.badgesTotal} />
+        <StrengthsHex strengths={player.strengths} />
+        <BadgeRow badges={player.badges} total={player.badgesTotal} />
       </ScrollView>
     </View>
   );

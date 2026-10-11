@@ -6,6 +6,7 @@ import PrimaryButton from '../../../../components/PrimaryButton';
 import ArchmageHint from '../../../../components/run/ArchmageHint';
 import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 import { hearts } from '../../../../game/enemyAI';
+import { useAiHint } from '../../../../hooks/useAiHint';
 import QuestionBox from './QuestionBox';
 import SheetBody from './SheetBody';
 import StepsAnswer from './StepsAnswer';
@@ -60,6 +61,9 @@ export default function CastSheet({
   const [panel, setPanel] = useState(null); // null | 'wrong' | 'hint'
   const [hintIndex, setHintIndex] = useState(-1);
   const [grow, setGrow] = useState(0); // how far the sheet has risen to fit more steps
+  const [wrongAnswer, setWrongAnswer] = useState(null); // what the player answered, when wrong
+  // Orrin (the AI) explains a wrong answer; the bank's hints show either way
+  const ai = useAiHint(version, question, panel === 'wrong' && !inline ? wrongAnswer : null);
   const junior = version.id === 'junior';
 
   const nextHint = () => {
@@ -69,6 +73,7 @@ export default function CastSheet({
 
   const submit = (answer) => {
     if (onSubmit(answer) === 'wrong') {
+      setWrongAnswer(String(answer));
       nextHint();
       setPanel('wrong');
     }
@@ -139,6 +144,8 @@ export default function CastSheet({
                     Not quite. Your spell fizzles, so it’s the enemy’s turn. Here’s a hint for next time:
                   </Text>
                 )}
+                {panel === 'wrong' && ai.loading && <Text style={styles.thinking}>Orrin is looking at your answer…</Text>}
+                {panel === 'wrong' && ai.hint && <ArchmageHint title="Orrin" hint={ai.hint} />}
                 <ArchmageHint hint={question.hints[hintIndex]} index={hintIndex} total={question.hints.length} />
               </>
             }
@@ -212,4 +219,5 @@ const styles = StyleSheet.create({
   },
   speaker: { backgroundColor: colors.gold, borderColor: colors.gold, borderRadius: 22 },
   wrong: { fontFamily: fonts.semibold, fontSize: 14, lineHeight: 20, color: '#FF9B8F' },
+  thinking: { fontFamily: fonts.medium, fontSize: 14, color: colors.mute },
 });

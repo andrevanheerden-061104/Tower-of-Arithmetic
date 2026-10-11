@@ -11,7 +11,8 @@ import { Montserrat_600SemiBold } from '@expo-google-fonts/montserrat/600SemiBol
 import { Montserrat_700Bold } from '@expo-google-fonts/montserrat/700Bold';
 import { TEXT_SCALES, TextSizeProvider } from './src/context/TextSizeContext';
 import { setMusic } from './src/audio/music';
-import { DEFAULT_CHARACTER_ID, getCharacter } from './src/data/characters';
+import { PlayerProvider } from './src/context/PlayerContext';
+import { DEFAULT_CHARACTER_ID, getCharacter, withProgress } from './src/data/characters';
 import { DEFAULT_SETTINGS } from './src/data/settings';
 import { ITEMS } from './src/game/encounters';
 import {
@@ -23,6 +24,7 @@ import {
   createRun,
   currentRoom,
   enterRoom,
+  floorsCleared,
   grantReward,
   heal,
   makeSpellOffers,
@@ -32,7 +34,10 @@ import {
   screenForRoom,
   swapSpell,
 } from './src/game/run';
+import { topicsForRun } from './src/game/questions';
 import { versionForGrade } from './src/game/versions';
+import { usePlayer } from './src/hooks/usePlayer';
+import { fetchQuestionPool } from './src/services/ai';
 import Characters from './src/screens/characters/Characters';
 import Home from './src/screens/home/Home';
 import Login from './src/screens/login/Login';
@@ -121,7 +126,18 @@ const RUN_SCREENS = [
   'deck',
 ];
 
+// The player's saved data (login, profile, progress) is shared with every
+// screen through PlayerProvider (src/context/PlayerContext.js).
 export default function App() {
+  return (
+    <PlayerProvider>
+      <Game />
+    </PlayerProvider>
+  );
+}
+
+function Game() {
+  const player = usePlayer();
   const [fontsLoaded] = useFonts({
     Montserrat_400Regular,
     Montserrat_500Medium,
@@ -142,15 +158,29 @@ export default function App() {
     setHistory((h) => h.slice(0, -1));
   };
 
-  // Front end only for now: the chosen grade is kept in memory
-  // and is lost when the app closes.
-  const [grade, setGrade] = useState(null);
+  // The player's grade, character and settings. Saved in their profile when
+  // logged in; for a guest they're only kept while the app is open.
+  const { profile } = player;
+  const [guest, setGuest] = useState({ grade: null, characterId: DEFAULT_CHARACTER_ID, settings: DEFAULT_SETTINGS });
+  const grade = profile ? profile.grade : guest.grade;
+  const characterId = profile ? profile.character_id : guest.characterId;
+  const settings = profile ? { ...DEFAULT_SETTINGS, ...profile.settings } : guest.settings;
+  // The chosen character, with its saved level
+  const character = withProgress(getCharacter(characterId), player.characters);
 
-  // Which character the player picked, and their settings.
-  // Also only kept in memory for now.
-  const [characterId, setCharacterId] = useState(DEFAULT_CHARACTER_ID);
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-  const changeSetting = (key, value) => setSettings((old) => ({ ...old, [key]: value }));
+  const setGrade = (value) => {
+    setGuest((g) => ({ ...g, grade: value }));
+    player.updateProfile({ grade: value });
+  };
+  const setCharacterId = (value) => {
+    setGuest((g) => ({ ...g, characterId: value }));
+    player.updateProfile({ character_id: value });
+  };
+  const changeSetting = (key, value) => {
+    const next = { ...settings, [key]: value };
+    setGuest((g) => ({ ...g, settings: next }));
+    player.updateProfile({ settings: next });
+  };
 
   // The current climb of the tower (null when no run is going).
   // The game rules live in src/game; these handlers just join them to the screens.
@@ -160,6 +190,21 @@ export default function App() {
   // when the spell came from the ghost's gift.
   const [spellReturn, setSpellReturn] = useState('reward');
 
+  // Save a run's XP and totals once, when it ends (won or lost) or is left
+  // for a new one. Runs themselves aren't stored, only the totals.
+  const savedRuns = useRef(new Set());
+  const saveRun = (r) => {
+    if (!r || savedRuns.current.has(r.seed)) return;
+    savedRuns.current.add(r.seed);
+    player.finishRun({ floorsCleared: floorsCleared(r), xp: r.xp, characterId });
+  };
+  const runStatus = run?.status;
+  useEffect(() => {
+    if (runStatus === 'won' || runStatus === 'lost') saveRun(run);
+    // Runs when a run's status changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runStatus, run?.seed]);
+
   const finishRoomToMap = (change = (r) => r) => {
     updateRun((r) => clearRoom(change(r)));
     navigate('pathMap');
@@ -167,9 +212,19 @@ export default function App() {
 
   const runActions = {
     onStartRun: (dungeonTypeId) => {
-      setRun(createRun({ version: versionForGrade(grade), dungeonTypeId, character: getCharacter(characterId) }));
+      if (run?.status === 'active' && run.xp > 0) saveRun(run); // left unfinished
+      const version = versionForGrade(grade);
+      const fresh = createRun({ version, dungeonTypeId, character });
+      setRun(fresh);
       navigate('pathMap');
+      // Fetch the AI questions for this run in the background. Until they
+      // arrive (or if they can't), fights use the game's own questions.
+      fetchQuestionPool({ version, topics: topicsForRun(version, dungeonTypeId), floors: fresh.map.floors }).then((pool) => {
+        if (pool) setRun((r) => (r?.seed === fresh.seed ? { ...r, questionPool: pool } : r));
+      });
     },
+    // Each answered sum adds to the player's saved topic totals
+    onAnswer: (answer) => player.recordAnswer(answer),
     onEnterRoom: (roomId) => {
       const room = run.map.nodes[roomId];
       updateRun((r) => enterRoom(r, roomId));
@@ -283,7 +338,7 @@ export default function App() {
         goBack={goBack}
         grade={grade}
         onGradeChosen={setGrade}
-        character={getCharacter(characterId)}
+        character={character}
         onCharacterChosen={setCharacterId}
         settings={settings}
         onSettingChange={changeSetting}

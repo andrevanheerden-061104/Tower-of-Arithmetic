@@ -2,6 +2,7 @@ import { ScrollView, View } from 'react-native';
 import ScreenHeader from '../../components/ScreenHeader';
 import Shade from '../../components/Shade';
 import ScreenBackground from '../../components/ScreenBackground';
+import { usePlayer } from '../../hooks/usePlayer';
 import LinkRow from './components/LinkRow';
 import MusicCredits from './components/MusicCredits';
 import SettingsGroup from './components/SettingsGroup';
@@ -13,6 +14,11 @@ import styles from './Settings.styles';
 // in App.js while the app is open; they don't change the game yet.
 export default function Settings({ navigate, goBack, settings, onSettingChange, grade }) {
   const toggle = (key) => (value) => onSettingChange(key, value);
+  const { signOut } = usePlayer();
+  const logOut = async () => {
+    await signOut().catch(() => {});
+    navigate('login');
+  };
 
   return (
     <View style={styles.screen}>
@@ -83,7 +89,7 @@ export default function Settings({ navigate, goBack, settings, onSettingChange, 
             accessibilityHint="Change your grade"
             onPress={() => navigate('onboarding')}
           />
-          <LinkRow label="Log out" icon="logOut" onPress={() => navigate('login')} last />
+          <LinkRow label="Log out" icon="logOut" onPress={logOut} last />
         </SettingsGroup>
       </ScrollView>
     </View>

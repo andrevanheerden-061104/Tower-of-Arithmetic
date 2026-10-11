@@ -5,6 +5,7 @@ import { TutorialContext } from '../../components/tutorial/TutorialTarget';
 import { makeDemoRun } from '../../data/tutorialDemo';
 import { tutorialSteps } from '../../data/tutorialSteps';
 import { versionForGrade } from '../../game/versions';
+import { usePlayer } from '../../hooks/usePlayer';
 import { spacing } from '../../theme/theme';
 import GuideBubble from './components/GuideBubble';
 import Spotlight, { padded } from './components/Spotlight';
@@ -121,8 +122,10 @@ export default function Tutorial({ goBack, grade, character }) {
   const speaking = Boolean(step.audio) && !(thisStep && voice.ended);
   const spokenWord = thisStep && !voice.ended ? voice.word : -1;
 
+  const { updateProfile } = usePlayer();
   const finish = () => {
     stopVoice();
+    updateProfile({ tutorial_done: true });
     goBack();
   };
   const next = () => (index === steps.length - 1 ? finish() : setIndex(index + 1));

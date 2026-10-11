@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import AuthSwitchLink from '../../../components/auth/AuthSwitchLink';
 import PrimaryButton from '../../../components/PrimaryButton';
+import FormMessage from '../../../components/auth/FormMessage';
 import TextField from '../../../components/auth/TextField';
 import ForgotPasswordLink from './ForgotPasswordLink';
 
-// Email and password. Nothing is checked or sent anywhere yet.
-export default function LoginForm({ onSubmit, onSwitch }) {
+// Email and password. "Enter the tower" hands them to the screen, which
+// logs in. `message` is { text, tone }.
+export default function LoginForm({ onSubmit, onSwitch, busy = false, message }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -34,8 +36,14 @@ export default function LoginForm({ onSubmit, onSwitch }) {
         <ForgotPasswordLink onPress={() => {}} />
       </View>
 
+      <FormMessage text={message?.text} tone={message?.tone} />
+
       <View style={styles.actions}>
-        <PrimaryButton label="Enter the tower" onPress={onSubmit} />
+        <PrimaryButton
+          label={busy ? 'Opening the tower…' : 'Enter the tower'}
+          disabled={busy}
+          onPress={() => onSubmit({ email: email.trim(), password })}
+        />
         <AuthSwitchLink question="New to the tower?" action="Create account" onPress={onSwitch} />
       </View>
     </View>

@@ -1,0 +1,21 @@
+{
+  "name": "tower-of-arithmetic-backend",
+  "version": "1.0.0",
+  "description": "API for Tower of Arithmetic: keeps the Groq key off the phone and makes the AI maths questions, hints and run summaries.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0"
+  }
+}

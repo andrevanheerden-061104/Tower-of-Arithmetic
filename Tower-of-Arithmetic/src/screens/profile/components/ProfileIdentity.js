@@ -44,7 +44,7 @@ export default function ProfileIdentity({ player, character, grade }) {
       </View>
 
       <Text style={styles.name} accessibilityRole="header">
-        {character.name}
+        {player.name}
       </Text>
       <Text style={styles.rank}>
         {player.rank} · {gradeText}

@@ -4,8 +4,8 @@ import RunBackground from '../../../components/run/RunBackground';
 import RunHud from '../../../components/run/RunHud';
 import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import { createEnemyState, hearts, hitEnemy, rollForFirstTurn, spellDamage, takeTurn } from '../../../game/enemyAI';
-import { getQuestion, isCorrect } from '../../../game/questions';
-import { currentRoom, damage, drinkPotion, enemyForRun, heal, recordAnswer, runVersion } from '../../../game/run';
+import { isCorrect, pickQuestion } from '../../../game/questions';
+import { currentRoom, damage, drinkPotion, enemyForRun, heal, markQuestionUsed, recordAnswer, runVersion } from '../../../game/run';
 import { baseDamage, getSpell } from '../../../game/spells';
 import BattleStage from './components/BattleStage';
 import BattleToast from './components/BattleToast';
@@ -40,6 +40,7 @@ export default function Combat({
   updateRun,
   onVictory,
   onDefeat,
+  onAnswer, // saves each answer to the player's topic totals (App.js)
   background = 'corridor',
   banner = null,
   // The tutorial shows this screen frozen at one moment, e.g.
@@ -62,7 +63,12 @@ export default function Combat({
 
   const hand = run.deck; // up to 5 cards
   const spell = selected != null ? getSpell(hand[selected]) : null;
-  const question = spell ? getQuestion(version, run.dungeonTypeId, Math.max(1, room.floor), spell) : null;
+  // The sum being cast: picked when a card is tapped (an AI question from
+  // the run's pool if there is one, otherwise the game's own)
+  const [question, setQuestion] = useState(() =>
+    demo?.phase === 'casting' ? pickQuestion(run, version, Math.max(1, room.floor), getSpell(run.deck[demo.selected ?? 0])) : null,
+  );
+  const askedAt = useRef(0); // when the sum appeared, to time the answer
   const healing = spell?.kind === 'heal';
   // The haunted ring makes every attack spell stronger
   const bonus = run.items.includes('hauntedRing') ? 0.5 : 0;
@@ -83,6 +89,10 @@ export default function Combat({
 
   const pickSpell = (index) => {
     if (phase !== 'player') return;
+    const next = pickQuestion(run, version, Math.max(1, room.floor), getSpell(hand[index]));
+    setQuestion(next);
+    updateRun((r) => markQuestionUsed(r, next.type));
+    askedAt.current = Date.now();
     setSelected(index);
     setPhase('casting');
   };
@@ -110,7 +120,9 @@ export default function Combat({
   // Called by the cast sheet. Returns 'right' or 'wrong'.
   const submit = (answer) => {
     const right = isCorrect(question, answer);
-    updateRun((r) => recordAnswer(r, { correct: right, hintsUsed }));
+    const timeMs = askedAt.current ? Date.now() - askedAt.current : 0;
+    updateRun((r) => recordAnswer(r, { correct: right, hintsUsed, topic: question.type, timeMs }));
+    onAnswer?.({ topic: question.type, version: version.id, correct: right, timeMs, hints: hintsUsed });
     if (!right) return 'wrong'; // the sheet shows a hint, then calls fizzled()
 
     setHintsUsed(0);

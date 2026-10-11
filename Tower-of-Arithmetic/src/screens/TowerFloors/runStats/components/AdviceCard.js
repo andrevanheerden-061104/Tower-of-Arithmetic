@@ -3,7 +3,8 @@ import Text from '../../../../components/AppText';
 import ArchmageHint from '../../../../components/run/ArchmageHint';
 import { colors, fonts } from '../../../../theme/theme';
 
-// Placeholder advice from the Archmage about what to practise next.
+// Orrin's advice about what to practise next: the AI's summary of the run
+// when there is one, otherwise placeholder advice for the version.
 const ADVICE = {
   junior: {
     hint: 'Great climbing! When you add, start with the bigger number and count on. Try using your fingers or the dots.',
@@ -19,17 +20,19 @@ const ADVICE = {
   },
 };
 
-export default function AdviceCard({ versionId }) {
-  const advice = ADVICE[versionId];
+export default function AdviceCard({ versionId, summary, focus, loading }) {
+  const advice = summary ? { hint: summary, focus } : ADVICE[versionId];
   return (
     <View style={styles.wrap}>
-      <ArchmageHint title="Archmage’s advice" hint={advice.hint} />
-      <View style={styles.focus}>
-        <Text style={styles.focusLabel}>Focus:</Text>
-        <View style={styles.pill}>
-          <Text style={styles.pillText}>{advice.focus}</Text>
+      <ArchmageHint title="Orrin’s advice" hint={loading ? 'Orrin is reading over your climb…' : advice.hint} />
+      {!loading && advice.focus ? (
+        <View style={styles.focus}>
+          <Text style={styles.focusLabel}>Focus:</Text>
+          <View style={styles.pill}>
+            <Text style={styles.pillText}>{advice.focus}</Text>
+          </View>
         </View>
-      </View>
+      ) : null}
     </View>
   );
 }
