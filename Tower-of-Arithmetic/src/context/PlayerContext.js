@@ -6,8 +6,10 @@ import {
   recordAnswer as saveAnswer,
   signIn as logIn,
   signOut as logOut,
+  resendEmailCode,
   signUp as createAccount,
   updateProfile as saveProfile,
+  verifyEmailCode,
 } from '../services/playerData';
 
 // ---------------------------------------------------------------------------
@@ -19,9 +21,10 @@ import {
 //   profile     their profile row (username, grade, xp, level, ...)
 //   characters  { shadow: { level, xp }, ... }
 //   topics      [{ topic, attempts, correct, time_ms_total, hints_total }]
+//   pendingEmail  the email waiting for its confirmation code (or null)
 //
-// and the actions: signUp, signIn, signOut, updateProfile, recordAnswer,
-// finishRun. Saving never blocks the game: if it fails, the answer is kept
+// and the actions: signUp, verifyCode, resendCode, signIn, signOut,
+// updateProfile, recordAnswer, finishRun. Saving never blocks the game: if it fails, the answer is kept
 // and sent again with the next one.
 // ---------------------------------------------------------------------------
 
@@ -34,6 +37,7 @@ export function PlayerProvider({ children }) {
   const [ready, setReady] = useState(!supabase);
   const [data, setData] = useState(EMPTY);
   const pending = useRef([]); // answers still waiting to be saved
+  const [pendingEmail, setPendingEmail] = useState(null);
   const userId = session?.user?.id ?? null;
 
   // Who is logged in (and stay up to date as that changes)
@@ -64,8 +68,32 @@ export function PlayerProvider({ children }) {
 
   const signUp = useCallback(async (values) => {
     if (!supabase) return { needsConfirmation: false };
-    return createAccount(values);
+    const result = await createAccount(values);
+    setPendingEmail(result.needsConfirmation ? values.email : null);
+    return result;
   }, []);
+
+  // The 6-digit code from the email: confirms the account and logs in.
+  // Returns the player's profile.
+  const verifyCode = useCallback(
+    async (code) => {
+      const next = await verifyEmailCode({ email: pendingEmail, code });
+      const loaded = await loadPlayer(next.user.id);
+      setData({ userId: next.user.id, ...loaded });
+      setPendingEmail(null);
+      return loaded.profile;
+    },
+    [pendingEmail],
+  );
+
+  // Email a fresh code (to `email`, or the one waiting for a code)
+  const resendCode = useCallback(
+    async (email = pendingEmail) => {
+      await resendEmailCode(email);
+      setPendingEmail(email);
+    },
+    [pendingEmail],
+  );
 
   // Log in and load the player straight away. Returns their profile.
   const signIn = useCallback(async (values) => {
@@ -151,14 +179,17 @@ export function PlayerProvider({ children }) {
       profile: mine.profile,
       characters: mine.characters,
       topics: mine.topics,
+      pendingEmail,
       signUp,
+      verifyCode,
+      resendCode,
       signIn,
       signOut,
       updateProfile,
       recordAnswer,
       finishRun,
     }),
-    [ready, userId, session, mine, signUp, signIn, signOut, updateProfile, recordAnswer, finishRun],
+    [ready, userId, session, mine, pendingEmail, signUp, verifyCode, resendCode, signIn, signOut, updateProfile, recordAnswer, finishRun],
   );
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

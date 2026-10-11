@@ -24,8 +24,23 @@ export async function signUp({ username, email, password, grade }) {
       options: { data: { username, grade: grade ?? '' } },
     }),
   );
-  // No session means Supabase wants the email confirmed first
+  // No session means Supabase wants the email confirmed first (with the
+  // code it just emailed)
   return { session: data.session, needsConfirmation: !data.session };
+}
+
+// The code from the "confirm your email" email. Logs the player in.
+export async function verifyEmailCode({ email, code }) {
+  const first = await supabase.auth.verifyOtp({ email, token: code, type: 'email' });
+  if (!first.error) return first.data.session;
+  // Older Supabase projects use the 'signup' type for this code
+  const second = await supabase.auth.verifyOtp({ email, token: code, type: 'signup' });
+  return check(second).session;
+}
+
+// Email a new code (the old one stops working).
+export async function resendEmailCode(email) {
+  check(await supabase.auth.resend({ type: 'signup', email }));
 }
 
 export async function signIn({ email, password }) {

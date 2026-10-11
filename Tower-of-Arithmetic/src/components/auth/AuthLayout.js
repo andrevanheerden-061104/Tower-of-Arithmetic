@@ -1,4 +1,4 @@
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import Shade from '../Shade';
 import ScreenBackground from '../ScreenBackground';
 import { colors, spacing } from '../../theme/theme';
@@ -11,7 +11,9 @@ export default function AuthLayout({ children }) {
       <ScreenBackground opacity={0.9} />
       <Shade stops={[[0, 0.86], [0.28, 0.78], [0.5, 0.97], [1, 1]]} />
 
-      <KeyboardAvoidingView style={styles.fill} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      {/* Android draws edge-to-edge, so the window no longer shrinks for the
+          keyboard by itself; pad on both platforms to lift the form above it */}
+      <KeyboardAvoidingView style={styles.fill} behavior="padding">
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"

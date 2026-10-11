@@ -47,6 +47,7 @@ import Settings from './src/screens/settings/Settings';
 import Signup from './src/screens/signup/Signup';
 import Splash from './src/screens/splash/Splash';
 import Tutorial from './src/screens/tutorial/Tutorial';
+import VerifyEmail from './src/screens/verifyEmail/VerifyEmail';
 import BossRoom from './src/screens/TowerFloors/bossRoom/BossRoom';
 import ChooseSpell from './src/screens/TowerFloors/chooseSpell/ChooseSpell';
 import Combat from './src/screens/TowerFloors/combat/Combat';
@@ -69,6 +70,7 @@ const SCREENS = {
   splash: Splash,
   signup: Signup,
   login: Login,
+  verifyEmail: VerifyEmail,
   onboarding: Onboarding,
   home: Home,
   characters: Characters,
@@ -99,7 +101,7 @@ const SCREENS = {
 //   tower   Thunderbird       every other screen in the tower
 // Settings (and the tutorial opened from it) keeps whatever was already
 // playing, so opening it from the run menu doesn't switch the tower music off.
-const MENU_MUSIC = ['splash', 'signup', 'login', 'onboarding', 'home', 'characters', 'profile'];
+const MENU_MUSIC = ['splash', 'signup', 'login', 'verifyEmail', 'onboarding', 'home', 'characters', 'profile'];
 const BATTLE_MUSIC = ['combat', 'boss'];
 
 function musicFor(screen, playing) {

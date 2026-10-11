@@ -9,9 +9,10 @@ import SignupForm from './components/SignupForm';
 import styles from './Signup.styles';
 
 // Create account. Makes the Supabase account (the database makes the
-// profile from the username), then on to choosing a grade. If Supabase
-// asks for the email to be confirmed first, the player is told to check
-// their inbox. Without Supabase set up, it just moves on as a guest.
+// profile from the username). Supabase then emails a 6-digit code, typed
+// in on the next screen (VerifyEmail). If email confirmation is switched
+// off in Supabase, it goes straight on to choosing a grade. Without
+// Supabase set up, it just moves on as a guest.
 export default function Signup({ navigate }) {
   const { signUp, online } = usePlayer();
   const [busy, setBusy] = useState(false);
@@ -24,11 +25,7 @@ export default function Signup({ navigate }) {
     setMessage(null);
     try {
       const { needsConfirmation } = await signUp(values);
-      if (needsConfirmation) {
-        setMessage({ text: 'Almost there! We sent you an email: tap the link in it, then log in.', tone: 'info' });
-      } else {
-        navigate('onboarding');
-      }
+      navigate(needsConfirmation ? 'verifyEmail' : 'onboarding');
     } catch (error) {
       setMessage({ text: friendlyAuthError(error.message), tone: 'error' });
     } finally {
