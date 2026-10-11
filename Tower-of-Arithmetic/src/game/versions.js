@@ -2,7 +2,7 @@
 // grade they chose in onboarding (CAPS phases).
 //
 //   junior        Grades 1-3   tap the answer, pictures, read aloud, 5 floors
-//   intermediate  Grades 4-6   type the final answer, no curses, 8 floors
+//   intermediate  Grades 4-6   type the final answer, curses, 8 floors
 //   senior        Grades 7-11  show each step, curses, 10 floors
 
 export const VERSIONS = {
@@ -35,7 +35,7 @@ export const VERSIONS = {
     hearts: 3,
     startCoins: 45,
     usesCoins: true,
-    usesCurses: false,
+    usesCurses: true,
     usesPotions: true,
     answerMode: 'type',   // work it out, type the final answer
     cardSet: 'standard',

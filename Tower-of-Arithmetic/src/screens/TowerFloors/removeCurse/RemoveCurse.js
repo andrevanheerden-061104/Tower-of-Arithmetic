@@ -10,7 +10,7 @@ import { currentRoom, cursedItems } from '../../../game/run';
 import CursedList from './components/CursedList';
 import styles from './RemoveCurse.styles';
 
-// Choose which cursed thing the campfire cleanses (senior mode).
+// Choose which cursed thing the campfire cleanses (not in junior mode).
 export default function RemoveCurse({ navigate, run, onRemove }) {
   const curses = cursedItems(run);
   const [choice, setChoice] = useState(curses[0]?.id ?? null);

@@ -1,5 +1,6 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
+import { playVoice, stopVoice } from '../../audio/voice';
 import { TutorialContext } from '../../components/tutorial/TutorialTarget';
 import { makeDemoRun } from '../../data/tutorialDemo';
 import { tutorialSteps } from '../../data/tutorialSteps';
@@ -24,6 +25,16 @@ function union(rects) {
   };
 }
 
+// Which word is being spoken `seconds` into the line (-1 before the first).
+function wordAt(starts, seconds) {
+  if (!starts) return -1;
+  let word = -1;
+  starts.forEach((start, i) => {
+    if (start <= seconds) word = i;
+  });
+  return word;
+}
+
 // Where the speech bubble goes: at the bottom, unless that covers the
 // spotlight, then at the top; if neither fits, just above or below it.
 function guideTop(holes, screenHeight, guideHeight) {
@@ -41,8 +52,10 @@ function guideTop(holes, screenHeight, guideHeight) {
   return bottom;
 }
 
-// How to play: Nyxara walks the player through the game on the real
-// screens, one step at a time (steps in src/data/tutorialSteps.js).
+// How to play: Orrin walks the player through the game on the real
+// screens, one step at a time (steps in src/data/tutorialSteps.js). Each
+// step's line is read out, the word being said lights up, and the speaker
+// button plays it again.
 // Opened from Settings for now; later it will also start by itself after
 // a new account is made.
 export default function Tutorial({ goBack, grade, character }) {
@@ -80,7 +93,38 @@ export default function Tutorial({ goBack, grade, character }) {
     [index, step],
   );
 
-  const finish = () => goBack();
+  // Orrin's voice. `voice` says how far this step's line has got.
+  const [voice, setVoice] = useState({ step: -1, word: -1, ended: false });
+  const speak = (at) => {
+    const s = steps[at];
+    if (!s.audio) return;
+    playVoice(s.audio, {
+      onTime: (seconds) =>
+        setVoice((old) => {
+          const word = wordAt(s.wordStarts, seconds);
+          return old.step === at && old.word === word && !old.ended ? old : { step: at, word, ended: false };
+        }),
+      onEnd: () => setVoice({ step: at, word: -1, ended: true }),
+    });
+  };
+  // Read each step out when it opens; stop when it changes or the tutorial closes
+  useEffect(() => {
+    speak(index);
+    return stopVoice;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, steps]);
+  const replay = () => {
+    setVoice({ step: index, word: -1, ended: false });
+    speak(index);
+  };
+  const thisStep = voice.step === index;
+  const speaking = Boolean(step.audio) && !(thisStep && voice.ended);
+  const spokenWord = thisStep && !voice.ended ? voice.word : -1;
+
+  const finish = () => {
+    stopVoice();
+    goBack();
+  };
   const next = () => (index === steps.length - 1 ? finish() : setIndex(index + 1));
 
   // Spotlights, in this screen's coordinates
@@ -109,6 +153,10 @@ export default function Tutorial({ goBack, grade, character }) {
           index={index}
           total={steps.length}
           junior={version.id === 'junior'}
+          spokenWord={spokenWord}
+          speaking={speaking}
+          canReplay={Boolean(step.audio)}
+          onReplay={replay}
           onNext={next}
           onSkip={finish}
           onLayout={(e) => setGuideHeight(e.nativeEvent.layout.height)}

@@ -27,7 +27,7 @@ const VOLUME = 0.3; // soft, so it stays in the background
 
 let current = null; // { name, play, pause, release }
 
-function webUri(source) {
+export function webUri(source) {
   if (typeof source === 'string') return source;
   return source?.uri ?? source?.default ?? '';
 }
@@ -53,6 +53,9 @@ function makePlayer(source) {
     return {
       play,
       pause: () => audio.pause(),
+      setVolume: (v) => {
+        audio.volume = v;
+      },
       release: () => {
         if (waiting) document.removeEventListener('pointerdown', waiting);
         audio.pause();
@@ -68,8 +71,16 @@ function makePlayer(source) {
   return {
     play: () => player.play(),
     pause: () => player.pause(),
+    setVolume: (v) => {
+      player.volume = v;
+    },
     release: () => player.release(),
   };
+}
+
+// Turn the music down while someone is speaking (and back up after).
+export function duckMusic(on) {
+  current?.setVolume(on ? VOLUME * 0.35 : VOLUME);
 }
 
 // Play the named track (or keep playing it if it's already on).

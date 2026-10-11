@@ -2,17 +2,28 @@ import { Image, Pressable, StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Text from '../../../components/AppText';
 import Icon from '../../../components/Icon';
-import { getCharacter } from '../../../data/characters';
+import { GUIDE } from '../../../data/guide';
 import { colors, fonts } from '../../../theme/theme';
 
-// The tutorial guide is always Nyxara, whichever character is chosen.
-const GUIDE = getCharacter('shadow');
-
-// Nyxara leaning over her speech bubble: the step count, what she says,
-// "Skip tutorial" and "Next" (on the last step: no skip, and a
-// "Let's climb!" button).
-export default function GuideBubble({ text, index, total, junior, onNext, onSkip, onLayout, style }) {
+// Orrin leaning over his speech bubble: the step count, what he says (the
+// word he's saying lights up), a button to hear it again, "Skip tutorial"
+// and "Next" (on the last step: no skip, and a "Let's climb!" button).
+export default function GuideBubble({
+  text,
+  index,
+  total,
+  junior,
+  spokenWord = -1,
+  speaking = false,
+  canReplay = false,
+  onReplay,
+  onNext,
+  onSkip,
+  onLayout,
+  style,
+}) {
   const last = index === total - 1;
+  const words = text.split(' ');
   return (
     <View style={[styles.wrap, style]} onLayout={onLayout} accessibilityViewIsModal>
       <View style={styles.guide} pointerEvents="none">
@@ -31,8 +42,13 @@ export default function GuideBubble({ text, index, total, junior, onNext, onSkip
           </Text>
         </View>
 
-        <Text style={[styles.message, junior && styles.messageJunior]} accessibilityLiveRegion="polite">
-          {text}
+        <Text style={[styles.message, junior && styles.messageJunior]} accessibilityLabel={text}>
+          {words.map((word, i) => (
+            <Text key={i}>
+              <Text style={i === spokenWord && styles.spoken}>{word}</Text>
+              {i < words.length - 1 ? ' ' : ''}
+            </Text>
+          ))}
         </Text>
 
         <View style={styles.actions}>
@@ -43,16 +59,28 @@ export default function GuideBubble({ text, index, total, junior, onNext, onSkip
               <Text style={[styles.skipText, junior && styles.skipJunior]}>{junior ? 'Skip' : 'Skip tutorial'}</Text>
             </Pressable>
           )}
-          <Pressable
-            onPress={onNext}
-            accessibilityRole="button"
-            style={({ pressed }) => [styles.next, pressed && styles.pressed]}
-          >
-            <Text style={[styles.nextText, junior && styles.nextJunior]}>
-              {last ? (junior ? "Let's go!" : "Let's climb!") : 'Next'}
-            </Text>
-            <Icon name="chevronRight" size={18} color={colors.gold} strokeWidth={2.5} />
-          </Pressable>
+          <View style={styles.buttons}>
+            {canReplay && (
+              <Pressable
+                onPress={onReplay}
+                accessibilityRole="button"
+                accessibilityLabel={speaking ? `${GUIDE.name} is speaking. Tap to start again` : `Hear ${GUIDE.name} again`}
+                style={({ pressed }) => [styles.replay, speaking && styles.replayOn, pressed && styles.pressed]}
+              >
+                <Icon name="volume" size={22} color={speaking ? colors.bg : colors.gold} />
+              </Pressable>
+            )}
+            <Pressable
+              onPress={onNext}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.next, pressed && styles.pressed]}
+            >
+              <Text style={[styles.nextText, junior && styles.nextJunior]}>
+                {last ? (junior ? "Let's go!" : "Let's climb!") : 'Next'}
+              </Text>
+              <Icon name="chevronRight" size={18} color={colors.gold} strokeWidth={2.5} />
+            </Pressable>
+          </View>
         </View>
       </View>
     </View>
@@ -61,7 +89,7 @@ export default function GuideBubble({ text, index, total, junior, onNext, onSkip
 
 const styles = StyleSheet.create({
   wrap: { position: 'absolute' },
-  // The top of Nyxara (hat to chest), cut off by the bubble
+  // The top of the guide (hat to chest), cut off by the bubble
   guide: { height: 132, overflow: 'hidden', zIndex: 2 },
   guideImage: { position: 'absolute', width: 300, height: 300, left: -62, top: 6 },
   tail: { position: 'absolute', left: 118, bottom: 0 },
@@ -84,7 +112,21 @@ const styles = StyleSheet.create({
   stepJunior: { fontSize: 14 },
   message: { fontFamily: fonts.medium, fontSize: 16, lineHeight: 24, color: colors.white },
   messageJunior: { fontFamily: fonts.semibold, fontSize: 19, lineHeight: 28 },
+  // The word being spoken: dark text on gold, so it stands out clearly
+  spoken: { color: colors.bg, backgroundColor: colors.gold },
   actions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  buttons: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  replay: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.bg,
+  },
+  replayOn: { backgroundColor: colors.gold },
   skip: { minHeight: 44, justifyContent: 'center', paddingRight: 12 },
   skipText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.gold },
   skipJunior: { fontSize: 16 },

@@ -10,7 +10,7 @@ import { currentRoom, cursedItems, runVersion } from '../../../game/run';
 import RestChoices from './components/RestChoices';
 import styles from './RestSite.styles';
 
-// Rest site: a quiet campfire. Rest to heal 1 heart, or (senior mode,
+// Rest site: a quiet campfire. Rest to heal 1 heart, or (not in junior mode,
 // when something is cursed) burn a curse away instead.
 export default function RestSite({ navigate, run, onRest }) {
   const version = runVersion(run);

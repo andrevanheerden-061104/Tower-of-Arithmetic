@@ -45,7 +45,7 @@ export const ENEMIES = {
 };
 
 // Items stay with the player for the whole run. Cursed items are stronger
-// but carry a drawback (senior mode only).
+// but carry a drawback (not in junior mode).
 export const ITEMS = {
   luckyGem: { id: 'luckyGem', name: 'Lucky gem', icon: 'gem', effect: '+5 coins after every fight', cursed: false },
   goldRing: { id: 'goldRing', name: 'Gold ring', icon: 'ring', effect: 'Start each fight with a free hint', cursed: false },
@@ -83,8 +83,8 @@ export const SHOP_WARES = [
   { id: 'item-ring', kind: 'item', itemId: 'goldRing', name: 'Gold ring', price: 60 },
 ];
 
-// The ghost's three gifts. The third gift depends on the version: only
-// senior mode has curses, so younger players get a gentle heal instead.
+// The ghost's three gifts. The third gift depends on the version:
+// junior mode has no curses, so the youngest players get a gentle heal instead.
 export function ghostGifts(version) {
   const first = version.usesCoins
     ? { id: 'coins', title: 'Ghostly coins', detail: 'Gain 30 coins.', drawback: null, icon: 'coin' }
