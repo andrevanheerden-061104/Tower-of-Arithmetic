@@ -6,7 +6,11 @@
 **/.env.*
 !**/.env.example
 
+<<<<<<< Updated upstream
 # Dependencies
+=======
+# Dependencies (npm install makes these)
+>>>>>>> Stashed changes
 node_modules/
 **/node_modules/
 
