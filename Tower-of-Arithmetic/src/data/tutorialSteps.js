@@ -82,7 +82,7 @@ const STANDARD_STEPS = [
   {
     scene: 'chooseSpell',
     targets: ['spellCard'],
-    text: 'Each card shows its element, level and damage. Higher floors offer stronger cards, and level 3 cards are legendary!',
+    text: 'Each card shows its element, level and damage. The cards you are offered are random, but legendary cards can only be won by defeating a boss!',
   },
   {
     scene: 'deck',

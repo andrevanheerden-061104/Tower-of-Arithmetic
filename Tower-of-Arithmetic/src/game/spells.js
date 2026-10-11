@@ -165,19 +165,19 @@ export function baseDamage(spell) {
   return (spell.hits ?? []).reduce((sum, h) => sum + h.amount, 0);
 }
 
-// Three spells offered after a fight. Spells already in the deck are left
-// out. Higher floors offer stronger spells: level 2 from 30% of the way up,
-// and a small chance of a legendary in the top half of the tower.
+// Three spells offered after a fight, picked at random. Spells the player
+// already has are left out. Level 2 cards can turn up from 30% of the way
+// up. Legendary (level 3) cards are never offered here: they are only won
+// by defeating a boss.
 export function spellOffers(deck, progress, count = 3) {
   const pool = SPELL_IDS.filter((id) => !deck.includes(id)).filter((id) => {
     const level = SPELLS[id].level;
     if (level === 1) return true;
     if (level === 2) return progress >= 0.3;
-    return progress >= 0.5;
+    return false; // legendaries come from bosses only
   });
   const weight = (id) => {
     const level = SPELLS[id].level;
-    if (level === 3) return 0.25;
     if (level === 2) return 1 + progress;
     return 1.5 - progress;
   };
