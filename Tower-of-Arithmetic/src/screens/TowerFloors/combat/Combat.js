@@ -63,8 +63,9 @@ export default function Combat({
 
   const hand = run.deck; // up to 5 cards
   const spell = selected != null ? getSpell(hand[selected]) : null;
-  // The sum being cast: picked when a card is tapped (an AI question from
-  // the run's pool if there is one, otherwise the game's own)
+  // The sum being cast: picked when a card is tapped. It is always from the
+  // run's maths topic, for the player's grade, at the spell card's level
+  // (an AI sum from the run's pool if there is one, otherwise the game's own)
   const [question, setQuestion] = useState(() =>
     demo?.phase === 'casting' ? pickQuestion(run, version, Math.max(1, room.floor), getSpell(run.deck[demo.selected ?? 0])) : null,
   );
@@ -91,7 +92,7 @@ export default function Combat({
     if (phase !== 'player') return;
     const next = pickQuestion(run, version, Math.max(1, room.floor), getSpell(hand[index]));
     setQuestion(next);
-    updateRun((r) => markQuestionUsed(r, next.type));
+    updateRun((r) => markQuestionUsed(r, next));
     askedAt.current = Date.now();
     setSelected(index);
     setPhase('casting');
@@ -121,11 +122,12 @@ export default function Combat({
   const submit = (answer) => {
     const right = isCorrect(question, answer);
     const timeMs = askedAt.current ? Date.now() - askedAt.current : 0;
-    updateRun((r) => recordAnswer(r, { correct: right, hintsUsed, topic: question.type, timeMs }));
+    updateRun((r) => recordAnswer(r, { correct: right, hintsUsed, topic: question.type, timeMs, question, given: answer }));
     onAnswer?.({ topic: question.type, version: version.id, correct: right, timeMs, hints: hintsUsed });
+    // Hints are counted per sum: start again for the next one
+    setHintsUsed(0);
     if (!right) return 'wrong'; // the sheet shows a hint, then calls fizzled()
 
-    setHintsUsed(0);
     setPhase('enemy');
 
     // Healing spell: heal the player, then it's the enemy's turn
@@ -239,6 +241,7 @@ export default function Combat({
         <CastSheet
           key={`${selected}-${foe.turn}`}
           version={version}
+          grade={run.grade}
           spell={spell}
           question={question}
           spellDamage={castAmount}

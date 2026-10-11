@@ -1,4 +1,5 @@
 import { tidy } from '../maths/evaluate.js';
+import { gradeFor } from './curriculum.js';
 import { VERSIONS } from './topics.js';
 
 // ---------------------------------------------------------------------------
@@ -7,14 +8,14 @@ import { VERSIONS } from './topics.js';
 // final answer, and the reply is thrown away if it does.
 // ---------------------------------------------------------------------------
 
-function systemPrompt(version) {
-  return `You are Orrin, the kind old Archmage in Tower of Arithmetic, a maths game for South African learners in ${VERSIONS[version].grades}. A learner just gave a wrong answer. In 1 or 2 short sentences: name the likely mistake gently (e.g. a sign error, forgot to divide both sides, added instead of multiplied) and ask ONE guiding question that leads to the next step. Never say the final answer. No markdown. Use simple words${version === 'junior' ? ' a 7-year-old understands' : ''}. Reply with ONLY JSON: {"hint": "..."}`;
+function systemPrompt(version, grade) {
+  return `You are Orrin, the kind old Archmage in Tower of Arithmetic, a maths game for South African learners. This learner is in Grade ${gradeFor(version, grade)}: only use methods taught by that grade (CAPS). A learner just gave a wrong answer. In 1 or 2 short sentences: name the likely mistake gently (e.g. a sign error, forgot to divide both sides, added instead of multiplied) and ask ONE guiding question that leads to the next step. Never say the final answer. No markdown. Use simple words${version === 'junior' ? ' a 7-year-old understands' : ''}. Reply with ONLY JSON: {"hint": "..."}`;
 }
 
-export async function makeHint({ version, question, givenAnswer, steps }, ask) {
+export async function makeHint({ version, grade, question, givenAnswer, steps }, ask) {
   if (!VERSIONS[version]) return null;
   const reply = await ask({
-    system: systemPrompt(version),
+    system: systemPrompt(version, grade),
     user: `Question: ${question?.display}\nInstruction: ${question?.instruction ?? ''}\nCorrect answer (do NOT reveal it): ${question?.answer}\nThe learner answered: ${givenAnswer}${
       Array.isArray(steps) && steps.length ? `\nTheir working: ${steps.join(' | ')}` : ''
     }`,

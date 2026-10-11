@@ -4,14 +4,14 @@ import { fetchHint } from '../services/ai';
 // After a wrong answer: ask Orrin (the AI) what went wrong.
 // Pass `givenAnswer` = null when nothing needs explaining.
 // Returns { hint, loading }: hint stays null if the AI can't help.
-export function useAiHint(version, question, givenAnswer) {
+export function useAiHint(version, question, givenAnswer, grade) {
   const [result, setResult] = useState({ key: null, hint: null });
   const key = givenAnswer != null && question ? `${question.display}|${givenAnswer}` : null;
 
   useEffect(() => {
     if (!key) return undefined;
     let current = true;
-    fetchHint({ version, question, givenAnswer }).then((hint) => {
+    fetchHint({ version, grade, question, givenAnswer }).then((hint) => {
       if (current) setResult({ key, hint });
     });
     return () => {

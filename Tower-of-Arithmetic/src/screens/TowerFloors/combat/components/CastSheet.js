@@ -43,6 +43,7 @@ function suppliesBottom(potionSlots, itemCount) {
 // tutorial uses this so its spotlight can sit on top).
 export default function CastSheet({
   version,
+  grade,
   spell,
   question,
   spellDamage,
@@ -63,7 +64,7 @@ export default function CastSheet({
   const [grow, setGrow] = useState(0); // how far the sheet has risen to fit more steps
   const [wrongAnswer, setWrongAnswer] = useState(null); // what the player answered, when wrong
   // Orrin (the AI) explains a wrong answer; the bank's hints show either way
-  const ai = useAiHint(version, question, panel === 'wrong' && !inline ? wrongAnswer : null);
+  const ai = useAiHint(version, question, panel === 'wrong' && !inline ? wrongAnswer : null, grade);
   const junior = version.id === 'junior';
 
   const nextHint = () => {
@@ -74,7 +75,8 @@ export default function CastSheet({
   const submit = (answer) => {
     if (onSubmit(answer) === 'wrong') {
       setWrongAnswer(String(answer));
-      nextHint();
+      // The hint shown after a wrong answer is free: it isn't counted
+      setHintIndex((i) => Math.min(i + 1, question.hints.length - 1));
       setPanel('wrong');
     }
   };
@@ -84,7 +86,9 @@ export default function CastSheet({
     setPanel('hint');
   };
 
-  const baseTop = Math.max(HIGHEST, Math.min(suppliesBottom(potionSlots, itemCount) + 8, height - MIN_SHEET));
+  // A sum with a drawing needs a taller sheet
+  const minSheet = MIN_SHEET + (question.figure ? 150 : 0);
+  const baseTop = Math.max(HIGHEST, Math.min(suppliesBottom(potionSlots, itemCount) + 8, height - minSheet));
   const top = baseTop - grow;
 
   // When the steps no longer fit, raise the sheet by the overflow (never

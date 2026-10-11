@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { STEP_COLUMNS, STEP_KEYS } from '../../../../game/keypads';
+import { useWorkingSteps } from '../../../../hooks/useWorkingSteps';
 import Text from '../../../../components/AppText';
 import Icon from '../../../../components/Icon';
 import PrimaryButton from '../../../../components/PrimaryButton';
@@ -10,47 +12,40 @@ import QuestionBox from './QuestionBox';
 import SheetBody from './SheetBody';
 import { colors, fonts } from '../../../../theme/theme';
 
-const KEYS = ['7', '8', '9', '÷', '⌫', '4', '5', '6', '×', '(', '1', '2', '3', '−', ')', '0', 'x', '/', '+', '='];
-
 // Senior: write the working one step at a time. The sum and the steps
 // scroll (newest step kept in view); the Keypad/Speak/Draw tabs, keypad,
 // Next step and Cast spell always stay at the bottom. The last step is
-// checked as the answer. Speak and Draw are placeholders. As steps are
+// checked as the answer. Speak and Draw are placeholders. A sum with a
+// drawing (geometry) is too tall to stay fixed at the top, so it scrolls
+// with the steps instead. As steps are
 // added the cast sheet grows taller, up to just under the menu button.
 export default function StepsAnswer({ question, onSubmit, onOverflow }) {
-  const [steps, setSteps] = useState(['']);
+  const { steps, last, press, nextStep, answer } = useWorkingSteps();
   const [mode, setMode] = useState('keypad');
-  const last = steps.length - 1;
 
-  const press = (key) => {
-    setSteps((s) => {
-      const copy = [...s];
-      if (key === '⌫') copy[last] = copy[last].slice(0, -1);
-      else copy[last] = copy[last] + (key === '=' ? ' = ' : key);
-      return copy;
-    });
-  };
-  const nextStep = () => setSteps((s) => (s[s.length - 1] ? [...s, ''] : s));
-
-  const answer = steps.filter(Boolean).at(-1) ?? '';
+  const box = <QuestionBox question={question} compact />;
+  const tall = Boolean(question.figure);
 
   return (
     <SheetBody
-      stickToEnd
+      stickToEnd={!tall || steps.length > 1}
       onOverflow={onOverflow}
-      header={<QuestionBox question={question} compact />}
+      header={tall ? null : box}
       scroll={
-        <View style={styles.steps}>
-          {steps.map((value, i) => (
-            <StepRow key={i} number={i + 1} value={value} status={i === last ? 'active' : 'done'} />
-          ))}
-        </View>
+        <>
+          {tall && box}
+          <View style={styles.steps}>
+            {steps.map((value, i) => (
+              <StepRow key={i} number={i + 1} value={value} status={i === last ? 'active' : 'done'} />
+            ))}
+          </View>
+        </>
       }
       footer={
         <>
           <AnswerModeTabs mode={mode} onChange={setMode} />
           {mode === 'keypad' ? (
-            <NumberPad keys={KEYS} columns={5} onKey={press} keyHeight={42} />
+            <NumberPad keys={STEP_KEYS} columns={STEP_COLUMNS} onKey={press} keyHeight={42} />
           ) : (
             <View style={styles.placeholder}>
               <Icon name={mode === 'speak' ? 'mic' : 'pencil'} size={32} color={colors.gold} />

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import Text from '../../../components/AppText';
 import Icon from '../../../components/Icon';
@@ -8,35 +8,47 @@ import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import ArchmageHint from '../../../components/run/ArchmageHint';
 import RunHud from '../../../components/run/RunHud';
 import RunTitle from '../../../components/run/RunTitle';
-import { getPuzzle } from '../../../game/puzzles';
-import { currentRoom, recordAnswer, runVersion } from '../../../game/run';
+import { makePuzzle } from '../../../game/puzzles';
+import { isCorrect } from '../../../game/questions';
+import { currentRoom, markQuestionUsed, recordAnswer, runVersion } from '../../../game/run';
 import { colors } from '../../../theme/theme';
-import PatternPuzzle from './components/PatternPuzzle';
-import ProofPuzzle from './components/ProofPuzzle';
-import StepsPuzzle from './components/StepsPuzzle';
+import DotPicture from '../combat/components/DotPicture';
+import QuestionBox from '../combat/components/QuestionBox';
+import PuzzleAnswer from './components/PuzzleAnswer';
 import styles from './Puzzle.styles';
 
-// A puzzle room: a sealed door that opens when the puzzle is solved.
-// Each version has its own kind of puzzle (placeholder data in
-// src/game/puzzles.js):
-//   junior        finish the shape pattern (PatternPuzzle)
-//   intermediate  a word problem with steps (StepsPuzzle)
-//   senior        a geometry proof with reasons (ProofPuzzle)
-export default function Puzzle({ navigate, run, updateRun, onSolved }) {
+// A puzzle room: a sealed door that opens when its sum is solved. The sum
+// is from the run's own maths topic and gets harder higher up the tower
+// (see src/game/puzzles.js). No hearts are lost for a wrong answer: the
+// player gets a hint and can try again.
+export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer }) {
   const version = runVersion(run);
-  const puzzle = getPuzzle(version);
   const room = currentRoom(run);
+  // Picked once when the room opens, so the door keeps the same sum
+  const [puzzle] = useState(() => makePuzzle(run, version, Math.max(1, room.floor)));
+  const { question } = puzzle;
   const [hintIndex, setHintIndex] = useState(-1);
   const [wrong, setWrong] = useState(false);
   const [hintsUsed, setHintsUsed] = useState(0);
+  const askedAt = useRef(0);
+
+  useEffect(() => {
+    askedAt.current = Date.now();
+    updateRun((r) => markQuestionUsed(r, question));
+    // Once, when the room opens
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const nextHint = () => {
-    setHintIndex((i) => Math.min(i + 1, puzzle.hints.length - 1));
+    setHintIndex((i) => Math.min(i + 1, question.hints.length - 1));
     setHintsUsed((n) => n + 1);
   };
 
-  const check = (correct) => {
-    updateRun((r) => recordAnswer(r, { correct, hintsUsed }));
+  const check = (answer) => {
+    const correct = isCorrect(question, answer);
+    const timeMs = askedAt.current ? Date.now() - askedAt.current : 0;
+    updateRun((r) => recordAnswer(r, { correct, hintsUsed, topic: question.type, timeMs, question, given: answer }));
+    onAnswer?.({ topic: question.type, version: version.id, correct, timeMs, hints: hintsUsed });
     if (correct) {
       onSolved();
     } else {
@@ -45,7 +57,6 @@ export default function Puzzle({ navigate, run, updateRun, onSolved }) {
     }
   };
 
-  const Body = puzzle.kind === 'pattern' ? PatternPuzzle : puzzle.kind === 'steps' ? StepsPuzzle : ProofPuzzle;
   const junior = version.id === 'junior';
 
   return (
@@ -59,13 +70,13 @@ export default function Puzzle({ navigate, run, updateRun, onSolved }) {
         </>
       )}
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <RunHud run={run} navigate={navigate} floor={room.floor} />
 
         <View style={styles.titleRow}>
           <View style={styles.titleText}>
             <RunTitle>{puzzle.title}</RunTitle>
-            {junior && <Text style={styles.juniorQuestion}>{puzzle.question}</Text>}
+            <Text style={styles.question}>{puzzle.intro}</Text>
           </View>
           <Pressable
             onPress={junior ? () => console.log('Read aloud (placeholder)') : nextHint}
@@ -77,13 +88,21 @@ export default function Puzzle({ navigate, run, updateRun, onSolved }) {
           </Pressable>
         </View>
 
-        {!junior && <Text style={styles.question}>{puzzle.question}</Text>}
-
-        {wrong && <Text style={styles.wrong}>Not quite. No hearts lost, take your time.</Text>}
-        {hintIndex >= 0 && <ArchmageHint hint={puzzle.hints[hintIndex]} index={hintIndex} total={puzzle.hints.length} />}
-
         <TutorialTarget id="puzzle">
-          <Body puzzle={puzzle} onCheck={check} />
+          <View style={styles.door}>
+            <QuestionBox question={question}>{junior && <DotPicture picture={question.picture} />}</QuestionBox>
+
+            {wrong && <Text style={styles.wrong}>Not quite. No hearts lost, take your time.</Text>}
+            {hintIndex >= 0 && <ArchmageHint title="Orrin" hint={question.hints[hintIndex]} index={hintIndex} total={question.hints.length} />}
+            {junior && hintIndex < 0 && (
+              <Pressable onPress={nextHint} accessibilityRole="button" accessibilityLabel="Help me" style={styles.help}>
+                <Icon name="lightbulb" size={20} color={colors.gold} />
+                <Text style={styles.helpText}>Help me</Text>
+              </Pressable>
+            )}
+
+            <PuzzleAnswer version={version} question={question} onCheck={check} />
+          </View>
         </TutorialTarget>
       </ScrollView>
     </View>

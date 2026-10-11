@@ -1,55 +1,19 @@
-// Placeholder puzzle rooms: one puzzle per version (matches the Figma screens).
+import { pickPuzzleQuestion } from './questions';
 
-export const PUZZLES = {
-  // Grades 1-3: finish the pattern on the magic door
-  junior: {
-    kind: 'pattern',
-    title: 'The magic door',
-    question: 'What comes next?',
-    sequence: ['circle', 'triangle', 'circle', 'triangle', 'circle'],
-    options: ['triangle', 'square', 'circle'],
-    answer: 'triangle',
-    hints: ['Say the shapes out loud: circle, triangle, circle…', 'After every circle comes a…', 'It has three corners.'],
-  },
+// ---------------------------------------------------------------------------
+// Puzzle rooms: a sealed door with a sum on it. The sum is always from the
+// run's own maths topic (an algebra dungeon only has algebra doors) and
+// gets harder higher up the tower:
+//   floors 1-3  level 1      floors 4-6  level 2      floor 7 and up  level 3
+// ---------------------------------------------------------------------------
 
-  // Grades 4-6: a word problem worked out in steps
-  intermediate: {
-    kind: 'steps',
-    title: 'The sealed door',
-    question:
-      'The door is a rectangle 8 m wide and 5 m high. Gold trim runs all the way around its edge. How long is the trim? Show your steps.',
-    width: 8,
-    height: 5,
-    unit: 'm',
-    answer: '26',
-    keys: ['1', '2', '3', '+', '4', '5', '6', '−', '7', '8', '9', '×', '⌫', '0', '=', 'next'],
-    hints: [
-      'The trim goes around all four sides.',
-      'Two sides are 8 m and two sides are 5 m: 8 + 8 + 5 + 5.',
-      '16 + 10 = ?',
-    ],
-  },
-
-  // Grades 7-11: a geometry proof, give a reason for each statement
-  senior: {
-    kind: 'proof',
-    title: 'The sealed door',
-    question:
-      'AB is a diameter of the circle with centre O. C lies on the circle and angle ABC = 35°. Find angle BAC and give a reason for each step.',
-    rows: [
-      { statement: 'AĈB = 90°', reason: 'Angle in a semicircle' },
-      { statement: 'BÂC + 35° + 90° = 180°', reason: 'Angles in a triangle' },
-      { statement: 'BÂC = 55°', reason: 'Solve the equation' },
-    ],
-    reasons: ['Angle in a semicircle', 'Angles in a triangle', 'Angles on a straight line', 'Solve the equation'],
-    hints: [
-      'An angle drawn from a diameter to the circle is special.',
-      'The three angles inside a triangle add up to 180°.',
-      'The last line just works out the equation above it.',
-    ],
-  },
+const TITLES = { junior: 'The magic door', intermediate: 'The sealed door', senior: 'The sealed door' };
+const INTROS = {
+  junior: 'Tap the right answer to open the door.',
+  intermediate: 'Solve the riddle on the door to open it. You can show your steps.',
+  senior: 'Solve the riddle on the door to open it. Show each step.',
 };
 
-export function getPuzzle(version) {
-  return PUZZLES[version.id];
+export function makePuzzle(run, version, floor) {
+  return { title: TITLES[version.id], intro: INTROS[version.id], question: pickPuzzleQuestion(run, version, floor) };
 }

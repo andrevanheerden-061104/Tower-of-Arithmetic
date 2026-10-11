@@ -1,19 +1,36 @@
 // A small, safe calculator for checking the AI's answers (no eval()).
 //
 // Understands: numbers (12, 3.5), + − × ÷ * / ^, brackets, a minus sign in
-// front (−3), "x" or "?" as the unknown, ½ ¼ ¾ ⅓ ⅔, degrees (°, ignored),
-// "of" (½ of 36) and multiplying without a sign (2x, 3(10), (2)(3)).
+// front (−3), "x", "n" or "?" as the unknown, ½ ¼ ¾ ⅓ ⅔, small raised
+// powers (3², 2⁵), square roots (√16), per cent (25% of 80), mixed numbers
+// (1 1/2), degrees (°, ignored), "of" (½ of 36) and multiplying without a
+// sign (2x, 3(10), (2)(3), 2√9).
 
 const FRACTIONS = { '½': '(1/2)', '¼': '(1/4)', '¾': '(3/4)', '⅓': '(1/3)', '⅔': '(2/3)' };
+const SUPERSCRIPTS = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+const SUBSCRIPTS = '₀₁₂₃₄₅₆₇₈₉';
+
+// Small lowered numbers become ordinary ones: T₁₀ → T10.
+export function plainSubscripts(text) {
+  return String(text).replace(/[₀-₉]/g, (c) => SUBSCRIPTS.indexOf(c)).replace(/ₙ/g, 'n');
+}
 
 export function tidy(text) {
   let s = String(text);
   for (const [k, v] of Object.entries(FRACTIONS)) s = s.split(k).join(v);
   return s
     .replace(/[−–—]/g, '-')
+    // 3² → 3^(2), 2⁻³ → 2^(-3)
+    .replace(/⁻?[⁰¹²³⁴-⁹]+/g, (run) => `^(${run.replace('⁻', '-').replace(/[⁰¹²³⁴-⁹]/g, (c) => SUPERSCRIPTS.indexOf(c))})`)
+    // 1 1/2 → (1+1/2), then 12 500 → 12500
+    .replace(/(\d+)\s+(\d+)\/(\d+)/g, '($1+$2/$3)')
+    .replace(/(\d)\s(?=\d{3}(?!\d))/g, '$1')
+    // 3/4 written as a fraction is one number: 3/4 ÷ 1/8 is (3/4) ÷ (1/8)
+    .replace(/(?<![\d.])(\d+)\/(\d+)(?![\d.])/g, '($1/$2)')
     .replace(/[×·]/g, '*')
     .replace(/÷/g, '/')
     .replace(/°/g, '')
+    .replace(/%/g, '/100')
     .replace(/\bof\b/gi, '*')
     .replace(/\s+/g, '')
     .toLowerCase();
@@ -31,10 +48,10 @@ function tokenize(s) {
       if (Number.isNaN(n)) throw new Error(`Bad number "${s.slice(i, j)}"`);
       tokens.push({ t: 'num', v: n });
       i = j;
-    } else if (c === 'x' || c === '?') {
+    } else if (c === 'x' || c === 'n' || c === '?') {
       tokens.push({ t: 'var' });
       i++;
-    } else if ('+-*/^()'.includes(c)) {
+    } else if ('+-*/^()√'.includes(c)) {
       tokens.push({ t: c });
       i++;
     } else {
@@ -44,12 +61,12 @@ function tokenize(s) {
   return tokens;
 }
 
-// Work out an expression with the unknown (x or ?) set to `value`.
+// Work out an expression with the unknown (x, n or ?) set to `value`.
 export function evaluate(expression, value = NaN) {
   const tokens = tokenize(tidy(expression));
   let pos = 0;
   const peek = () => tokens[pos];
-  const startsFactor = (tok) => tok && (tok.t === 'num' || tok.t === 'var' || tok.t === '(');
+  const startsFactor = (tok) => tok && (tok.t === 'num' || tok.t === 'var' || tok.t === '(' || tok.t === '√');
 
   function sum() {
     let v = product();
@@ -61,12 +78,12 @@ export function evaluate(expression, value = NaN) {
     return v;
   }
   function product() {
-    let v = power();
+    let v = signed();
     for (;;) {
       const tok = peek();
       if (tok?.t === '*' || tok?.t === '/') {
         pos++;
-        const r = power();
+        const r = signed();
         v = tok.t === '*' ? v * r : v / r;
       } else if (startsFactor(tok)) {
         v *= power(); // 2x, 3(10)
@@ -75,14 +92,7 @@ export function evaluate(expression, value = NaN) {
       }
     }
   }
-  function power() {
-    const base = signed();
-    if (peek()?.t === '^') {
-      pos++;
-      return base ** power();
-    }
-    return base;
-  }
+  // A minus in front applies to the whole power: −3² is −9, (−3)² is 9
   function signed() {
     if (peek()?.t === '-') {
       pos++;
@@ -92,13 +102,30 @@ export function evaluate(expression, value = NaN) {
       pos++;
       return signed();
     }
-    return single();
+    return power();
+  }
+  function power() {
+    const base = single();
+    if (peek()?.t === '^') {
+      pos++;
+      return base ** exponent();
+    }
+    return base;
+  }
+  // What a power is raised to may have its own minus: 2^-3
+  function exponent() {
+    if (peek()?.t === '-') {
+      pos++;
+      return -exponent();
+    }
+    return power();
   }
   function single() {
     const tok = tokens[pos++];
     if (!tok) throw new Error('Ended too soon');
     if (tok.t === 'num') return tok.v;
     if (tok.t === 'var') return value;
+    if (tok.t === '√') return Math.sqrt(single());
     if (tok.t === '(') {
       const v = sum();
       if (peek()?.t !== ')') throw new Error('Missing )');
@@ -119,7 +146,7 @@ export function answerValue(answer) {
   return evaluate(s);
 }
 
-const close = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
+export const close = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
 
 // Is `equation` (like "2x − 4 = 10" or "6 × 24 = ?") true when the unknown
 // is the answer? False if it can't be worked out.

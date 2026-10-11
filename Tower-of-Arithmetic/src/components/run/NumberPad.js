@@ -3,7 +3,7 @@ import Text from '../AppText';
 import Icon from '../Icon';
 import { colors, fonts } from '../../theme/theme';
 
-const SYMBOLS = ['+', '−', '×', '÷', '=', '(', ')', 'x', '/', '.'];
+const SYMBOLS = ['+', '−', '×', '÷', '=', '(', ')', 'x', 'n', 'y', '/', '.', '^'];
 const NAMES = {
   '⌫': 'Delete',
   next: 'Next step',
@@ -16,6 +16,8 @@ const NAMES = {
   '(': 'open bracket',
   ')': 'close bracket',
   '/': 'over',
+  '.': 'decimal point',
+  '^': 'to the power of',
 };
 
 // The on-screen keypad. Pass the keys in reading order and how many columns

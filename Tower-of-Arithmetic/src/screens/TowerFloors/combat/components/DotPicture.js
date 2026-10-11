@@ -42,7 +42,7 @@ export default function DotPicture({ picture }) {
 
 const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, maxWidth: 260, marginTop: 6 },
-  row: { flexDirection: 'row', gap: 10, marginTop: 6 },
+  row: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10, marginTop: 6 },
   group: {
     flexDirection: 'row',
     gap: 6,

@@ -30,3 +30,16 @@ test('checks equations with the answer put in', () => {
   assert.ok(!checks('Median of 4, 9, 2', '5'));
   assert.ok(!checks('process.exit()', '1'));
 });
+
+test('reads the way sums are written in class', () => {
+  assert.equal(evaluate('3² + √16'), 13);
+  assert.equal(evaluate('−3²'), -9);
+  assert.equal(evaluate('(−3)² − 5'), 4);
+  assert.equal(evaluate('2^(−3)'), 0.125);
+  assert.equal(evaluate('2⁵ ÷ 2³'), 4);
+  assert.equal(evaluate('25% of 80'), 20);
+  assert.equal(evaluate('3/4 ÷ 1/8'), 6); // a fraction is one number
+  assert.equal(evaluate('1 1/2 + 1/2'), 2);
+  assert.equal(evaluate('√50 ÷ √2'), 5);
+  assert.equal(evaluate('4n − 1', 15), 59);
+});

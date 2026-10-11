@@ -32,8 +32,10 @@ import {
   moveToStash,
   removeCurse,
   screenForRoom,
+  runVersion,
   swapSpell,
 } from './src/game/run';
+import { mergePools, poolDisplays, unusedInPool } from './src/game/questionPool';
 import { topicsForRun } from './src/game/questions';
 import { versionForGrade } from './src/game/versions';
 import { usePlayer } from './src/hooks/usePlayer';
@@ -212,24 +214,40 @@ function Game() {
     navigate('pathMap');
   };
 
+  // Ask the server for AI sums for a run, in the background: for the
+  // player's grade and the run's maths topic, at all three difficulty
+  // levels. Until they arrive (or if they can't), fights and puzzles use
+  // the game's own sum maker. Asked again when the run is nearly out.
+  const poolRequest = useRef({ seed: null, busy: false, count: 0 });
+  const loadQuestions = (r) => {
+    const request = poolRequest.current;
+    if (request.seed !== r.seed) Object.assign(request, { seed: r.seed, busy: false, count: 0 });
+    if (request.busy || request.count >= 4) return;
+    request.busy = true;
+    request.count += 1;
+    const version = runVersion(r);
+    fetchQuestionPool({ version, grade: r.grade, topics: topicsForRun(version, r.dungeonTypeId), avoid: poolDisplays(r.questionPool) }).then((pool) => {
+      if (poolRequest.current.seed === r.seed) poolRequest.current.busy = false;
+      if (pool) setRun((now) => (now?.seed === r.seed ? { ...now, questionPool: mergePools(now.questionPool, pool) } : now));
+    });
+  };
+
   const runActions = {
     onStartRun: (dungeonTypeId) => {
       if (run?.status === 'active' && run.xp > 0) saveRun(run); // left unfinished
       const version = versionForGrade(grade);
-      const fresh = createRun({ version, dungeonTypeId, character });
+      const fresh = createRun({ version, dungeonTypeId, character, grade });
       setRun(fresh);
       navigate('pathMap');
-      // Fetch the AI questions for this run in the background. Until they
-      // arrive (or if they can't), fights use the game's own questions.
-      fetchQuestionPool({ version, topics: topicsForRun(version, dungeonTypeId), floors: fresh.map.floors }).then((pool) => {
-        if (pool) setRun((r) => (r?.seed === fresh.seed ? { ...r, questionPool: pool } : r));
-      });
+      loadQuestions(fresh);
     },
     // Each answered sum adds to the player's saved topic totals
     onAnswer: (answer) => player.recordAnswer(answer),
     onEnterRoom: (roomId) => {
       const room = run.map.nodes[roomId];
       updateRun((r) => enterRoom(r, roomId));
+      // Nearly out of easy AI sums: fetch some more for the rooms ahead
+      if (unusedInPool(run, 1) < 2) loadQuestions(run);
       navigate(screenForRoom(room.type));
     },
     // Won a fight, solved a puzzle or beat the boss

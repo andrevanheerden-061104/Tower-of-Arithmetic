@@ -1,219 +1,40 @@
-// Placeholder sums: ONE question per maths type for each version, so every
-// fight on that type asks the same sum. Swap in a real question bank later
-// (or a generator) without changing the screens: they only read these fields.
+import { clampLevel, makeQuestion } from './generators';
+
+// ---------------------------------------------------------------------------
+// The sums asked in a run.
 //
+// Every sum belongs to the run's maths topic (the dungeon type the player
+// chose), is made for the player's own grade, and has a difficulty level:
+//   casting a spell   the spell card's level (1, 2 or 3)
+//   a puzzle room     the floor: floors 1-3 level 1, 4-6 level 2, 7+ level 3
+//
+// Where a sum comes from:
+//   1. the run's AI pool, if the server has sent one (run.questionPool)
+//   2. otherwise the game's own sum maker (src/game/generators), which
+//      always works, even with no internet
+//
+// A sum has these fields (the screens only read these):
+//   type          the maths topic, e.g. 'algebra'
+//   level         1, 2 or 3
 //   instruction   short line above the sum
 //   display       the sum as shown to the player
+//   story         optional word problem shown above the sum (puzzles)
+//   figure        optional drawing (geometry, rectangles)
 //   answer        the correct answer (as text)
 //   accepted      other ways of writing the answer that also count (senior)
+//   simplest      true = a fraction answer must be in its simplest form
 //   choices       three answers to tap (junior)
 //   picture       optional visual help (dots, groups or a worked breakdown)
-//   steps         example working, shown by the last hint (senior)
-//   hints         three Archmage hints, from a nudge to almost the answer
+//   steps         example working (senior)
+//   hints         three hints from Orrin, from a nudge to almost the answer
+// ---------------------------------------------------------------------------
 
-const JUNIOR = {
-  adding: {
-    instruction: 'How many altogether?',
-    display: '7 + 5 = ?',
-    answer: '12',
-    choices: ['11', '12', '13'],
-    picture: { kind: 'dots', groups: [{ count: 7, color: 'gold' }, { count: 5, color: 'pink' }] },
-    hints: [
-      'Count the yellow dots, then keep counting the pink ones.',
-      'Start at 7 and count on 5 more: 8, 9, 10…',
-      '7 and 3 make 10. Then 2 more.',
-    ],
-  },
-  takingAway: {
-    instruction: 'How many are left?',
-    display: '9 − 3 = ?',
-    answer: '6',
-    choices: ['5', '6', '7'],
-    picture: { kind: 'takeAway', total: 9, gone: 3 },
-    hints: [
-      'Cross out 3 dots. How many are not crossed out?',
-      'Start at 9 and count back 3: 8, 7…',
-      'Count back one more after 7.',
-    ],
-  },
-  times: {
-    instruction: 'How many in 3 groups of 2?',
-    display: '3 × 2 = ?',
-    answer: '6',
-    choices: ['5', '6', '8'],
-    picture: { kind: 'groups', groups: 3, each: 2 },
-    hints: [
-      'There are 3 groups. Each group has 2 dots.',
-      'Count in twos: 2, 4…',
-      'One more group of 2 after 4.',
-    ],
-  },
-  patterns: {
-    instruction: 'What number comes next?',
-    display: '2, 4, 6, ?',
-    answer: '8',
-    choices: ['7', '8', '10'],
-    picture: null,
-    hints: [
-      'Look at how much the numbers grow each time.',
-      'Each number is 2 more than the one before.',
-      'What is 6 and 2 more?',
-    ],
-  },
-};
-
-const INTERMEDIATE = {
-  multiplication: {
-    instruction: 'Work it out, then type your answer',
-    display: '6 × 24 = ?',
-    answer: '144',
-    picture: { kind: 'breakdown', parts: ['6 × 20 = 120', '6 × 4 = 24', '120 + 24 = ?'] },
-    hints: [
-      'Split 24 into 20 and 4.',
-      'Work out 6 × 20 and 6 × 4 on their own.',
-      'Add 120 and 24.',
-    ],
-  },
-  division: {
-    instruction: 'Work it out, then type your answer',
-    display: '84 ÷ 4 = ?',
-    answer: '21',
-    picture: { kind: 'breakdown', parts: ['80 ÷ 4 = 20', '4 ÷ 4 = 1', '20 + 1 = ?'] },
-    hints: [
-      'Split 84 into 80 and 4.',
-      'How many 4s are in 80? How many in 4?',
-      'Add 20 and 1.',
-    ],
-  },
-  fractions: {
-    instruction: 'Work it out, then type your answer',
-    display: '½ of 36 = ?',
-    answer: '18',
-    picture: { kind: 'breakdown', parts: ['36 shared into 2 equal groups', '30 ÷ 2 = 15', '6 ÷ 2 = 3'] },
-    hints: [
-      'Half means sharing into 2 equal groups.',
-      'Halve 30, then halve 6.',
-      'Add 15 and 3.',
-    ],
-  },
-  measurement: {
-    instruction: 'Perimeter: add up all four sides',
-    display: '8 m by 5 m rectangle = ? m',
-    answer: '26',
-    picture: { kind: 'breakdown', parts: ['8 + 5 + 8 + 5', '16 + 10', '= ?'] },
-    hints: [
-      'A rectangle has two long sides and two short sides.',
-      'Add 8 + 8 and 5 + 5.',
-      'Add 16 and 10.',
-    ],
-  },
-  patterns: {
-    instruction: 'Find the rule, then type the next number',
-    display: '3, 7, 11, 15, ?',
-    answer: '19',
-    picture: { kind: 'breakdown', parts: ['3 → 7 is +4', '7 → 11 is +4', '15 + 4 = ?'] },
-    hints: [
-      'How much bigger is each number than the one before?',
-      'The rule is "add 4".',
-      'What is 15 + 4?',
-    ],
-  },
-  data: {
-    instruction: 'Range = biggest − smallest',
-    display: 'Range of 3, 9, 5, 7 = ?',
-    answer: '6',
-    picture: { kind: 'breakdown', parts: ['Biggest: 9', 'Smallest: 3', '9 − 3 = ?'] },
-    hints: [
-      'Find the biggest and the smallest number.',
-      'The biggest is 9 and the smallest is 3.',
-      'Work out 9 − 3.',
-    ],
-  },
-};
-
-const SENIOR = {
-  algebra: {
-    instruction: 'Solve for x · show each step',
-    display: '2x − 4 = 10',
-    answer: 'x=7',
-    accepted: ['x=7', '7'],
-    steps: ['2x = 10 + 4', '2x = 14', 'x = 7'],
-    hints: [
-      'Look at the −4. When a term crosses to the other side of the equals sign, what must happen to its sign?',
-      'Add 4 to both sides: 2x = 14.',
-      'Divide both sides by 2.',
-    ],
-  },
-  geometry: {
-    instruction: 'Angles in a triangle · find x',
-    display: '35° + 90° + x = 180°',
-    answer: 'x=55',
-    accepted: ['x=55', '55', 'x=55°', '55°'],
-    steps: ['125 + x = 180', 'x = 180 − 125', 'x = 55'],
-    hints: [
-      'The three angles of a triangle add up to 180°.',
-      'Add the two angles you know first.',
-      'Take 125 away from 180.',
-    ],
-  },
-  fractions: {
-    instruction: 'Add · simplify your answer',
-    display: '3/4 + 1/8 = ?',
-    answer: '7/8',
-    accepted: ['7/8'],
-    steps: ['6/8 + 1/8', '= 7/8'],
-    hints: [
-      'The fractions need the same denominator.',
-      '3/4 is the same as 6/8.',
-      'Add 6/8 and 1/8.',
-    ],
-  },
-  arithmetic: {
-    instruction: 'Brackets first · show each step',
-    display: '−3 × (4 − 9) = ?',
-    answer: '15',
-    accepted: ['15', '=15'],
-    steps: ['−3 × (−5)', '= 15'],
-    hints: [
-      'Work out the brackets first.',
-      '4 − 9 = −5.',
-      'A negative times a negative is positive.',
-    ],
-  },
-  patterns: {
-    instruction: 'Tₙ = 3n + 2 · find T₁₀',
-    display: 'T₁₀ = 3(10) + 2',
-    answer: '32',
-    accepted: ['32', '=32', 't10=32'],
-    steps: ['3 × 10 + 2', '= 30 + 2', '= 32'],
-    hints: [
-      'Put n = 10 into the rule.',
-      'Multiply before you add.',
-      '3 × 10 = 30. Now add 2.',
-    ],
-  },
-  data: {
-    instruction: 'Order the data · find the median',
-    display: 'Median of 4, 9, 2, 7, 5',
-    answer: '5',
-    accepted: ['5', '=5'],
-    steps: ['2, 4, 5, 7, 9', 'median = 5'],
-    hints: [
-      'Write the numbers from smallest to biggest.',
-      '2, 4, 5, 7, 9',
-      'The median is the middle number.',
-    ],
-  },
-};
-
-const BANK = { junior: JUNIOR, intermediate: INTERMEDIATE, senior: SENIOR };
-
-// Which maths type a fight on this floor uses. A focused dungeon always
-// uses its type; a mixed dungeon works through the types floor by floor.
+// Which maths topic a room on this floor uses. A focused dungeon always
+// uses its own topic; a mixed dungeon works through the topics floor by floor.
 export function typeForFloor(version, dungeonTypeId, floor) {
   const ids = version.dungeonTypes.map((t) => t.id);
   if (ids.includes(dungeonTypeId)) return dungeonTypeId;
-  return ids[(floor - 1) % ids.length];
+  return ids[(Math.max(1, floor) - 1) % ids.length];
 }
 
 // The maths topic a cast asks. Junior spells each cast their own kind of
@@ -224,20 +45,45 @@ export function topicFor(version, dungeonTypeId, floor, spell) {
   return typeForFloor(version, dungeonTypeId, floor);
 }
 
-// The game's own sum for that topic (always available, even offline).
-export function getQuestion(version, dungeonTypeId, floor, spell) {
-  const type = topicFor(version, dungeonTypeId, floor, spell);
-  return { type, source: 'bank', ...BANK[version.id][type] };
+// How hard a puzzle room is, from its floor.
+export function levelForFloor(floor) {
+  if (floor <= 3) return 1;
+  if (floor <= 6) return 2;
+  return 3;
 }
 
-// The next sum to ask in a run: the next unused AI question for the topic
-// if the run has any (see run.questionPool), otherwise the game's own.
+// The next unused AI sum for a topic and level, or null. Word problems
+// (`story`) are kept for the puzzle rooms; fights use the plain sums.
+function fromPool(run, topic, level, story) {
+  const list = (run.questionPool?.[topic]?.[level] ?? []).filter((q) => Boolean(q.story) === story);
+  const poolKey = `${topic}:${level}:${story ? 'story' : 'sum'}`;
+  const used = run.questionsUsed?.[poolKey] ?? 0;
+  return used < list.length ? { ...list[used], type: topic, level, source: 'ai', poolKey } : null;
+}
+
+// The game's own sum (always available, even offline). It tries a few
+// times not to ask the very same sum twice in a row.
+export function getQuestion(run, version, topic, level) {
+  let question = makeQuestion({ versionId: version.id, grade: run.grade, topic, level });
+  for (let tries = 0; tries < 4 && question.display === run.lastAsked; tries++) {
+    question = makeQuestion({ versionId: version.id, grade: run.grade, topic, level });
+  }
+  return question;
+}
+
+// The sum for casting a spell: the run's topic at the spell card's level.
 export function pickQuestion(run, version, floor, spell) {
-  const type = topicFor(version, run.dungeonTypeId, floor, spell);
-  const pool = run.questionPool?.[type] ?? [];
-  const used = run.questionsUsed?.[type] ?? 0;
-  if (used < pool.length) return { ...pool[used], type, source: 'ai' };
-  return getQuestion(version, run.dungeonTypeId, floor, spell);
+  const topic = topicFor(version, run.dungeonTypeId, floor, spell);
+  const level = clampLevel(spell?.level ?? 1);
+  return fromPool(run, topic, level, false) ?? getQuestion(run, version, topic, level);
+}
+
+// The sum on a puzzle room's door: the run's topic at the floor's level.
+// An AI word problem if there is one, otherwise a sum.
+export function pickPuzzleQuestion(run, version, floor) {
+  const topic = typeForFloor(version, run.dungeonTypeId, floor);
+  const level = levelForFloor(floor);
+  return fromPool(run, topic, level, true) ?? fromPool(run, topic, level, false) ?? getQuestion(run, version, topic, level);
 }
 
 // Every topic a run can ask: one for a focused dungeon, all for mixed.
@@ -252,17 +98,49 @@ export function juniorOpLabel(version, dungeonTypeId, spell) {
   return version.dungeonTypes.find((t) => t.id === type);
 }
 
-// Tidy up typed working so "X = 7", "x=7" and "x =7 " all match.
+// --- checking an answer -------------------------------------------------------
+
+// Tidy up typed working so "X = 7", "x=7" and "x =7 " all match. South
+// African decimals may be typed with a comma (2,5).
 export function normalise(text) {
   return String(text)
     .toLowerCase()
     .replace(/\s+/g, '')
-    .replace(/−/g, '-')
-    .replace(/°/g, '');
+    .replace(/[−–]/g, '-')
+    .replace(/°/g, '')
+    .replace(/(\d),(\d)/g, '$1.$2');
 }
 
+// The number a piece of text stands for ("7", "-3", "2.5", "7/8"), or null.
+function toNumber(text) {
+  const m = text.match(/^(-?\d+(?:\.\d+)?)(?:\/(\d+(?:\.\d+)?))?$/);
+  if (!m) return null;
+  const value = m[2] === undefined ? Number(m[1]) : Number(m[1]) / Number(m[2]);
+  return Number.isFinite(value) ? value : null;
+}
+
+function isSimplest(text) {
+  const m = text.match(/^-?(\d+)\/(\d+)$/);
+  if (!m) return true;
+  const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+  return gcd(Number(m[1]), Number(m[2])) === 1;
+}
+
+// Is the player's answer right? The last line of working is checked: what
+// comes after its last "=" must be the answer ("2x = 14" is not "x = 7").
+// Numbers are compared by value, so 0.5 and 0,50 both count.
 export function isCorrect(question, input) {
   const given = normalise(input);
+  if (!given) return false;
   const accepted = [question.answer, ...(question.accepted ?? [])].map(normalise);
-  return accepted.includes(given);
+  if (accepted.includes(given)) return true;
+
+  const want = toNumber(normalise(question.answer).split('=').at(-1));
+  const typed = given.split('=').at(-1);
+  const got = toNumber(typed);
+  if (want === null || got === null || Math.abs(want - got) > 1e-9) return false;
+  // "2x = 14" is not the answer 14: the left of the "=" must be the letter on its own
+  const left = given.split('=').at(-2) ?? '';
+  if (/[a-z]/.test(left) && !/^[a-z]$/.test(left)) return false;
+  return question.simplest ? isSimplest(typed) : true;
 }

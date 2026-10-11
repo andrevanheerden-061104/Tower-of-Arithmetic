@@ -4,14 +4,14 @@ import Text from '../../../../components/AppText';
 import Icon from '../../../../components/Icon';
 import PrimaryButton from '../../../../components/PrimaryButton';
 import NumberPad from '../../../../components/run/NumberPad';
+import { TYPE_COLUMNS, TYPE_KEYS } from '../../../../game/keypads';
 import BreakdownPicture from './BreakdownPicture';
 import QuestionBox from './QuestionBox';
 import SheetBody from './SheetBody';
 import { colors, fonts } from '../../../../theme/theme';
 
-const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', 'ok'];
-
-// Intermediate: work it out, type the final answer. The sum, answer box and
+// Intermediate: work it out, type the final answer: a whole number, a
+// fraction (3/4) or a decimal (2.5). The sum, answer box and
 // picture scroll; the keypad and Cast spell always stay at the bottom.
 export default function TypeAnswer({ question, onSubmit }) {
   const [answer, setAnswer] = useState('');
@@ -20,14 +20,19 @@ export default function TypeAnswer({ question, onSubmit }) {
   const press = (key) => {
     if (key === '⌫') setAnswer((a) => a.slice(0, -1));
     else if (key === 'ok') answer && onSubmit(answer);
-    else setAnswer((a) => (a.length < 6 ? a + key : a));
+    else setAnswer((a) => (a.length < 8 ? a + key : a));
   };
+
+  // A sum with a drawing is too tall to stay fixed at the top: it scrolls
+  const box = <QuestionBox question={question} compact />;
+  const tall = Boolean(question.figure);
 
   return (
     <SheetBody
-      header={<QuestionBox question={question} compact />}
+      header={tall ? null : box}
       scroll={
         <>
+          {tall && box}
           <View style={styles.field} accessible accessibilityLabel={`Your answer: ${answer || 'empty'}`}>
             <Text style={styles.fieldLabel}>Your answer</Text>
             <Text style={styles.fieldValue}>{answer}|</Text>
@@ -47,7 +52,7 @@ export default function TypeAnswer({ question, onSubmit }) {
       }
       footer={
         <>
-          <NumberPad keys={KEYS} columns={3} onKey={press} keyHeight={44} />
+          <NumberPad keys={TYPE_KEYS} columns={TYPE_COLUMNS} onKey={press} keyHeight={44} />
           <PrimaryButton label="Cast spell" disabled={!answer} onPress={() => onSubmit(answer)} />
         </>
       }

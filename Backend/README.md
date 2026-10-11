@@ -6,9 +6,9 @@ does the three AI jobs:
 | Route | What it does |
 |---|---|
 | `GET /health` | Says the server is up (Render checks this). |
-| `POST /api/questions` | Makes a batch of maths questions for a run. Every answer is **checked by code** before it is sent (`src/maths/evaluate.js`); wrong ones are thrown away. |
+| `POST /api/questions` | Makes a batch of sums for a run, for the player's **grade** (1-11), the run's topic and three difficulty levels (`src/ai/curriculum.js`). Code works out every answer itself (`src/maths/solve.js`) and throws away any sum that is wrong, off topic, or has an answer the keypad can't type. |
 | `POST /api/hint` | After a wrong answer, Orrin explains the mistake in 1–2 sentences without giving the answer. |
-| `POST /api/run-summary` | Orrin's end-of-run message: one strength, one topic to practise. |
+| `POST /api/run-summary` | Orrin's end-of-run message. The strength and the topic to practise are worked out by code from the run's results; the AI words it and reads the missed sums. A message with made-up numbers is thrown away. |
 
 Every `/api` call needs the player's Supabase login token
 (`Authorization: Bearer …`); the app sends it for you. Each player is
@@ -73,7 +73,9 @@ src/
   app.js               routes, login check, error handling
   config.js            reads .env
   routes/ai.js         /api/questions, /api/hint, /api/run-summary
-  ai/topics.js         the CAPS topics for each version (match the game)
+  ai/curriculum.js     what each grade covers per topic and level (the AI's guide)
+  ai/topics.js         the versions, and the test that a sum is on its topic
+  maths/solve.js       works out sums, equations, patterns and data by code
   ai/questions.js      prompt + checking every AI question
   ai/hints.js          Orrin's wrong-answer hints (never the answer)
   ai/summary.js        Orrin's end-of-run message

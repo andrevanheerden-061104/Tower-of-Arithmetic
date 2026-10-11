@@ -1,6 +1,7 @@
 import { levelBonus } from '../data/characterLevels';
 import { ENEMIES, ITEMS } from './encounters';
 import { pickEnemyId } from './enemyAI';
+import { gradeFor } from './generators';
 import { generateMap } from './mapGenerator';
 import { newSeed } from './random';
 import { REWARD_ROOMS, ROOMS } from './rooms';
@@ -16,13 +17,17 @@ import { VERSIONS } from './versions';
 // or a server yet, so a run is lost when the app closes.
 // ---------------------------------------------------------------------------
 
-export function createRun({ version, dungeonTypeId, character }) {
+export function createRun({ version, dungeonTypeId, character, grade }) {
   const seed = newSeed();
   // Rewards from the character's level (e.g. +1 heart at level 5)
   const bonus = levelBonus(character?.level ?? 1);
   const hearts = version.hearts + bonus.maxHearts;
   return {
     versionId: version.id,
+    // The player's school grade: every sum in the run is made for it
+    grade: gradeFor(version.id, grade),
+    // The maths topic chosen for this run ('mixed' = all of them). Every
+    // spell and every puzzle door asks sums from it.
     dungeonTypeId,
     seed,
     map: generateMap({ floors: version.floors, seed, roomTypes: version.rooms }),
@@ -46,9 +51,12 @@ export function createRun({ version, dungeonTypeId, character }) {
     // Per maths topic: { attempts, correct, timeMs, hints } (for Orrin's
     // end-of-run summary)
     topicStats: {},
-    // AI questions for this run, by topic (null until they arrive, or if
-    // the server can't be reached: then the game's own questions are used),
-    // and how many of each topic have been asked
+    // The sums the player got wrong: { topic, level, display, answer, given }
+    // (the last 12, for Orrin's summary)
+    mistakes: [],
+    // AI sums for this run, by topic and difficulty level (null until they
+    // arrive, or if the server can't be reached: then the game's own sum
+    // maker is used), and how many of each list have been asked
     questionPool: null,
     questionsUsed: {},
     reward: null,   // what the reward screen will show
@@ -178,14 +186,19 @@ export function cursedItems(run) {
   return run.items.filter((id) => isCursed(run, id)).map((id) => ITEMS[id]);
 }
 
-// A question of this topic has been asked (the next one comes from
-// further down the pool).
-export function markQuestionUsed(run, topic) {
-  return { ...run, questionsUsed: { ...run.questionsUsed, [topic]: (run.questionsUsed?.[topic] ?? 0) + 1 } };
+// An AI sum from the pool has been asked (the next one comes from further
+// down its list). The game's own sums are made fresh, so they aren't counted.
+export function markQuestionUsed(run, question) {
+  const key = question?.poolKey;
+  const next = { ...run, lastAsked: question?.display ?? null };
+  if (!key) return next;
+  return { ...next, questionsUsed: { ...run.questionsUsed, [key]: (run.questionsUsed?.[key] ?? 0) + 1 } };
 }
 
 // Count answers for the run stats screen (and per topic for Orrin's summary).
-export function recordAnswer(run, { correct, hintsUsed = 0, topic, timeMs = 0 }) {
+// Pass the `question` and what the player `given` so a wrong answer can be
+// remembered.
+export function recordAnswer(run, { correct, hintsUsed = 0, topic, timeMs = 0, question, given }) {
   const floor = currentRoom(run).floor;
   const stats = { ...run.stats };
   stats.hints += hintsUsed;
@@ -215,7 +228,11 @@ export function recordAnswer(run, { correct, hintsUsed = 0, topic, timeMs = 0 })
       hints: t.hints + hintsUsed,
     };
   }
-  return { ...run, stats, topicStats };
+  const mistakes =
+    !correct && question
+      ? [...(run.mistakes ?? []), { topic, level: question.level ?? 1, display: question.display, answer: question.answer, given: String(given ?? '') }].slice(-12)
+      : run.mistakes ?? [];
+  return { ...run, stats, topicStats, mistakes };
 }
 
 // Rewards for finishing a fight, puzzle or the boss (placeholder amounts).
