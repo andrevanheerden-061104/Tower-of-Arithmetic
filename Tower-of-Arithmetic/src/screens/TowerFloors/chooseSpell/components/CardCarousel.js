@@ -1,9 +1,11 @@
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Icon from '../../../../components/Icon';
 import SpellCardImage from '../../../../components/run/SpellCardImage';
+import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 import { colors } from '../../../../theme/theme';
 
-// One big card at a time, with arrows to see the others.
+// One big card at a time, with arrows to see the others. The card itself is
+// what the tutorial's spotlight points at ("spellCard").
 export default function CardCarousel({ spells, index, onChange, cardSet }) {
   const { width } = useWindowDimensions();
   const cardWidth = Math.min(270, width - 120);
@@ -11,7 +13,9 @@ export default function CardCarousel({ spells, index, onChange, cardSet }) {
 
   return (
     <View style={styles.stage}>
-      <SpellCardImage spellId={spells[index]} cardSet={cardSet} width={cardWidth} />
+      <TutorialTarget id="spellCard">
+        <SpellCardImage spellId={spells[index]} cardSet={cardSet} width={cardWidth} />
+      </TutorialTarget>
       <Arrow side="left" onPress={() => go(-1)} />
       <Arrow side="right" onPress={() => go(1)} />
     </View>
