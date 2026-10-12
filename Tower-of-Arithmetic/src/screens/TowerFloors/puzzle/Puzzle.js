@@ -6,6 +6,9 @@ import ScreenBackground from '../../../components/ScreenBackground';
 import Shade from '../../../components/Shade';
 import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import ArchmageHint from '../../../components/run/ArchmageHint';
+import LessonLink from '../../../components/lesson/LessonLink';
+import LessonOverlay from '../../../components/lesson/LessonOverlay';
+import { hasLesson } from '../../../data/lessons';
 import RunHud from '../../../components/run/RunHud';
 import RunTitle from '../../../components/run/RunTitle';
 import { makePuzzle } from '../../../game/puzzles';
@@ -21,7 +24,7 @@ import styles from './Puzzle.styles';
 // is from the run's own maths topic and gets harder higher up the tower
 // (see src/game/puzzles.js). No hearts are lost for a wrong answer: the
 // player gets a hint and can try again.
-export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer }) {
+export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer, onLessonDone }) {
   const version = runVersion(run);
   const room = currentRoom(run);
   // Picked once when the room opens, so the door keeps the same sum
@@ -30,6 +33,7 @@ export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer })
   const [hintIndex, setHintIndex] = useState(-1);
   const [wrong, setWrong] = useState(false);
   const [hintsUsed, setHintsUsed] = useState(0);
+  const [lesson, setLesson] = useState(false); // Spell School open over the door
   const askedAt = useRef(0);
 
   useEffect(() => {
@@ -94,6 +98,7 @@ export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer })
 
             {wrong && <Text style={styles.wrong}>Not quite. No hearts lost, take your time.</Text>}
             {hintIndex >= 0 && <ArchmageHint title="Orrin" hint={question.hints[hintIndex]} index={hintIndex} total={question.hints.length} />}
+            {wrong && hasLesson(version.id, question.type) && <LessonLink junior={junior} onPress={() => setLesson(true)} />}
             {junior && hintIndex < 0 && (
               <Pressable onPress={nextHint} accessibilityRole="button" accessibilityLabel="Help me" style={styles.help}>
                 <Icon name="lightbulb" size={20} color={colors.gold} />
@@ -105,6 +110,10 @@ export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer })
           </View>
         </TutorialTarget>
       </ScrollView>
+
+      {lesson && (
+        <LessonOverlay versionId={version.id} topic={question.type} backLabel="Back to the door" onClose={() => setLesson(false)} onDone={onLessonDone} />
+      )}
     </View>
   );
 }

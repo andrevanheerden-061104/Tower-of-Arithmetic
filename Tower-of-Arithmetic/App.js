@@ -42,6 +42,7 @@ import { usePlayer } from './src/hooks/usePlayer';
 import { fetchQuestionPool } from './src/services/ai';
 import Characters from './src/screens/characters/Characters';
 import Home from './src/screens/home/Home';
+import Lesson from './src/screens/lesson/Lesson';
 import Login from './src/screens/login/Login';
 import Onboarding from './src/screens/onboarding/Onboarding';
 import Profile from './src/screens/profile/Profile';
@@ -79,6 +80,7 @@ const SCREENS = {
   profile: Profile,
   settings: Settings,
   tutorial: Tutorial,
+  lesson: Lesson, // Spell School (src/components/lesson)
   // The tower (src/screens/TowerFloors)
   dungeonType: DungeonType,
   pathMap: PathMap,
@@ -193,6 +195,10 @@ function Game() {
   // Where the spell picker goes back to: the reward screen, or the map
   // when the spell came from the ghost's gift.
   const [spellReturn, setSpellReturn] = useState('reward');
+  // The maths type of the Spell School lesson being shown
+  const [lessonTopic, setLessonTopic] = useState(null);
+  // Lessons finished, e.g. 'senior:algebra' (kept with the settings)
+  const lessonsDone = settings.lessonsDone ?? [];
 
   // Save a run's XP and totals once, when it ends (won or lost) or is left
   // for a new one. Runs themselves aren't stored, only the totals.
@@ -233,6 +239,16 @@ function Game() {
   };
 
   const runActions = {
+    // Spell School
+    lessonTopic,
+    lessonsDone,
+    onOpenLesson: (topic) => {
+      setLessonTopic(topic);
+      navigate('lesson');
+    },
+    onLessonDone: (id) => {
+      if (!lessonsDone.includes(id)) changeSetting('lessonsDone', [...lessonsDone, id]);
+    },
     onStartRun: (dungeonTypeId) => {
       if (run?.status === 'active' && run.xp > 0) saveRun(run); // left unfinished
       const version = versionForGrade(grade);

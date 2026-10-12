@@ -608,4 +608,35 @@ export function geometry(grade, level, rng) {
   return plan[grade][level - 1]();
 }
 
+// Fixed drawings for the Spell School lessons (src/data/lessons/senior.js).
+export const LESSON_FIGURES = {
+  // A straight line split into 130° and x
+  line() {
+    const fig = blank();
+    const P = [60, 60];
+    fig.lines.push([8, 60, 112, 60], line(P, at(P, 44, 130)));
+    sweep(fig, P, 0, 130, '130°', 10);
+    sweep(fig, P, 130, 180, 'x', 10);
+    return fig;
+  },
+  // A triangle with 60°, 70° and x
+  triangle() {
+    return drawTriangle(60, 70, ['60°', '70°', 'x']).fig;
+  },
+  // Parallel lines cut by a line: corresponding angles 65° and x
+  parallel() {
+    const fig = blank();
+    const t = 65;
+    const shift = 17 / Math.tan(t * RAD);
+    const U = [60 + shift, 24];
+    const V = [60 - shift, 58];
+    fig.lines.push([8, 24, 112, 24], [8, 58, 112, 58], line(at(U, 16, t), at(V, 16, t + 180)));
+    arrow(fig, [100, 24], 0);
+    arrow(fig, [100, 58], 0);
+    sweep(fig, U, 0, t, '65°', 8);
+    sweep(fig, V, 0, t, 'x', 8);
+    return fig;
+  },
+};
+
 export const CANVAS = { width: W, height: H };

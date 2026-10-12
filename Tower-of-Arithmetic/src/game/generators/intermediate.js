@@ -219,7 +219,7 @@ export function fractions(grade, level, rng) {
 // --- measurement --------------------------------------------------------------
 
 // A rectangle drawn with its side lengths (see GeometryFigure).
-function rectangle(w, h, unit, labels = {}) {
+export function rectangle(w, h, unit, labels = {}) {
   const scale = Math.min(64 / w, 46 / h);
   const width = Math.max(w * scale, 28);
   const height = Math.max(h * scale, 16);

@@ -4,6 +4,9 @@ import Text from '../../../../components/AppText';
 import Icon from '../../../../components/Icon';
 import PrimaryButton from '../../../../components/PrimaryButton';
 import ArchmageHint from '../../../../components/run/ArchmageHint';
+import LessonLink from '../../../../components/lesson/LessonLink';
+import LessonOverlay from '../../../../components/lesson/LessonOverlay';
+import { hasLesson } from '../../../../data/lessons';
 import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 import { hearts } from '../../../../game/enemyAI';
 import { useAiHint } from '../../../../hooks/useAiHint';
@@ -56,6 +59,7 @@ export default function CastSheet({
   onFizzled,
   onHint,
   onClose,
+  onLessonDone,
   inline = false,
 }) {
   const { height } = useWindowDimensions();
@@ -63,6 +67,8 @@ export default function CastSheet({
   const [hintIndex, setHintIndex] = useState(-1);
   const [grow, setGrow] = useState(0); // how far the sheet has risen to fit more steps
   const [wrongAnswer, setWrongAnswer] = useState(null); // what the player answered, when wrong
+  const [lesson, setLesson] = useState(false); // Spell School open over the fight
+  const canLearn = !inline && hasLesson(version.id, question.type);
   // Orrin (the AI) explains a wrong answer; the bank's hints show either way
   const ai = useAiHint(version, question, panel === 'wrong' && !inline ? wrongAnswer : null, grade);
   const junior = version.id === 'junior';
@@ -151,6 +157,7 @@ export default function CastSheet({
                 {panel === 'wrong' && ai.loading && <Text style={styles.thinking}>Orrin is looking at your answer…</Text>}
                 {panel === 'wrong' && ai.hint && <ArchmageHint title="Orrin" hint={ai.hint} />}
                 <ArchmageHint hint={question.hints[hintIndex]} index={hintIndex} total={question.hints.length} />
+                {panel === 'wrong' && canLearn && <LessonLink junior={junior} onPress={() => setLesson(true)} />}
               </>
             }
             footer={
@@ -170,12 +177,16 @@ export default function CastSheet({
           <Body question={question} onSubmit={submit} onHelp={showHint} onOverflow={onOverflow} />
         )}
       </View>
+
+      {lesson && (
+        <LessonOverlay versionId={version.id} topic={question.type} backLabel="Back to the fight" onClose={() => setLesson(false)} onDone={onLessonDone} />
+      )}
     </>
   );
 
   if (inline) return <View style={styles.inline}>{content}</View>;
   return (
-    <Modal visible transparent animationType="slide" statusBarTranslucent navigationBarTranslucent onRequestClose={panel === 'wrong' ? onFizzled : onClose}>
+    <Modal visible transparent animationType="slide" statusBarTranslucent navigationBarTranslucent onRequestClose={lesson ? () => setLesson(false) : panel === 'wrong' ? onFizzled : onClose}>
       {content}
     </Modal>
   );
