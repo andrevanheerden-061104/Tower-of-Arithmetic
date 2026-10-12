@@ -27,7 +27,7 @@ export default function GuideBubble({
   return (
     <View style={[styles.wrap, style]} onLayout={onLayout} accessibilityViewIsModal>
       <View style={styles.guide} pointerEvents="none">
-        <Image source={GUIDE.image} style={styles.guideImage} resizeMode="contain" accessibilityLabel={`${GUIDE.name}, your guide`} />
+        <Image source={GUIDE.image} style={[styles.guideImage, junior && styles.guideImageJunior]} resizeMode="contain" accessibilityLabel={`${GUIDE.name}, your guide`} />
         <Svg width={30} height={22} style={styles.tail}>
           <Path d="M0 22 L15 1 L30 22 Z" fill={colors.panel} />
           <Path d="M0.8 21.5 L15 1.5 L29.2 21.5" fill="none" stroke={colors.gold} strokeWidth={1.5} strokeLinejoin="round" />
@@ -89,9 +89,11 @@ export default function GuideBubble({
 
 const styles = StyleSheet.create({
   wrap: { position: 'absolute' },
-  // The top of the guide (hat to chest), cut off by the bubble
+  // The top of Orrin (hat to chest), cut off by the bubble. Sizes match
+  // the Tutorial / Guide component in Figma.
   guide: { height: 132, overflow: 'hidden', zIndex: 2 },
-  guideImage: { position: 'absolute', width: 300, height: 300, left: -62, top: 6 },
+  guideImage: { position: 'absolute', width: 145, height: 228, left: 0, top: 18 },
+  guideImageJunior: { left: 2, top: 7 },
   tail: { position: 'absolute', left: 118, bottom: 0 },
   bubble: {
     marginTop: -2,

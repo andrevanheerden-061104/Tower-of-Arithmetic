@@ -1,6 +1,6 @@
 // The tutorial guide: Orrin Mossveil, the old Archmage of the tower.
 //
-// `image` shows above the tutorial's speech bubble (the top part, hat to
+// `image` (Orrin, full body) shows above the tutorial's speech bubble (the top part, hat to
 // chest); `face` is the round picture next to his hints in the game.
 export const GUIDE = {
   name: 'Orrin',
