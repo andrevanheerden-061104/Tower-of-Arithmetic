@@ -26,10 +26,12 @@ import { createRandom, pickWeighted, rollDie } from './random';
 //   kind     attack | boost | heal | idle
 //   amount   hearts of damage, boost or healing
 //   maxUses  how many times per fight (leave out for unlimited)
+//   element  what an attack is made of (fire, ice or shadow), if anything:
+//            the player's rings and veil block part of it
 export const ACTIONS = {
   // Slime (level 1)
   slimeBoost: { id: 'slimeBoost', kind: 'boost', name: 'Bubble up', amount: 0.5 },
-  waterAttack: { id: 'waterAttack', kind: 'attack', name: 'Water splash', amount: 0.5 },
+  waterAttack: { id: 'waterAttack', kind: 'attack', name: 'Water splash', amount: 0.5, element: 'ice' },
 
   // Pumpkin (level 1)
   vineWhip: { id: 'vineWhip', kind: 'attack', name: 'Vine whip', amount: 0.5 },
@@ -37,20 +39,20 @@ export const ACTIONS = {
   pumpkinSlam: { id: 'pumpkinSlam', kind: 'attack', name: 'Pumpkin slam', amount: 1 },
 
   // Dark Owl (level 2)
-  shadowPeck: { id: 'shadowPeck', kind: 'attack', name: 'Shadow peck', amount: 0.5 },
-  nightDive: { id: 'nightDive', kind: 'attack', name: 'Night dive', amount: 1 },
+  shadowPeck: { id: 'shadowPeck', kind: 'attack', name: 'Shadow peck', amount: 0.5, element: 'shadow' },
+  nightDive: { id: 'nightDive', kind: 'attack', name: 'Night dive', amount: 1, element: 'shadow' },
   hauntingHoot: { id: 'hauntingHoot', kind: 'boost', name: 'Haunting hoot', amount: 0.5 },
   moonlitRest: { id: 'moonlitRest', kind: 'heal', name: 'Moonlit rest', amount: 1, maxUses: 1 },
 
   // Fire Lizard (level 2)
   tailSwipe: { id: 'tailSwipe', kind: 'attack', name: 'Tail swipe', amount: 0.5 },
-  fireBreath: { id: 'fireBreath', kind: 'attack', name: 'Fire breath', amount: 1.5 },
+  fireBreath: { id: 'fireBreath', kind: 'attack', name: 'Fire breath', amount: 1.5, element: 'fire' },
   heatUp: { id: 'heatUp', kind: 'boost', name: 'Heat up', amount: 0.5 },
   baskInFlames: { id: 'baskInFlames', kind: 'heal', name: 'Bask in the flames', amount: 1, maxUses: 1 },
 
   // Morvath, the Shadow Warden (boss)
-  shadowStrike: { id: 'shadowStrike', kind: 'attack', name: 'Shadow strike', amount: 0.5 },
-  shadowCrush: { id: 'shadowCrush', kind: 'attack', name: 'Shadow crush', amount: 2, maxUses: 3 },
+  shadowStrike: { id: 'shadowStrike', kind: 'attack', name: 'Shadow strike', amount: 0.5, element: 'shadow' },
+  shadowCrush: { id: 'shadowCrush', kind: 'attack', name: 'Shadow crush', amount: 2, maxUses: 3, element: 'shadow' },
   darkMend: { id: 'darkMend', kind: 'heal', name: 'Dark mend', amount: 1, maxUses: 3 },
   wardenFocus: { id: 'wardenFocus', kind: 'boost', name: 'Warden’s focus', amount: 0.5 },
 };
@@ -167,7 +169,7 @@ export function takeTurn(state, enemyName) {
 }
 
 // How much a spell does to this enemy. Parts that match the enemy's
-// weakness do double damage. `bonus` (e.g. the haunted ring) adds to the
+// weakness do double damage. `bonus` (e.g. the Scroll of Sharpened Spells) adds to the
 // first part.
 export function spellDamage(spell, enemyId, bonus = 0) {
   const weak = WEAKNESS[enemyId];

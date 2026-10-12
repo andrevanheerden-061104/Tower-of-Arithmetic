@@ -3,7 +3,6 @@ import Text from '../../../../components/AppText';
 import CoinIcon from '../../../../components/run/CoinIcon';
 import ItemIcon from '../../../../components/run/ItemIcon';
 import SpellCardImage from '../../../../components/run/SpellCardImage';
-import { ITEMS, POTIONS } from '../../../../game/encounters';
 import { colors, fonts } from '../../../../theme/theme';
 
 // One thing for sale: picture, name and price. Shows how many more coins
@@ -22,9 +21,9 @@ export default function WareTile({ ware, coins, sold, selected, onPress }) {
         {ware.kind === 'spell' ? (
           <SpellCardImage spellId={ware.spellId} width={50} />
         ) : ware.kind === 'potion' ? (
-          <ItemIcon kind="potion" potionColor={POTIONS[ware.potionId].color} size={44} />
+          <ItemIcon kind={ware.potionId} size={56} />
         ) : (
-          <ItemIcon kind={ITEMS[ware.itemId].icon} size={44} />
+          <ItemIcon kind={ware.itemId} size={56} />
         )}
       </View>
       <Text style={styles.name} numberOfLines={1}>

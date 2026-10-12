@@ -9,7 +9,7 @@ export default function CursedList({ items, selectedId, onSelect }) {
       {items.map((item) => (
         <ChoiceOption
           key={item.id}
-          icon={<ItemIcon kind={item.icon} size={30} cursed />}
+          icon={<ItemIcon kind={item.id} size={34} cursed />}
           title={item.name}
           detail={`Item · ${item.effect}`}
           note={`Curse: ${item.curse}`}

@@ -1,5 +1,6 @@
 import { levelBonus } from '../data/characterLevels';
-import { ENEMIES, ITEMS } from './encounters';
+import { ENEMIES, ITEMS, POTIONS } from './encounters';
+import { canRevive } from './items';
 import { pickEnemyId } from './enemyAI';
 import { gradeFor } from './generators';
 import { generateMap } from './mapGenerator';
@@ -44,8 +45,11 @@ export function createRun({ version, dungeonTypeId, character, grade }) {
     deck: [character?.starter ?? 'shadowShard'],
     stash: [],
     offers: null,   // the spells on offer in the spell picker
-    potions: version.usesPotions ? ['heal', 'power'] : [],
-    items: version.usesCurses ? ['luckyGem', 'hauntedRing'] : version.usesCoins ? ['luckyGem'] : [],
+    // Two healing potions to start with; items are found on the way up
+    // (the trader, the ghost)
+    potions: version.usesPotions ? ['minor', 'heal'] : [],
+    items: [],
+    phoenixUsed: false, // the Phoenix Feather Charm saves the player once
     cleansed: [],   // items whose curse was removed at a campfire
     stats: { solved: 0, hints: 0, errors: 0, streak: 0, bestStreak: 0, floors: [] },
     // Per maths topic: { attempts, correct, timeMs, hints } (for Orrin's
@@ -84,7 +88,12 @@ export function enemyForRun(run) {
 }
 
 export function enterRoom(run, roomId) {
-  return { ...run, currentId: roomId };
+  const next = { ...run, currentId: roomId };
+  // The Cursed Scroll's curse: ½ heart less at the start of every new floor
+  // (it never takes the last half heart)
+  const higher = run.map.nodes[roomId].floor > currentRoom(run).floor;
+  if (higher && isCursed(run, 'cursedScroll')) next.hearts = Math.max(0.5, run.hearts - 0.5);
+  return next;
 }
 
 // Mark the room the player is in as done.
@@ -99,6 +108,8 @@ export function heal(run, amount) {
 
 export function damage(run, amount) {
   const hearts = Math.max(0, run.hearts - amount);
+  // The Phoenix Feather Charm: once per run, back up with 1 heart
+  if (hearts <= 0 && canRevive(run)) return { ...run, hearts: 1, phoenixUsed: true };
   return { ...run, hearts, status: hearts <= 0 ? 'lost' : run.status };
 }
 
@@ -157,8 +168,12 @@ export function deckLocked(run) {
   return (room.type === 'combat' || room.type === 'boss') && !run.cleared.includes(run.currentId);
 }
 
+// A new item (each item can only be owned once). The Heartstone Amulet
+// adds its heart straight away.
 export function addItem(run, itemId) {
-  return { ...run, items: [...run.items, itemId] };
+  if (run.items.includes(itemId)) return run;
+  const extra = ITEMS[itemId]?.extraHearts ?? 0;
+  return { ...run, items: [...run.items, itemId], maxHearts: run.maxHearts + extra, hearts: run.hearts + extra };
 }
 
 export function drinkPotion(run, index) {
@@ -166,7 +181,7 @@ export function drinkPotion(run, index) {
   if (!potion) return run;
   const potions = run.potions.filter((_, i) => i !== index);
   const next = { ...run, potions };
-  return potion === 'heal' ? heal(next, 0.5) : next;
+  return heal(next, POTIONS[potion]?.heal ?? 0);
 }
 
 export function addPotion(run, potionId) {
@@ -245,7 +260,7 @@ export function makeReward(run, roomType) {
     towerCleared: boss,
     xp: boss ? 300 : roomType === 'puzzle' ? 80 : 120,
     coins: version.usesCoins ? (boss ? 50 : 15) : 0,
-    potion: version.usesPotions && roomType === 'combat' ? 'heal' : null,
+    potion: version.usesPotions && roomType === 'combat' ? 'minor' : null,
     spellChoice: !boss,
     spellTaken: false,
   };

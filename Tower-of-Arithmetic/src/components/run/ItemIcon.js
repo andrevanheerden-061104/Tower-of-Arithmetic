@@ -1,12 +1,15 @@
-import { StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import Icon from '../Icon';
+import { ITEMS, POTIONS } from '../../game/encounters';
 import CoinIcon from './CoinIcon';
 import { Heart } from './HeartRow';
 import { colors } from '../../theme/theme';
 
-// Little drawings for items, potions and gifts (gem, ring, lantern, potion,
-// spell card, star). Cursed things get a small purple skull badge.
+// Pictures for items, potions and gifts. `kind` is an item or potion id
+// (e.g. 'frostwardRing', 'heal'), which shows its painted picture, or one of
+// the small drawings: coin, heart, star, card, gem, ring, lantern, potion.
+// Cursed things get a small purple skull badge.
 export default function ItemIcon({ kind, size = 32, potionColor = colors.pink, cursed = false }) {
   return (
     <View style={{ width: size, height: size }}>
@@ -21,6 +24,8 @@ export default function ItemIcon({ kind, size = 32, potionColor = colors.pink, c
 }
 
 function Art({ kind, size, potionColor }) {
+  const picture = ITEMS[kind]?.image ?? POTIONS[kind]?.image;
+  if (picture) return <Image source={picture} style={{ width: size, height: size }} resizeMode="contain" />;
   switch (kind) {
     case 'coin':
       return <CoinIcon size={size} />;

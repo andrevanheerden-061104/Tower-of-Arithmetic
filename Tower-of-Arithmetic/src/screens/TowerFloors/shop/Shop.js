@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import Text from '../../../components/AppText';
 import PrimaryButton from '../../../components/PrimaryButton';
@@ -6,7 +6,7 @@ import RunHud from '../../../components/run/RunHud';
 import RunTitle from '../../../components/run/RunTitle';
 import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import { BACKGROUNDS } from '../../../components/run/RunBackground';
-import { SHOP_WARES } from '../../../game/encounters';
+import { shopWares } from '../../../game/encounters';
 import { collectedSpells, currentRoom } from '../../../game/run';
 import WareGrid from './components/WareGrid';
 import styles from './Shop.styles';
@@ -16,16 +16,20 @@ const BG_ASPECT = 1103 / 960; // the shop picture (width / height)
 const COUNTER_TOP = 0.885; // where the wooden counter starts in the picture
 
 // The wandering trader (intermediate and senior). Tap a ware, then buy it
-// with gold. Placeholder prices in src/game/encounters.js.
+// with gold. Each visit has 2 spell cards, 2 potions and 2 items the player
+// doesn't own yet (prices in src/game/encounters.js).
 export default function Shop({ navigate, run, onBuy, onLeave }) {
+  // Picked once per shop room (the same if the player comes back)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const SHOP_WARES = useMemo(() => shopWares(run), [run.seed, run.currentId]);
   const [selectedId, setSelectedId] = useState(SHOP_WARES[0].id);
   const { width } = useWindowDimensions();
   const heroHeight = width / BG_ASPECT;
   const traderHeight = heroHeight * 0.965;
   const traderWidth = traderHeight * (1536 / 2636);
   const [bought, setBought] = useState([]);
-  // Spell cards the player already has count as sold (no doubles)
-  const owned = SHOP_WARES.filter((w) => w.kind === 'spell' && collectedSpells(run).includes(w.spellId)).map((w) => w.id);
+  // Spell cards and items the player already has count as sold (no doubles)
+  const owned = SHOP_WARES.filter((w) => (w.kind === 'spell' && collectedSpells(run).includes(w.spellId)) || (w.kind === 'item' && run.items.includes(w.itemId))).map((w) => w.id);
   const sold = [...bought, ...owned];
   const selected = SHOP_WARES.find((w) => w.id === selectedId);
   const canBuy = selected && !sold.includes(selected.id) && run.coins >= selected.price;
@@ -71,7 +75,7 @@ export default function Shop({ navigate, run, onBuy, onLeave }) {
             !selected
               ? 'Choose a ware'
               : owned.includes(selected.id) && !bought.includes(selected.id)
-                ? 'You have this card'
+                ? 'You have this already'
                 : sold.includes(selected.id)
                   ? 'Sold'
                   : `Buy ${selected.name}`

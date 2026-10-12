@@ -56,7 +56,7 @@ export default function FloorReward({ navigate, run, character }) {
         <View style={styles.list}>
           <RewardRow icon="star" title={`+${reward.xp} XP`} detail="Collected" done />
           {reward.coins > 0 && <RewardRow icon="coin" title={`+${reward.coins} coins`} detail="Collected" done />}
-          {reward.potion && <RewardRow icon="potion" potionColor={POTIONS[reward.potion].color} title={`${POTIONS[reward.potion].name} ×1`} detail="Collected" done />}
+          {reward.potion && <RewardRow icon={reward.potion} title={`${POTIONS[reward.potion].name} ×1`} detail="Collected" done />}
           {reward.spellChoice && (
             <TutorialTarget id="spellReward">
               <RewardRow

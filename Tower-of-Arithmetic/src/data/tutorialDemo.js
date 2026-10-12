@@ -25,6 +25,8 @@ export function makeDemoRun(version, character, scene) {
   let run = createRun({ version, dungeonTypeId: 'mixed', character });
   const starter = run.deck[0];
   run = { ...run, deck: [starter, ...DEMO_SPELLS.filter((id) => id !== starter).slice(0, 2)], stash: ['azureBlaze'] };
+  // A couple of items to point at (a cursed one where the version has curses)
+  if (version.usesCoins) run = { ...run, items: version.usesCurses ? ['frostwardRing', 'cursedScroll'] : ['frostwardRing', 'sharpenedScroll'] };
 
   const type = ROOM_FOR_SCENE[scene];
   if (type) {

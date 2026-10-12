@@ -30,7 +30,7 @@ export default function SupplyColumn({ side, title, kind, run, onUse, tutorialId
                 accessibilityLabel={`${potion.name}: ${potion.effect}. Tap to drink`}
                 style={({ pressed }) => [styles.slot, pressed && styles.pressed]}
               >
-                <ItemIcon kind="potion" potionColor={potion.color} size={30} />
+                <ItemIcon kind={id} size={34} />
               </Pressable>
             );
           })
@@ -38,7 +38,7 @@ export default function SupplyColumn({ side, title, kind, run, onUse, tutorialId
             const item = ITEMS[id];
             return (
               <View key={id} style={styles.slot} accessible accessibilityLabel={`${item.name}: ${item.effect}${isCursed(run, id) ? `. Cursed: ${item.curse}` : ''}`}>
-                <ItemIcon kind={item.icon} size={30} cursed={isCursed(run, id)} />
+                <ItemIcon kind={id} size={34} cursed={isCursed(run, id)} />
               </View>
             );
           })}

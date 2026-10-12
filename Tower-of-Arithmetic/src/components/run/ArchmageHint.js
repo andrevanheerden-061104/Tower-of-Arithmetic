@@ -1,14 +1,15 @@
-import { StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import Text from '../AppText';
+import { GUIDE } from '../../data/guide';
 import { colors, fonts } from '../../theme/theme';
 
 // The Archmage helper with one hint at a time ("Hint 1 of 3").
-export default function ArchmageHint({ hint, index, total, title = 'Archmage' }) {
+export default function ArchmageHint({ hint, index, total, title = GUIDE.name }) {
   return (
     <View style={styles.card} accessibilityLiveRegion="polite">
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>A</Text>
+          <Image source={GUIDE.face} style={styles.face} accessibilityLabel={GUIDE.name} />
         </View>
         <View>
           <Text style={styles.name}>{title}</Text>
@@ -43,8 +44,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.gold,
     backgroundColor: colors.indigo,
+    overflow: 'hidden',
   },
-  avatarText: { fontFamily: fonts.display, fontSize: 18, color: colors.white },
+  face: { width: '100%', height: '100%' },
   name: { fontFamily: fonts.bold, fontSize: 16, color: colors.white },
   count: { fontFamily: fonts.regular, fontSize: 12, color: colors.mute },
   hint: { fontFamily: fonts.medium, fontSize: 16, lineHeight: 23, color: colors.white },

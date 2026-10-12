@@ -4,6 +4,8 @@ import RunBackground from '../../../components/run/RunBackground';
 import RunHud from '../../../components/run/RunHud';
 import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import { createEnemyState, hearts, hitEnemy, rollForFirstTurn, spellDamage, takeTurn } from '../../../game/enemyAI';
+import { ITEMS } from '../../../game/encounters';
+import { attackBonus, blockAttack, canRevive, movesFirst } from '../../../game/items';
 import { isCorrect, pickQuestion } from '../../../game/questions';
 import { currentRoom, damage, drinkPotion, enemyForRun, heal, markQuestionUsed, recordAnswer, runVersion } from '../../../game/run';
 import { baseDamage, getSpell } from '../../../game/spells';
@@ -54,7 +56,8 @@ export default function Combat({
   const boss = room.type === 'boss';
 
   const [foe, setFoe] = useState(() => createEnemyState(enemy));
-  const [start] = useState(rollForFirstTurn); // { roll, first }
+  // { roll, first }: the Hourglass of First Light skips the roll
+  const [start] = useState(() => (movesFirst(run) ? { roll: null, first: 'player', hourglass: true } : rollForFirstTurn()));
   const [phase, setPhase] = useState(demo?.phase ?? 'intro'); // intro | player | casting | enemy | over
   const [selected, setSelected] = useState(demo?.selected ?? null); // index in the hand
   const [hintsUsed, setHintsUsed] = useState(0);
@@ -71,8 +74,8 @@ export default function Combat({
   );
   const askedAt = useRef(0); // when the sum appeared, to time the answer
   const healing = spell?.kind === 'heal';
-  // The haunted ring makes every attack spell stronger
-  const bonus = run.items.includes('hauntedRing') ? 0.5 : 0;
+  // Items like the Scroll of Sharpened Spells make every attack spell stronger
+  const bonus = attackBonus(run);
   // What the cast sheet shows. Weaknesses are secret, so it shows the
   // normal amount; a weakness only shows up as a "Critical hit!".
   const castAmount = !spell ? 0 : healing ? spell.heal : baseDamage(spell) + bonus;
@@ -106,9 +109,18 @@ export default function Combat({
     await wait(ENEMY_DELAY);
     const result = takeTurn(foeNow, enemy.name);
     setFoe(result.state);
-    const heartsLeft = heartsNow - result.damage;
-    if (result.damage > 0) updateRun((r) => damage(r, result.damage));
-    await announce(result.message, result.damage > 0 ? 'hurt' : result.action.kind);
+    // A ring or the veil blocks part of an attack of its element
+    const { amount: hurt, guard } = blockAttack(run, result.action, result.damage);
+    let heartsLeft = heartsNow - hurt;
+    // The Phoenix Feather Charm saves the player once per run
+    const revived = heartsLeft <= 0 && canRevive(run);
+    if (revived) heartsLeft = 1;
+    if (hurt > 0) updateRun((r) => damage(r, hurt));
+    const message = guard
+      ? `${enemy.name} uses ${result.action.name}! Your ${ITEMS[guard].name} blocks ½ heart${hurt > 0 ? `: you lose ${hearts(hurt)}.` : ', so it does no harm.'}`
+      : result.message;
+    await announce(message, hurt > 0 ? 'hurt' : guard ? 'heal' : result.action.kind);
+    if (revived) await announce(`Your ${ITEMS.phoenixCharm.name} bursts into flame! You rise again with 1 heart.`, 'heal');
 
     if (heartsLeft <= 0) {
       setPhase('over');
@@ -173,7 +185,8 @@ export default function Combat({
   useEffect(() => {
     if (demo) return;
     (async () => {
-      await announce(start.first === 'enemy' ? `${enemy.name} moves first!` : 'You move first!', start.first === 'enemy' ? 'boost' : 'hit');
+      const opening = start.hourglass ? `Your ${ITEMS.hourglass.name} glows: you move first!` : start.first === 'enemy' ? `${enemy.name} moves first!` : 'You move first!';
+      await announce(opening, start.first === 'enemy' ? 'boost' : 'hit');
       if (start.first === 'enemy') enemyTurn(foe);
       else setPhase('player');
     })();

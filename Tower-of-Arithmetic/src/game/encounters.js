@@ -1,5 +1,7 @@
-// Placeholder content for the rooms: enemies, items, potions, the trader's
-// wares and the ghost's gifts. Numbers are not balanced yet.
+import { createRandom, shuffle } from './random';
+
+// Content for the rooms: enemies, items, potions, the trader's wares and the
+// ghost's gifts. Numbers are not balanced yet.
 
 export const ENEMIES = {
   // Level 1: lower floors, fixed attack patterns (see src/game/enemyAI.js)
@@ -44,44 +46,134 @@ export const ENEMIES = {
   },
 };
 
-// Items stay with the player for the whole run. Cursed items are stronger
-// but carry a drawback (not in junior mode).
+// Items stay with the player for the whole run and work on their own (what
+// each one does is in src/game/items.js). A cursed item is stronger but
+// carries a drawback until a campfire burns the curse away (not in junior
+// mode). `price` is what the trader asks.
 export const ITEMS = {
-  luckyGem: { id: 'luckyGem', name: 'Lucky gem', icon: 'gem', effect: '+5 coins after every fight', cursed: false },
-  goldRing: { id: 'goldRing', name: 'Gold ring', icon: 'ring', effect: 'Start each fight with a free hint', cursed: false },
-  hauntedRing: {
-    id: 'hauntedRing',
-    name: 'Haunted ring',
-    icon: 'ring',
+  heartstoneAmulet: {
+    id: 'heartstoneAmulet',
+    name: 'Heartstone Amulet',
+    image: require('../assets/items/heartstone-amulet-icon.png'),
+    effect: '+1 heart for the rest of the run',
+    extraHearts: 1,
+    price: 70,
+  },
+  hourglass: {
+    id: 'hourglass',
+    name: 'Hourglass of First Light',
+    image: require('../assets/items/hourglass-icon.png'),
+    effect: 'You always move first in a fight',
+    price: 60,
+  },
+  frostwardRing: {
+    id: 'frostwardRing',
+    name: 'Frostward Ring',
+    image: require('../assets/items/frostward-ring-icon.png'),
+    effect: 'Ice and water attacks hurt you ½ heart less',
+    guards: 'ice',
+    block: 0.5,
+    price: 45,
+  },
+  emberguardRing: {
+    id: 'emberguardRing',
+    name: 'Emberguard Ring',
+    image: require('../assets/items/emberguard-ring-icon.png'),
+    effect: 'Fire attacks hurt you ½ heart less',
+    guards: 'fire',
+    block: 0.5,
+    price: 45,
+  },
+  veilOfDusk: {
+    id: 'veilOfDusk',
+    name: 'Veil of Dusk',
+    image: require('../assets/items/veil-of-dusk-icon.png'),
+    effect: 'Shadow attacks hurt you ½ heart less',
+    guards: 'shadow',
+    block: 0.5,
+    price: 45,
+  },
+  sharpenedScroll: {
+    id: 'sharpenedScroll',
+    name: 'Scroll of Sharpened Spells',
+    image: require('../assets/items/scroll-icon.png'),
     effect: 'Attack spells deal +½ heart',
-    cursed: true,
-    curse: '½ heart less each floor',
+    attackBonus: 0.5,
+    price: 65,
   },
-  rustyLantern: {
-    id: 'rustyLantern',
-    name: 'Rusty lantern',
-    icon: 'lantern',
-    effect: '1 free hint every floor',
+  phoenixCharm: {
+    id: 'phoenixCharm',
+    name: 'Phoenix Feather Charm',
+    image: require('../assets/items/phoenix-feather-icon.png'),
+    effect: 'Once per run, rise again with 1 heart instead of falling',
+    price: 80,
+  },
+  // The ghost's stronger, cursed gift
+  cursedScroll: {
+    id: 'cursedScroll',
+    name: 'Cursed Scroll',
+    image: require('../assets/items/scroll-icon.png'),
+    effect: 'Attack spells deal +1 heart',
+    attackBonus: 1,
     cursed: true,
-    curse: 'Shop prices +10 coins',
+    curse: '½ heart less at the start of every floor',
   },
 };
 
-// Potions are used up when tapped in a fight.
+// The items the trader can sell (the cursed scroll only comes from the ghost).
+const SHOP_ITEMS = Object.keys(ITEMS).filter((id) => !ITEMS[id].cursed);
+
+// Healing potions: drunk in a fight by tapping them (up to 4 carried).
 export const POTIONS = {
-  heal: { id: 'heal', name: 'Heal potion', effect: 'Heal ½ heart', color: '#F2D3D0' },
-  power: { id: 'power', name: 'Power potion', effect: 'Your next spell can’t miss', color: '#A77BFF' },
+  minor: {
+    id: 'minor',
+    name: 'Minor Healing Potion',
+    image: require('../assets/potions/minor-healing-icon.png'),
+    effect: 'Heal ½ heart',
+    heal: 0.5,
+    price: 15,
+  },
+  heal: {
+    id: 'heal',
+    name: 'Healing Potion',
+    image: require('../assets/potions/healing-icon.png'),
+    effect: 'Heal 1 heart',
+    heal: 1,
+    price: 30,
+  },
+  greater: {
+    id: 'greater',
+    name: 'Greater Healing Potion',
+    image: require('../assets/potions/greater-healing-icon.png'),
+    effect: 'Heal 2 hearts',
+    heal: 2,
+    price: 60,
+  },
 };
 
-// What the wandering trader sells (intermediate and senior).
-export const SHOP_WARES = [
-  { id: 'card-flashflame', kind: 'spell', spellId: 'flashflame', name: 'Flashflame', price: 30 },
-  { id: 'card-random', kind: 'spell', spellId: 'flashFreeze', name: 'Spell card', price: 40 },
-  { id: 'item-gem', kind: 'item', itemId: 'luckyGem', name: 'Lucky gem', price: 25 },
-  { id: 'potion-heal', kind: 'potion', potionId: 'heal', name: 'Heal potion', price: 15 },
-  { id: 'potion-power', kind: 'potion', potionId: 'power', name: 'Power potion', price: 20 },
-  { id: 'item-ring', kind: 'item', itemId: 'goldRing', name: 'Gold ring', price: 60 },
-];
+// What the wandering trader sells in this room (intermediate and senior):
+// 2 spell cards, 2 potions and 2 items the player doesn't have yet. The
+// pick comes from the run's seed and the room, so it stays the same if the
+// player leaves to the menu and comes back.
+export function shopWares(run) {
+  const random = createRandom((run.seed ^ hash(run.currentId)) >>> 0);
+  const pickFrom = (list, count) => shuffle(random, list).slice(0, count);
+  const spells = [
+    { id: 'card-flashflame', kind: 'spell', spellId: 'flashflame', name: 'Flashflame', price: 30 },
+    { id: 'card-freeze', kind: 'spell', spellId: 'flashFreeze', name: 'Flash Freeze', price: 30 },
+    { id: 'card-shard', kind: 'spell', spellId: 'shadowShard', name: 'Shadow Shard', price: 30 },
+    { id: 'card-flash', kind: 'spell', spellId: 'flash', name: 'Flash', price: 35 },
+  ];
+  const potions = Object.values(POTIONS).map((p) => ({ id: `potion-${p.id}`, kind: 'potion', potionId: p.id, name: p.name, price: p.price }));
+  const items = SHOP_ITEMS.filter((id) => !run.items.includes(id)).map((id) => ({ id: `item-${id}`, kind: 'item', itemId: id, name: ITEMS[id].name, price: ITEMS[id].price }));
+  return [...pickFrom(spells, 2), ...pickFrom(potions, 2), ...pickFrom(items, 2)];
+}
+
+function hash(text) {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
 
 // The ghost's three gifts. The third gift depends on the version:
 // junior mode has no curses, so the youngest players get a gentle heal instead.
@@ -91,11 +183,11 @@ export function ghostGifts(version) {
     : { id: 'xp', title: 'Glowing star', detail: 'Gain 30 XP.', drawback: null, icon: 'star' };
   const third = version.usesCurses
     ? {
-        id: 'hauntedRing',
-        title: 'Haunted ring',
-        detail: 'A stronger item: every attack spell deals +½ heart.',
-        drawback: 'Drawback: it carries a curse. Start each floor with ½ heart less.',
-        icon: 'ring',
+        id: 'cursedScroll',
+        title: 'Cursed Scroll',
+        detail: 'A stronger item: every attack spell deals +1 heart.',
+        drawback: 'Drawback: it carries a curse. Lose ½ heart at the start of every floor.',
+        icon: 'cursedScroll',
         cursed: true,
       }
     : { id: 'heal', title: 'Warm glow', detail: 'Heal ½ heart.', drawback: null, icon: 'heart' };

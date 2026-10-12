@@ -10,7 +10,7 @@ export default function GiftList({ gifts, selectedId, onSelect }) {
       {gifts.map((gift) => (
         <ChoiceOption
           key={gift.id}
-          icon={<ItemIcon kind={gift.icon} size={30} cursed={gift.cursed} />}
+          icon={<ItemIcon kind={gift.icon} size={34} cursed={gift.cursed} />}
           title={gift.title}
           detail={gift.detail}
           note={gift.drawback ?? 'No drawback'}
