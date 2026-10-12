@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { apiPost, apiUpload } from '../lib/api';
+import { apiPost, apiUpload, apiUploadFile } from '../lib/api';
 import { poolIsEmpty } from '../game/questionPool';
 
 // ---------------------------------------------------------------------------
@@ -66,18 +66,7 @@ export async function readSpokenAnswer(uri) {
   const ext = AUDIO_TYPES[found] ? found : 'm4a';
   // Android needs the file:// in front of the path to send the file
   const fileUri = /^[a-z]+:\/\//i.test(uri) ? uri : `file://${uri}`;
-  try {
-    return await apiUpload('/api/speech', formWith({ uri: fileUri, name: `speech.${ext}`, type: AUDIO_TYPES[ext] }));
-  } catch (error) {
-    // Some phones won't send a file by its address: send its contents instead
-    if (!/reach/i.test(error.message)) throw error;
-    try {
-      const blob = await (await fetch(fileUri)).blob();
-      return await apiUpload('/api/speech', formWith(blob, `speech.${ext}`));
-    } catch {
-      throw error;
-    }
-  }
+  return apiUploadFile('/api/speech', { uri: fileUri, name: `speech.${ext}`, type: AUDIO_TYPES[ext] });
 }
 
 function formWith(file, name) {
