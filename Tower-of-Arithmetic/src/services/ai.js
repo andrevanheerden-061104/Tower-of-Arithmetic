@@ -1,4 +1,5 @@
-import { apiPost } from '../lib/api';
+import { Platform } from 'react-native';
+import { apiPost, apiUpload } from '../lib/api';
 import { poolIsEmpty } from '../game/questionPool';
 
 // ---------------------------------------------------------------------------
@@ -46,4 +47,30 @@ export async function fetchRunSummary({ version, grade, won, floorsCleared, floo
   } catch {
     return null;
   }
+}
+
+// --- answering by voice and by handwriting -----------------------------------
+// These two show their error to the player (e.g. "Can't reach the game
+// server"), so they throw instead of returning null.
+
+const AUDIO_TYPES = { m4a: 'audio/mp4', mp4: 'audio/mp4', webm: 'audio/webm', wav: 'audio/wav', ogg: 'audio/ogg', mp3: 'audio/mpeg', caf: 'audio/x-caf', '3gp': 'audio/3gpp' };
+
+// A recording (its file address on the phone) -> { heard, maths }
+export async function readSpokenAnswer(uri) {
+  const form = new FormData();
+  if (Platform.OS === 'web') {
+    const blob = await (await fetch(uri)).blob();
+    const ext = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm';
+    form.append('file', blob, `speech.${ext}`);
+  } else {
+    const found = /\.([a-z0-9]+)(?:\?.*)?$/i.exec(uri)?.[1]?.toLowerCase();
+    const ext = AUDIO_TYPES[found] ? found : 'm4a';
+    form.append('file', { uri, name: `speech.${ext}`, type: AUDIO_TYPES[ext] });
+  }
+  return apiUpload('/api/speech', form);
+}
+
+// Pen strokes ([[x, y, x, y, ...], ...]) -> { maths }
+export function readWrittenAnswer(strokes) {
+  return apiPost('/api/handwriting', { strokes }, { timeoutMs: 40000 });
 }

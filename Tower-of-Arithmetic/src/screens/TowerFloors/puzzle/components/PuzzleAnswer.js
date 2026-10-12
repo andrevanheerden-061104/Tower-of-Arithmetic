@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import Text from '../../../../components/AppText';
 import PrimaryButton from '../../../../components/PrimaryButton';
-import NumberPad from '../../../../components/run/NumberPad';
+import AnswerInput from '../../../../components/run/answer/AnswerInput';
 import StepRow from '../../../../components/run/StepRow';
-import { PUZZLE_COLUMNS, PUZZLE_KEYS, STEP_COLUMNS, STEP_KEYS } from '../../../../game/keypads';
+import { PUZZLE_COLUMNS, PUZZLE_KEYS, PUZZLE_MORE_KEYS, STEP_COLUMNS, STEP_KEYS, STEP_MORE_KEYS } from '../../../../game/keypads';
 import { useWorkingSteps } from '../../../../hooks/useWorkingSteps';
 import { colors, fonts } from '../../../../theme/theme';
 
@@ -11,8 +11,9 @@ import { colors, fonts } from '../../../../theme/theme';
 //   junior        tap one of three big answers
 //   intermediate  write the working step by step ("Next" starts a new step)
 //   senior        the same, with the full keypad
-// The last step is the answer that gets checked.
-export default function PuzzleAnswer({ version, question, onCheck }) {
+// The last step is the answer that gets checked. Speak and Draw fill in the
+// current step; swipe the keypad for more maths keys.
+export default function PuzzleAnswer({ version, question, onCheck, speech = true }) {
   const work = useWorkingSteps();
 
   if (version.answerMode === 'tap') {
@@ -41,7 +42,15 @@ export default function PuzzleAnswer({ version, question, onCheck }) {
           <StepRow key={i} number={i + 1} value={value} status={i === work.last ? 'active' : 'done'} />
         ))}
       </View>
-      <NumberPad keys={senior ? STEP_KEYS : PUZZLE_KEYS} columns={senior ? STEP_COLUMNS : PUZZLE_COLUMNS} onKey={work.press} keyHeight={44} />
+      <AnswerInput
+        pages={senior ? [STEP_KEYS, STEP_MORE_KEYS] : [PUZZLE_KEYS, PUZZLE_MORE_KEYS]}
+        columns={senior ? STEP_COLUMNS : PUZZLE_COLUMNS}
+        keyHeight={44}
+        onKey={work.press}
+        onUse={work.write}
+        speech={speech}
+        example={senior ? 'x squared equals two x plus three' : 'twelve times four'}
+      />
       <View style={styles.actions}>
         {senior && <PrimaryButton label="Next step" variant="secondary" disabled={!work.steps[work.last]} onPress={work.nextStep} style={styles.next} />}
         <PrimaryButton label="Check answer" disabled={!work.answer} onPress={() => onCheck(work.answer)} style={styles.check} />

@@ -5,6 +5,7 @@ import { useState } from 'react';
 // answer that gets checked.
 //   press(key)   type a key ("⌫" deletes, "next" starts a new step)
 //   nextStep()   start a new step
+//   write(text)  put text in the current step (from Speak or Draw)
 export function useWorkingSteps() {
   const [steps, setSteps] = useState(['']);
   const last = steps.length - 1;
@@ -21,6 +22,13 @@ export function useWorkingSteps() {
     });
   };
 
+  const write = (text) =>
+    setSteps((s) => {
+      const copy = [...s];
+      copy[copy.length - 1] = String(text);
+      return copy;
+    });
+
   const answer = steps.filter(Boolean).at(-1) ?? '';
-  return { steps, last, press, nextStep, answer };
+  return { steps, last, press, nextStep, write, answer };
 }

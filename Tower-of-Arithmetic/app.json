@@ -22,7 +22,13 @@
     },
     "plugins": [
       "expo-video",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to use your microphone so you can say your maths answers."
+        }
+      ]
     ]
   }
 }

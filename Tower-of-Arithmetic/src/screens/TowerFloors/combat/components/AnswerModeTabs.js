@@ -9,11 +9,12 @@ const MODES = [
   { id: 'draw', label: 'Draw', icon: 'pencil' },
 ];
 
-// Keypad / Speak / Draw switch for senior answers.
-export default function AnswerModeTabs({ mode, onChange }) {
+// Keypad / Speak / Draw switch above the answer keypad. `modes` leaves
+// some out (Speak is hidden when speech to text is off in Settings).
+export default function AnswerModeTabs({ mode, onChange, modes = ['keypad', 'speak', 'draw'] }) {
   return (
     <View style={styles.tabs} accessibilityRole="tablist">
-      {MODES.map((m) => {
+      {MODES.filter((m) => modes.includes(m.id)).map((m) => {
         const on = m.id === mode;
         return (
           <Pressable

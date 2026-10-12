@@ -8,6 +8,8 @@ does the three AI jobs:
 | `GET /health` | Says the server is up (Render checks this). |
 | `POST /api/questions` | Makes a batch of sums for a run, for the player's **grade** (1-11), the run's topic and three difficulty levels (`src/ai/curriculum.js`). Code works out every answer itself (`src/maths/solve.js`) and throws away any sum that is wrong, off topic, or has an answer the keypad can't type. |
 | `POST /api/hint` | After a wrong answer, Orrin explains the mistake in 1–2 sentences without giving the answer. |
+| `POST /api/speech` | "Speak" on the answer keypad: Whisper writes down a short recording, and code turns the words into maths with the keypad's keys ("x squared equals two x plus three" → `x² = 2x+3`, `src/maths/spoken.js`). |
+| `POST /api/handwriting` | "Draw" on the answer keypad: the app sends the pen strokes, the server draws them as a PNG (`src/maths/sketch.js`, no extra packages) and a vision model reads the maths. |
 | `POST /api/run-summary` | Orrin's end-of-run message. The strength and the topic to practise are worked out by code from the run's results; the AI words it and reads the missed sums. A message with made-up numbers is thrown away. |
 
 Every `/api` call needs the player's Supabase login token
@@ -54,7 +56,7 @@ computer's network address (e.g. `http://192.168.1.20:4000`), not localhost.
 3. **Root Directory:** `Backend` · **Build Command:** `npm install` ·
    **Start Command:** `npm start` · **Instance type:** Free.
 4. **Environment:** add `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`,
-   `GROQ_API_KEY`, `GROQ_MODEL` (and `ALLOWED_ORIGINS` if you host the web
+   `GROQ_API_KEY`, `GROQ_MODEL`, `GROQ_SPEECH_MODEL`, `GROQ_VISION_MODEL` (and `ALLOWED_ORIGINS` if you host the web
    version somewhere). Render sets `PORT` itself.
 5. **Health Check Path:** `/health`.
 6. Put the Render address (e.g. `https://tower-of-arithmetic-api.onrender.com`)
@@ -72,16 +74,21 @@ src/
   server.js            starts the server
   app.js               routes, login check, error handling
   config.js            reads .env
-  routes/ai.js         /api/questions, /api/hint, /api/run-summary
+  routes/ai.js         /api/questions, /api/hint, /api/run-summary, /api/speech, /api/handwriting
   ai/curriculum.js     what each grade covers per topic and level (the AI's guide)
   ai/topics.js         the versions, and the test that a sum is on its topic
   maths/solve.js       works out sums, equations, patterns and data by code
   ai/questions.js      prompt + checking every AI question
   ai/hints.js          Orrin's wrong-answer hints (never the answer)
   ai/summary.js        Orrin's end-of-run message
+  ai/ink.js            answers by voice and by handwriting
+  maths/spoken.js      spoken words -> keypad maths
+  maths/sketch.js      pen strokes -> PNG picture
   maths/evaluate.js    safe calculator used to check answers
   middleware/          login check, per-player rate limit
   lib/groq.js          Groq API (JSON replies, timeout, retry)
+  lib/groqMedia.js     Groq speech-to-text and vision calls
+  lib/multipart.js     reads the uploaded recording
   lib/supabase.js      checks login tokens
 supabase/schema.sql    the database
 test/                  node --test

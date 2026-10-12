@@ -44,6 +44,7 @@ export default function Combat({
   onDefeat,
   onAnswer, // saves each answer to the player's topic totals (App.js)
   onLessonDone, // a Spell School lesson finished from "Show me how"
+  settings,
   background = 'corridor',
   banner = null,
   // The tutorial shows this screen frozen at one moment, e.g.
@@ -271,6 +272,7 @@ export default function Combat({
           onHint={() => setHintsUsed((n) => n + 1)}
           onClose={() => setPhase('player')}
           onLessonDone={onLessonDone}
+          speech={settings?.speechToText !== false}
           inline={Boolean(demo)}
         />
       )}

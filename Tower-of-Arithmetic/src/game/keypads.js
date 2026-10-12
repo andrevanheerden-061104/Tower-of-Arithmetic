@@ -17,6 +17,18 @@ export const STEP_KEYS = [
 ];
 export const STEP_COLUMNS = 6;
 
+// Swipe left on the steps keypad for more maths: roots, powers, pi,
+// percent, inequalities, degrees and a few more letters.
+export const STEP_MORE_KEYS = [
+  '√', '²', '³', 'π', '%', '⌫',
+  '<', '>', '≤', '≥', '°', '±',
+  'a', 'b', 'c', 'm', 'k', 't',
+  '[', ']', ':', ',', '∴', 'r',
+];
+
 // Grades 4-6, working in steps on a puzzle door
 export const PUZZLE_KEYS = ['7', '8', '9', '÷', '⌫', '4', '5', '6', '×', '/', '1', '2', '3', '−', '.', '0', '=', '+', 'next'];
 export const PUZZLE_COLUMNS = 5;
+
+// Swipe left on the puzzle keypad (Grades 4-6) for more
+export const PUZZLE_MORE_KEYS = ['(', ')', '%', '²', '⌫', '<', '>', ',', ':', '°', '√', '³', 'x', 'n', 'next'];

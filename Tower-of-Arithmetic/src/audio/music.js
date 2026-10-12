@@ -91,6 +91,15 @@ export function setMusic(name, enabled) {
     current?.release();
     current = { name, ...makePlayer(TRACKS[name]) };
   }
+  current.enabled = enabled;
   if (enabled) current.play();
   else current.pause();
+}
+
+// Pause the music while the microphone is recording an answer, then carry
+// on (only if the Music setting is on).
+export function holdMusic(on) {
+  if (!current) return;
+  if (on) current.pause();
+  else if (current.enabled) current.play();
 }

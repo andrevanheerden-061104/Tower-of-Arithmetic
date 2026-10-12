@@ -1,11 +1,14 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import { makeHint } from '../ai/hints.js';
+import { readHandwriting, readSpeech } from '../ai/ink.js';
 import { makeQuestions } from '../ai/questions.js';
 import { makeSummary } from '../ai/summary.js';
+import { fileFromMultipart } from '../lib/multipart.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 
-// The three AI features. `ask` is the Groq call (swapped for a fake in tests).
-export function aiRoutes(ask) {
+// The AI features. `ask` is the Groq chat call and `media` the speech and
+// picture calls (both swapped for fakes in tests).
+export function aiRoutes(ask, media) {
   const router = Router();
 
   // POST /api/questions
@@ -40,6 +43,26 @@ export function aiRoutes(ask) {
     const { version, grade, won, floorsCleared, floors, topics, mistakes } = req.body ?? {};
     const result = await makeSummary({ version, grade, won: Boolean(won), floorsCleared, floors, topics, mistakes }, ask);
     res.json(result ?? { summary: null, focusTopic: null });
+  });
+
+  // POST /api/speech   (multipart/form-data with one file: "file")
+  // → { heard, maths }  e.g. { heard: 'x equals seven', maths: 'x = 7' }
+  // "Speak" on the answer keypad: a short recording of the player saying
+  // their answer or step, turned into maths with the keypad's keys.
+  router.post('/speech', rateLimit({ limit: 20, windowMs: 60_000 }), express.raw({ type: 'multipart/form-data', limit: '4mb' }), async (req, res) => {
+    if (!media) return res.status(503).json({ error: 'Speaking answers is not set up on the server.' });
+    const file = fileFromMultipart(req.body, req.get('content-type'));
+    if (!file) return res.status(400).json({ error: 'Send the recording as "file".' });
+    res.json(await readSpeech(file, media));
+  });
+
+  // POST /api/handwriting
+  // { strokes: [[x, y, x, y, ...], ...] }  → { maths }
+  // "Draw" on the answer keypad: the pen strokes are drawn as a picture
+  // here and read by a vision model.
+  router.post('/handwriting', rateLimit({ limit: 20, windowMs: 60_000 }), async (req, res) => {
+    if (!media) return res.status(503).json({ error: 'Writing answers is not set up on the server.' });
+    res.json(await readHandwriting(req.body?.strokes, media));
   });
 
   return router;

@@ -24,7 +24,7 @@ import styles from './Puzzle.styles';
 // is from the run's own maths topic and gets harder higher up the tower
 // (see src/game/puzzles.js). No hearts are lost for a wrong answer: the
 // player gets a hint and can try again.
-export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer, onLessonDone }) {
+export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer, onLessonDone, settings }) {
   const version = runVersion(run);
   const room = currentRoom(run);
   // Picked once when the room opens, so the door keeps the same sum
@@ -106,7 +106,7 @@ export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer, o
               </Pressable>
             )}
 
-            <PuzzleAnswer version={version} question={question} onCheck={check} />
+            <PuzzleAnswer version={version} question={question} onCheck={check} speech={settings?.speechToText !== false} />
           </View>
         </TutorialTarget>
       </ScrollView>

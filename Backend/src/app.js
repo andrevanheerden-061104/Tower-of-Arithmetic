@@ -3,18 +3,20 @@ import express from 'express';
 import { requireUser } from './middleware/auth.js';
 import { aiRoutes } from './routes/ai.js';
 
-// The web server. `userFromToken` and `ask` are passed in so the tests can
-// use fakes instead of Supabase and Groq.
-export function createApp({ userFromToken, ask, allowedOrigins = ['*'] }) {
+// The web server. `userFromToken`, `ask` and `media` are passed in so the
+// tests can use fakes instead of Supabase and Groq.
+export function createApp({ userFromToken, ask, media = null, allowedOrigins = ['*'] }) {
   const app = express();
   app.disable('x-powered-by');
   app.use(cors({ origin: allowedOrigins.includes('*') ? true : allowedOrigins }));
+  // Handwriting sends pen strokes, which can be bigger than other requests
+  app.use('/api/handwriting', express.json({ limit: '300kb' }));
   app.use(express.json({ limit: '50kb' }));
 
   // Render pings this to check the server is up
   app.get('/health', (req, res) => res.json({ ok: true }));
 
-  app.use('/api', requireUser(userFromToken), aiRoutes(ask));
+  app.use('/api', requireUser(userFromToken), aiRoutes(ask, media));
 
   app.use((req, res) => res.status(404).json({ error: 'Not found.' }));
 

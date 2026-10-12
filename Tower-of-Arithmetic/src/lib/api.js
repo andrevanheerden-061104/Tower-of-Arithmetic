@@ -10,7 +10,16 @@ const API_URL = (process.env.EXPO_PUBLIC_API_URL || '').replace(/\/$/, '');
 
 export class ApiError extends Error {}
 
-export async function apiPost(path, body, { timeoutMs = 20000 } = {}) {
+export function apiPost(path, body, { timeoutMs = 20000 } = {}) {
+  return send(path, { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, timeoutMs);
+}
+
+// Send a file (FormData). fetch sets the Content-Type itself.
+export function apiUpload(path, form, { timeoutMs = 30000 } = {}) {
+  return send(path, { body: form }, timeoutMs);
+}
+
+async function send(path, { headers = {}, body }, timeoutMs) {
   if (!API_URL || !supabase) throw new ApiError('The game server is not set up.');
   const { data } = await supabase.auth.getSession();
   const token = data?.session?.access_token;
@@ -22,8 +31,8 @@ export async function apiPost(path, body, { timeoutMs = 20000 } = {}) {
     const res = await fetch(`${API_URL}${path}`, {
       method: 'POST',
       signal: controller.signal,
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      headers: { Authorization: `Bearer ${token}`, ...headers },
+      body,
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new ApiError(json.error || `The game server replied ${res.status}.`);

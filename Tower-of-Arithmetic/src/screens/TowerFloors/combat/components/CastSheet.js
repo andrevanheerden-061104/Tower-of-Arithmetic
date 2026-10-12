@@ -60,6 +60,7 @@ export default function CastSheet({
   onHint,
   onClose,
   onLessonDone,
+  speech = true, // speech to text, from Settings
   inline = false,
 }) {
   const { height } = useWindowDimensions();
@@ -174,7 +175,7 @@ export default function CastSheet({
             }
           />
         ) : (
-          <Body question={question} onSubmit={submit} onHelp={showHint} onOverflow={onOverflow} />
+          <Body question={question} onSubmit={submit} onHelp={showHint} onOverflow={onOverflow} speech={speech} />
         )}
       </View>
 

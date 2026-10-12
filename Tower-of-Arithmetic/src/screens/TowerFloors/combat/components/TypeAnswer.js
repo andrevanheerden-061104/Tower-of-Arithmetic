@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Text from '../../../../components/AppText';
 import Icon from '../../../../components/Icon';
 import PrimaryButton from '../../../../components/PrimaryButton';
-import NumberPad from '../../../../components/run/NumberPad';
+import AnswerInput from '../../../../components/run/answer/AnswerInput';
 import { TYPE_COLUMNS, TYPE_KEYS } from '../../../../game/keypads';
 import BreakdownPicture from './BreakdownPicture';
 import QuestionBox from './QuestionBox';
@@ -13,7 +13,8 @@ import { colors, fonts } from '../../../../theme/theme';
 // Intermediate: work it out, type the final answer: a whole number, a
 // fraction (3/4) or a decimal (2.5). The sum, answer box and
 // picture scroll; the keypad and Cast spell always stay at the bottom.
-export default function TypeAnswer({ question, onSubmit }) {
+// Speak or Draw fill in the answer box (just the final number).
+export default function TypeAnswer({ question, onSubmit, speech }) {
   const [answer, setAnswer] = useState('');
   const [picture, setPicture] = useState(false);
 
@@ -22,6 +23,8 @@ export default function TypeAnswer({ question, onSubmit }) {
     else if (key === 'ok') answer && onSubmit(answer);
     else setAnswer((a) => (a.length < 8 ? a + key : a));
   };
+  // "x = 12" or "the answer is 3/4": keep the number after the last "="
+  const write = (text) => setAnswer(String(text).split('=').at(-1).replace(/[^0-9./]/g, '').slice(0, 8));
 
   // A sum with a drawing is too tall to stay fixed at the top: it scrolls
   const box = <QuestionBox question={question} compact />;
@@ -52,7 +55,7 @@ export default function TypeAnswer({ question, onSubmit }) {
       }
       footer={
         <>
-          <NumberPad keys={TYPE_KEYS} columns={TYPE_COLUMNS} onKey={press} keyHeight={44} />
+          <AnswerInput pages={[TYPE_KEYS]} columns={TYPE_COLUMNS} keyHeight={44} onKey={press} onUse={write} speech={speech} example="three quarters" />
           <PrimaryButton label="Cast spell" disabled={!answer} onPress={() => onSubmit(answer)} />
         </>
       }
