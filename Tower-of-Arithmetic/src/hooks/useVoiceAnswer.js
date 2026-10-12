@@ -20,13 +20,19 @@ export function useVoiceAnswer() {
   const [error, setError] = useState(null);
   const timer = useRef(null);
   const alive = useRef(true);
+  // Our own note of whether the microphone is on. The recorder itself is
+  // let go by expo-audio when the pad closes, and must not be touched then.
+  const recordingNow = useRef(false);
 
   const finishRecording = async () => {
     clearTimeout(timer.current);
-    try {
-      await recorder.stop();
-    } catch {
-      // already stopped
+    if (recordingNow.current) {
+      recordingNow.current = false;
+      try {
+        await recorder.stop();
+      } catch {
+        // already stopped, or the recorder was let go
+      }
     }
     await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true }).catch(() => {});
     holdMusic(false);
@@ -48,6 +54,7 @@ export function useVoiceAnswer() {
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
       await recorder.prepareToRecordAsync();
       recorder.record();
+      recordingNow.current = true;
       setStatus('listening');
       timer.current = setTimeout(() => stop(), MAX_SECONDS * 1000);
     } catch {
@@ -57,10 +64,15 @@ export function useVoiceAnswer() {
   };
 
   const stop = async () => {
-    if (!recorder.isRecording && status !== 'listening') return;
+    if (!recordingNow.current) return;
     setStatus('reading');
     await finishRecording();
-    const uri = recorder.uri;
+    let uri = null;
+    try {
+      uri = recorder.uri;
+    } catch {
+      uri = null;
+    }
     if (!uri) return fail('Nothing was recorded. Try again.');
     try {
       const reply = await readSpokenAnswer(uri);
@@ -84,7 +96,7 @@ export function useVoiceAnswer() {
     return () => {
       alive.current = false;
       clearTimeout(timer.current);
-      if (recorder.isRecording) finishRecording();
+      if (recordingNow.current) finishRecording();
     };
     // Runs once
     // eslint-disable-next-line react-hooks/exhaustive-deps

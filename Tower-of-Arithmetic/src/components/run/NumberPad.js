@@ -124,7 +124,7 @@ export default function NumberPad({ keys, pages, pageNames = ['123', '√ π %']
           <Pressable
             key={i}
             onPress={() => goTo(i)}
-            hitSlop={8}
+            hitSlop={6}
             accessibilityRole="tab"
             accessibilityState={{ selected: i === page }}
             accessibilityLabel={i === 0 ? 'Number keys' : 'More maths keys'}
@@ -162,19 +162,20 @@ const styles = StyleSheet.create({
   label: { fontFamily: fonts.bold, fontSize: 20, color: colors.white },
   symbol: { color: colors.gold },
   actionLabel: { fontSize: 15 },
-  switcher: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  switcher: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  // Big enough to tap easily (at least 44 high, like every other button)
   pageTab: {
-    minWidth: 52,
-    height: 26,
-    paddingHorizontal: 10,
-    borderRadius: 13,
+    minWidth: 92,
+    height: 44,
+    paddingHorizontal: 16,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.line,
     alignItems: 'center',
     justifyContent: 'center',
   },
   pageTabOn: { backgroundColor: colors.indigo, borderColor: colors.gold },
-  pageName: { fontFamily: fonts.semibold, fontSize: 12, color: colors.mute },
+  pageName: { fontFamily: fonts.bold, fontSize: 16, color: colors.mute },
   pageNameOn: { color: colors.white },
   swipe: { flex: 1, textAlign: 'right', fontFamily: fonts.medium, fontSize: 12, color: colors.mute },
 });

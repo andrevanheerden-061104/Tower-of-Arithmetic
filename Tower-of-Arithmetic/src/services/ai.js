@@ -57,17 +57,34 @@ const AUDIO_TYPES = { m4a: 'audio/mp4', mp4: 'audio/mp4', webm: 'audio/webm', wa
 
 // A recording (its file address on the phone) -> { heard, maths }
 export async function readSpokenAnswer(uri) {
-  const form = new FormData();
   if (Platform.OS === 'web') {
     const blob = await (await fetch(uri)).blob();
     const ext = blob.type.includes('mp4') ? 'm4a' : blob.type.includes('ogg') ? 'ogg' : 'webm';
-    form.append('file', blob, `speech.${ext}`);
-  } else {
-    const found = /\.([a-z0-9]+)(?:\?.*)?$/i.exec(uri)?.[1]?.toLowerCase();
-    const ext = AUDIO_TYPES[found] ? found : 'm4a';
-    form.append('file', { uri, name: `speech.${ext}`, type: AUDIO_TYPES[ext] });
+    return apiUpload('/api/speech', formWith(blob, `speech.${ext}`));
   }
-  return apiUpload('/api/speech', form);
+  const found = /\.([a-z0-9]+)(?:\?.*)?$/i.exec(uri)?.[1]?.toLowerCase();
+  const ext = AUDIO_TYPES[found] ? found : 'm4a';
+  // Android needs the file:// in front of the path to send the file
+  const fileUri = /^[a-z]+:\/\//i.test(uri) ? uri : `file://${uri}`;
+  try {
+    return await apiUpload('/api/speech', formWith({ uri: fileUri, name: `speech.${ext}`, type: AUDIO_TYPES[ext] }));
+  } catch (error) {
+    // Some phones won't send a file by its address: send its contents instead
+    if (!/reach/i.test(error.message)) throw error;
+    try {
+      const blob = await (await fetch(fileUri)).blob();
+      return await apiUpload('/api/speech', formWith(blob, `speech.${ext}`));
+    } catch {
+      throw error;
+    }
+  }
+}
+
+function formWith(file, name) {
+  const form = new FormData();
+  if (name) form.append('file', file, name);
+  else form.append('file', file);
+  return form;
 }
 
 // Pen strokes ([[x, y, x, y, ...], ...]) -> { maths }

@@ -16,7 +16,7 @@ export default function AnswerInput({ pages, columns, keyHeight = 44, onKey, onU
 
   // Speak and Draw take the same space as the keypad, so nothing jumps
   const rows = Math.max(...pages.map((keys) => Math.ceil(keys.length / columns)));
-  const height = rows * keyHeight + (rows - 1) * 8 + (pages.length > 1 ? 34 : 0);
+  const height = rows * keyHeight + (rows - 1) * 8 + (pages.length > 1 ? 52 : 0);
   const use = (text) => {
     setMode('keypad');
     onUse(text);

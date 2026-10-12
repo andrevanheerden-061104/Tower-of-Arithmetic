@@ -40,7 +40,8 @@ async function send(path, { headers = {}, body }, timeoutMs) {
   } catch (error) {
     if (error.name === 'AbortError') throw new ApiError('The game server took too long to answer.');
     if (error instanceof ApiError) throw error;
-    throw new ApiError("Can't reach the game server.");
+    console.warn(`API ${path} failed:`, error?.message ?? error);
+    throw new ApiError("Can't reach the game server. Check your internet and try again.");
   } finally {
     clearTimeout(timer);
   }
