@@ -10,10 +10,14 @@ import { createRandom, pickWeighted, rollDie } from './random';
 // The player is never told what the enemy will do; each action is
 // explained only when it happens.
 //
-// Level 1 enemies (Slime, Pumpkin) follow a fixed pattern.
-// Level 2 enemies (Dark Owl, Fire Lizard) pick their attacks at random, so
-// they can't be predicted. The only rule they always follow: they heal
-// 1 heart once per fight when they drop to half health or less.
+// Level 1 enemies (Slime, Pumpkin, Book Mimic, Crystal Crawler) follow a
+// fixed pattern.
+// Level 2 enemies (Dark Owl, Fire Lizard, Frost Wyvern, Glass Knight) pick
+// their attacks at random, so they can't be predicted. The only rule they
+// always follow: they heal 1 heart once per fight when they drop to half
+// health or less.
+// Bosses (Morvath, Marionetta, the Shadow of Merlin) repeat a pattern of
+// three moves and heal a few times when they drop to half health.
 //
 // Every enemy has a hidden weakness. Spells of that element do double
 // damage and show "Critical hit!" (the weakness itself is never named).
@@ -24,6 +28,7 @@ import { createRandom, pickWeighted, rollDie } from './random';
 
 // Everything an enemy can do.
 //   kind     attack | boost | heal | idle
+//   text     what an idle move says ("… and does nothing!" is added)
 //   amount   hearts of damage, boost or healing
 //   maxUses  how many times per fight (leave out for unlimited)
 //   element  what an attack is made of (fire, ice or shadow), if anything:
@@ -55,6 +60,40 @@ export const ACTIONS = {
   shadowCrush: { id: 'shadowCrush', kind: 'attack', name: 'Shadow crush', amount: 2, maxUses: 3, element: 'shadow' },
   darkMend: { id: 'darkMend', kind: 'heal', name: 'Dark mend', amount: 1, maxUses: 3 },
   wardenFocus: { id: 'wardenFocus', kind: 'boost', name: 'Warden’s focus', amount: 0.5 },
+
+  // Book Mimic (level 1)
+  paperCut: { id: 'paperCut', kind: 'attack', name: 'Paper cut', amount: 0.5 },
+  snapShut: { id: 'snapShut', kind: 'attack', name: 'Snap shut', amount: 1 },
+  readAPage: { id: 'readAPage', kind: 'idle', name: 'Read a page', amount: 0, text: 'stops to read one of its own pages' },
+
+  // Crystal Crawler (level 1)
+  crystalShine: { id: 'crystalShine', kind: 'boost', name: 'Crystal shine', amount: 0.5 },
+  pincerSnap: { id: 'pincerSnap', kind: 'attack', name: 'Pincer snap', amount: 0.5 },
+  shardSpray: { id: 'shardSpray', kind: 'attack', name: 'Shard spray', amount: 0.5, element: 'ice' },
+
+  // Frost Wyvern (level 2)
+  frostBite: { id: 'frostBite', kind: 'attack', name: 'Frost bite', amount: 0.5, element: 'ice' },
+  iceBreath: { id: 'iceBreath', kind: 'attack', name: 'Ice breath', amount: 1, element: 'ice' },
+  wingGust: { id: 'wingGust', kind: 'boost', name: 'Wing gust', amount: 0.5 },
+  frozenRest: { id: 'frozenRest', kind: 'heal', name: 'Frozen rest', amount: 1, maxUses: 1 },
+
+  // Glass Knight (level 2)
+  glassSlash: { id: 'glassSlash', kind: 'attack', name: 'Glass slash', amount: 0.5 },
+  shatterLance: { id: 'shatterLance', kind: 'attack', name: 'Shatter lance', amount: 1 },
+  prismGuard: { id: 'prismGuard', kind: 'boost', name: 'Prism glow', amount: 0.5 },
+  mendTheGlass: { id: 'mendTheGlass', kind: 'heal', name: 'Mend the glass', amount: 1, maxUses: 1 },
+
+  // Marionetta, the Puppet Queen (boss)
+  stringLash: { id: 'stringLash', kind: 'attack', name: 'String lash', amount: 0.5 },
+  pullTheStrings: { id: 'pullTheStrings', kind: 'boost', name: 'Pull the strings', amount: 1 },
+  sixArmStrike: { id: 'sixArmStrike', kind: 'attack', name: 'Six-arm strike', amount: 1, maxUses: 4 },
+  restitch: { id: 'restitch', kind: 'heal', name: 'Restitch', amount: 1, maxUses: 2 },
+
+  // The Shadow of Merlin, the Starless Sage (boss)
+  fallingStar: { id: 'fallingStar', kind: 'attack', name: 'Falling star', amount: 0.5 },
+  cosmicGaze: { id: 'cosmicGaze', kind: 'boost', name: 'Cosmic gaze', amount: 0.5 },
+  voidBolt: { id: 'voidBolt', kind: 'attack', name: 'Void bolt', amount: 1.5, maxUses: 3, element: 'shadow' },
+  starlightMend: { id: 'starlightMend', kind: 'heal', name: 'Starlight mend', amount: 1, maxUses: 3 },
 };
 
 // Hidden weakness of each enemy (spells of this element do double damage).
@@ -64,6 +103,12 @@ export const WEAKNESS = {
   darkOwl: 'light', // a creature of the night
   fireLizard: 'ice',
   morvath: 'light',
+  bookMimic: 'fire', // paper burns
+  crystalCrawler: 'shadow', // crystals go dull without light
+  frostWyvern: 'fire',
+  glassKnight: 'shadow', // stained glass is made of light
+  marionetta: 'fire', // her strings burn
+  merlinShadow: 'light',
 };
 
 // Weighted random pick for the level 2 enemies. Big attacks never come
@@ -110,6 +155,38 @@ export const SCRIPTS = {
     const id = ['shadowStrike', 'wardenFocus', 'shadowCrush'][state.cycle % 3];
     return canUse(state, id) ? id : 'shadowStrike';
   },
+
+  // Repeats: paper cut (½), a lazy read (nothing), snap shut (1).
+  bookMimic: (state) => ['paperCut', 'readAPage', 'snapShut'][state.cycle % 3],
+
+  // Repeats: shine (boost), boosted pincer snap (1 heart), shard spray (½).
+  crystalCrawler: (state) => ['crystalShine', 'pincerSnap', 'shardSpray'][state.cycle % 3],
+
+  // Random: mostly frost bites, sometimes a wing gust, now and then ice breath.
+  frostWyvern: (state) =>
+    wantsHeal(state, 'frozenRest') ? 'frozenRest' : randomAction(state, { frostBite: 3, wingGust: 2, iceBreath: 1 }, 'iceBreath'),
+
+  // Random: mostly slashes, sometimes glows (boost), now and then a lance.
+  glassKnight: (state) =>
+    wantsHeal(state, 'mendTheGlass') ? 'mendTheGlass' : randomAction(state, { glassSlash: 3, prismGuard: 2, shatterLance: 1 }, 'shatterLance'),
+
+  // Marionetta restitches at half health (twice per fight), otherwise
+  // repeats: String lash, Pull the strings (+1 heart on her next attack),
+  // Six-arm strike (4 times per fight, then String lash instead).
+  marionetta: (state) => {
+    if (wantsHeal(state, 'restitch')) return 'restitch';
+    const id = ['stringLash', 'pullTheStrings', 'sixArmStrike'][state.cycle % 3];
+    return canUse(state, id) ? id : 'stringLash';
+  },
+
+  // The Shadow of Merlin heals at half health (3 times per fight), otherwise
+  // repeats: Falling star, Cosmic gaze (boost), Void bolt (3 times per
+  // fight, then Falling star instead).
+  merlinShadow: (state) => {
+    if (wantsHeal(state, 'starlightMend')) return 'starlightMend';
+    const id = ['fallingStar', 'cosmicGaze', 'voidBolt'][state.cycle % 3];
+    return canUse(state, id) ? id : 'fallingStar';
+  },
 };
 
 function canUse(state, actionId) {
@@ -124,12 +201,14 @@ export function rollForFirstTurn() {
   return { roll, first: roll <= 3 ? 'enemy' : 'player' };
 }
 
-// A fresh enemy at the start of a fight.
+// A fresh enemy at the start of a fight. `power` is extra damage on every
+// attack (the third climb of the tower hits harder, see src/game/tower.js).
 export function createEnemyState(enemy) {
   return {
     id: enemy.id,
     hearts: enemy.hearts,
     max: enemy.hearts,
+    power: enemy.power ?? 0,
     boost: 0, // extra damage added to its next attack
     turn: 0, // how many turns it has taken
     cycle: 0, // position in its pattern (heals don't move it on)
@@ -159,9 +238,11 @@ export function takeTurn(state, enemyName) {
     next.hearts = Math.min(state.max, state.hearts + action.amount);
     message = `${enemyName} uses ${action.name} and heals ${hearts(next.hearts - state.hearts)}.`;
   } else if (action.kind === 'idle') {
-    message = `${enemyName} lets out a ${action.name.toLowerCase()}… and does nothing!`;
+    message = action.text
+      ? `${enemyName} ${action.text}… and does nothing!`
+      : `${enemyName} lets out a ${action.name.toLowerCase()}… and does nothing!`;
   } else {
-    damage = action.amount + state.boost;
+    damage = action.amount + state.boost + (state.power ?? 0);
     next.boost = 0;
     message = `${enemyName} uses ${action.name}! You lose ${hearts(damage)}.`;
   }
@@ -194,25 +275,29 @@ export function hitEnemy(state, amount) {
 // ---------------------------------------------------------------------------
 // Which enemy is in a room
 //
-// Level 1 enemies (Slime, Pumpkin) fill the lower floors and level 2
-// enemies (Dark Owl, Fire Lizard) the higher ones. In between, the chance
-// of a level 2 enemy rises the higher the player climbs:
-//   bottom 25% of the tower   always level 1
+// Level 1 enemies fill the lower floors and level 2 enemies the higher
+// ones; which one of its level is random. On the first climb the chance
+// of a level 2 enemy rises the higher the player gets:
+//   bottom 25% of the climb   always level 1
 //   25% - 75%                 level 2 chance grows from 0% to 100%
 //   top 25%                   always level 2
-// The pick comes from the run's seed and the room, so it stays the same if
-// the player leaves to the main menu and comes back.
+// On the second climb it starts at 50%, and on the third it's always level 2.
+// The pick comes from the climb's map seed and the room, so it stays the
+// same if the player leaves to the main menu and comes back.
+// The boss of each climb is picked at random from BOSS_IDS (src/game/run.js).
 // ---------------------------------------------------------------------------
 export const ENEMY_LEVELS = {
-  1: ['slime', 'pumpkin'],
-  2: ['darkOwl', 'fireLizard'],
+  1: ['slime', 'pumpkin', 'bookMimic', 'crystalCrawler'],
+  2: ['darkOwl', 'fireLizard', 'frostWyvern', 'glassKnight'],
 };
 
-export function pickEnemyId(seed, room, floors) {
-  if (room.type === 'boss') return 'morvath';
+export const BOSS_IDS = ['morvath', 'marionetta', 'merlinShadow'];
+
+export function pickEnemyId(seed, room, floors, climb = 1) {
   const random = createRandom((seed ^ hashString(room.id)) >>> 0);
   const progress = floors > 2 ? (room.floor - 1) / (floors - 2) : 0; // 0 on floor 1, 1 just before the boss
-  const level2Chance = Math.min(1, Math.max(0, (progress - 0.25) / 0.5));
+  const ramp = Math.min(1, Math.max(0, (progress - 0.25) / 0.5));
+  const level2Chance = climb >= 3 ? 1 : climb === 2 ? 0.5 + ramp / 2 : ramp;
   const level = random() < level2Chance ? 2 : 1;
   const list = ENEMY_LEVELS[level];
   return list[Math.floor(random() * list.length)];

@@ -15,7 +15,9 @@ import CastSheet from './components/CastSheet';
 import HealthPanel from './components/HealthPanel';
 import SpellHand from './components/SpellHand';
 import SupplyColumn from './components/SupplyColumn';
+import SupplyDetails from './components/SupplyDetails';
 import TurnPrompt from './components/TurnPrompt';
+import { floorBackground } from '../../../game/tower';
 import styles from './Combat.styles';
 
 const ENEMY_DELAY = 700; // ms before the enemy acts
@@ -45,7 +47,7 @@ export default function Combat({
   onAnswer, // saves each answer to the player's topic totals (App.js)
   onLessonDone, // a Spell School lesson finished from "Show me how"
   settings,
-  background = 'corridor',
+  background, // a key of BACKGROUNDS; fights pick a random corridor per room
   banner = null,
   // The tutorial shows this screen frozen at one moment, e.g.
   // { phase: 'player' } or { phase: 'casting', selected: 0 }. Nothing happens
@@ -64,6 +66,7 @@ export default function Combat({
   const [selected, setSelected] = useState(demo?.selected ?? null); // index in the hand
   const [hintsUsed, setHintsUsed] = useState(0);
   const [toast, setToast] = useState(null); // { id, text, tone }
+  const [detail, setDetail] = useState(null); // the potion or item popup that is open
   const closeToast = useRef(null); // resolves the message on screen
 
   const hand = run.deck; // up to 5 cards
@@ -196,17 +199,22 @@ export default function Combat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onDrink = (index) => {
-    if (phase === 'player' || phase === 'casting') updateRun((r) => drinkPotion(r, index));
-  };
-
   const playerTurn = phase === 'player' || phase === 'casting';
+
+  // Potions are drunk from their popup, on the player's turn (it doesn't
+  // use the turn up)
+  const drinkFromPopup = () => {
+    if (playerTurn && detail?.kind === 'potion') updateRun((r) => drinkPotion(r, detail.index));
+    setDetail(null);
+  };
+  const openSupply = demo ? () => {} : setDetail;
   const supplies = (
     <>
-      {version.usesPotions && <SupplyColumn side="left" title="Potions" kind="potions" run={run} onUse={onDrink} tutorialId="potions" />}
-      {run.items.length > 0 && <SupplyColumn side="right" title="Items" kind="items" run={run} tutorialId="items" />}
+      {version.usesPotions && <SupplyColumn side="left" title="Potions" kind="potions" run={run} onOpen={openSupply} tutorialId="potions" />}
+      {run.items.length > 0 && <SupplyColumn side="right" title="Items" kind="items" run={run} onOpen={openSupply} tutorialId="items" />}
     </>
   );
+  const supplyPopup = detail ? <SupplyDetails run={run} detail={detail} canDrink={playerTurn} onDrink={drinkFromPopup} onClose={() => setDetail(null)} /> : null;
   const hud = (
     <View style={styles.top} pointerEvents="box-none">
       <RunHud run={run} navigate={navigate} floor={room.floor} />
@@ -216,7 +224,7 @@ export default function Combat({
 
   return (
     <View style={styles.screen}>
-      <RunBackground image={background} />
+      <RunBackground image={background ?? floorBackground(run)} />
       {supplies}
 
       <BattleStage character={character} enemy={enemy} boss={boss} defeated={foe.hearts <= 0} />
@@ -274,8 +282,12 @@ export default function Combat({
           onLessonDone={onLessonDone}
           speech={settings?.speechToText !== false}
           inline={Boolean(demo)}
+          overlay={supplyPopup}
         />
       )}
+
+      {/* The cast sheet draws the popup itself while it's open */}
+      {phase !== 'casting' && supplyPopup}
     </View>
   );
 }

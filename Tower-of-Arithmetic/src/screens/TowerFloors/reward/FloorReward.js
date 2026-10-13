@@ -5,7 +5,8 @@ import CoinIcon from '../../../components/run/CoinIcon';
 import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import FloorProgress from '../../../components/run/FloorProgress';
 import { POTIONS } from '../../../game/encounters';
-import { runVersion } from '../../../game/run';
+import { currentRoom, runVersion } from '../../../game/run';
+import { MAX_CLIMBS, climbOf, towerTop } from '../../../game/tower';
 import RewardRow from './components/RewardRow';
 import RewardsBanner from './components/RewardsBanner';
 import StarRow from './components/StarRow';
@@ -13,14 +14,17 @@ import VictoryHero from './components/VictoryHero';
 import styles from './FloorReward.styles';
 
 // After winning a fight, solving a puzzle or beating the boss: what the
-// player earned, and how far up the tower they are.
-export default function FloorReward({ navigate, run, character }) {
+// player earned, and how far up the tower they are. After a boss (when
+// there's a climb left) the player chooses: climb the next floors, where
+// the enemies are tougher, or leave the tower with what they've won.
+export default function FloorReward({ navigate, run, character, onClimbOn, onLeaveTower }) {
   const version = runVersion(run);
   const reward = run.reward;
   if (!reward) return null;
 
   const junior = version.id === 'junior';
-  const total = run.map.floors;
+  const total = towerTop(run);
+  const climb = climbOf(run);
   const { solved, errors, hints } = run.stats;
   const next = reward.towerCleared ? 'runStats' : 'pathMap';
   // A spell card has to be picked before moving on
@@ -41,7 +45,7 @@ export default function FloorReward({ navigate, run, character }) {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.titles}>
           <Text style={styles.title} accessibilityRole="header">
-            {reward.towerCleared ? 'Tower cleared' : 'Victory'}
+            {reward.climbOn ? 'Boss defeated' : reward.towerCleared ? 'Tower cleared' : 'Victory'}
           </Text>
           <Text style={styles.subtitle}>
             {reward.towerCleared ? `${total} FLOORS CLIMBED` : `FLOOR ${reward.floor} CLEARED`}
@@ -49,7 +53,7 @@ export default function FloorReward({ navigate, run, character }) {
           {junior && <StarRow stars={errors === 0 ? 3 : errors < 3 ? 2 : 1} />}
         </View>
 
-        <FloorProgress total={total} current={reward.floor} label={junior ? `Floor ${reward.floor} of ${total}` : `You are on floor ${reward.floor} of ${total}`} />
+        <FloorProgress total={run.map.floors} current={currentRoom(run).floor} label={junior ? `Floor ${reward.floor} of ${total}` : `You are on floor ${reward.floor} of ${total}`} />
 
         <RewardsBanner />
 
@@ -75,11 +79,23 @@ export default function FloorReward({ navigate, run, character }) {
           {junior ? `You solved ${solved} ${solved === 1 ? 'sum' : 'sums'}!` : `${solved} / ${solved + errors} correct  ·  ${hints} ${hints === 1 ? 'hint' : 'hints'} used`}
         </Text>
 
-        <PrimaryButton
-          label={mustPick ? 'Choose a spell first' : continueLabel}
-          disabled={mustPick}
-          onPress={() => navigate(next)}
-        />
+        {reward.climbOn ? (
+          <View style={styles.list}>
+            <Text style={styles.summary}>
+              {junior
+                ? `You beat the boss! Climb ${run.map.floors} more floors? The monsters are stronger up there.`
+                : `The stairs go on. Climb floors ${total + 1}–${total + run.map.floors}, where the enemies are tougher and the rewards bigger (climb ${climb + 1} of ${MAX_CLIMBS}), or leave the tower now.`}
+            </Text>
+            <PrimaryButton label={junior ? 'Keep climbing!' : `Climb to floor ${total + run.map.floors}`} onPress={onClimbOn} />
+            <PrimaryButton label="Leave the tower" variant="secondary" onPress={onLeaveTower} />
+          </View>
+        ) : (
+          <PrimaryButton
+            label={mustPick ? 'Choose a spell first' : continueLabel}
+            disabled={mustPick}
+            onPress={() => navigate(next)}
+          />
+        )}
       </ScrollView>
     </View>
   );

@@ -8,8 +8,9 @@ import { colors, fonts, spacing } from '../../../../theme/theme';
 
 const POTION_SLOTS = 4;
 
-// Potions (left, tap to drink) or items (right) down the side of a fight.
-export default function SupplyColumn({ side, title, kind, run, onUse, tutorialId }) {
+// Potions (left) or items (right) down the side of a fight. Tapping one
+// opens its popup (SupplyDetails), where a potion can be drunk.
+export default function SupplyColumn({ side, title, kind, run, onOpen, tutorialId }) {
   const potions = kind === 'potions';
   const place = side === 'left' ? { left: 24 } : { right: 24 };
 
@@ -25,9 +26,9 @@ export default function SupplyColumn({ side, title, kind, run, onUse, tutorialId
             return (
               <Pressable
                 key={i}
-                onPress={() => onUse(i)}
+                onPress={() => onOpen({ kind: 'potion', index: i })}
                 accessibilityRole="button"
-                accessibilityLabel={`${potion.name}: ${potion.effect}. Tap to drink`}
+                accessibilityLabel={`${potion.name}: ${potion.effect}. Tap to see it and drink it`}
                 style={({ pressed }) => [styles.slot, pressed && styles.pressed]}
               >
                 <ItemIcon kind={id} size={34} />
@@ -37,9 +38,15 @@ export default function SupplyColumn({ side, title, kind, run, onUse, tutorialId
         : run.items.map((id) => {
             const item = ITEMS[id];
             return (
-              <View key={id} style={styles.slot} accessible accessibilityLabel={`${item.name}: ${item.effect}${isCursed(run, id) ? `. Cursed: ${item.curse}` : ''}`}>
+              <Pressable
+                key={id}
+                onPress={() => onOpen({ kind: 'item', id })}
+                accessibilityRole="button"
+                accessibilityLabel={`${item.name}: ${item.effect}${isCursed(run, id) ? `. Cursed: ${item.curse}` : ''}. Tap to see what it does`}
+                style={({ pressed }) => [styles.slot, pressed && styles.pressed]}
+              >
                 <ItemIcon kind={id} size={34} cursed={isCursed(run, id)} />
-              </View>
+              </Pressable>
             );
           })}
     </View>

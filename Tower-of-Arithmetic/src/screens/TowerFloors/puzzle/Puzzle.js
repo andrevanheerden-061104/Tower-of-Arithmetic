@@ -14,6 +14,7 @@ import RunTitle from '../../../components/run/RunTitle';
 import { makePuzzle } from '../../../game/puzzles';
 import { isCorrect } from '../../../game/questions';
 import { currentRoom, markQuestionUsed, recordAnswer, runVersion } from '../../../game/run';
+import { towerFloor } from '../../../game/tower';
 import { colors } from '../../../theme/theme';
 import DotPicture from '../combat/components/DotPicture';
 import QuestionBox from '../combat/components/QuestionBox';
@@ -28,7 +29,8 @@ export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer, o
   const version = runVersion(run);
   const room = currentRoom(run);
   // Picked once when the room opens, so the door keeps the same sum
-  const [puzzle] = useState(() => makePuzzle(run, version, Math.max(1, room.floor)));
+  // (higher climbs count as higher floors, so their puzzles are harder)
+  const [puzzle] = useState(() => makePuzzle(run, version, towerFloor(run, Math.max(1, room.floor))));
   const { question } = puzzle;
   const [hintIndex, setHintIndex] = useState(-1);
   const [wrong, setWrong] = useState(false);

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { floorsCleared, runVersion } from '../game/run';
+import { towerTop } from '../game/tower';
 import { localSummary } from '../game/runSummary';
 import { fetchRunSummary } from '../services/ai';
 
@@ -27,7 +28,7 @@ export function useRunSummary(run) {
       grade: run.grade,
       won: run.status === 'won',
       floorsCleared: floorsCleared(run),
-      floors: run.map.floors,
+      floors: towerTop(run),
       topicStats: run.topicStats,
       mistakes: run.mistakes,
     }).then((reply) => {

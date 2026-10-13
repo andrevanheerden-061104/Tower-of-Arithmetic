@@ -7,6 +7,7 @@ import TutorialTarget from '../../../components/tutorial/TutorialTarget';
 import RunHud from '../../../components/run/RunHud';
 import RunTitle from '../../../components/run/RunTitle';
 import { currentRoom, runVersion } from '../../../game/run';
+import { climbOf, towerFloor } from '../../../game/tower';
 import MapBoard from './components/MapBoard';
 import MapLegend from './components/MapLegend';
 import SelectedRoom from './components/SelectedRoom';
@@ -22,7 +23,9 @@ export default function PathMap({ navigate, run, onEnterRoom }) {
   const [selectedId, setSelectedId] = useState(reachable[0] ?? null);
   const selected = selectedId ? run.map.nodes[selectedId] : null;
 
-  const floorLabel = here.floor === 0 ? 'Tower gate' : `Floor ${here.floor} cleared`;
+  const climb = climbOf(run);
+  const gate = climb > 1 ? `Climb ${climb} gate` : 'Tower gate';
+  const floorLabel = here.floor === 0 ? gate : `Floor ${towerFloor(run, here.floor)} cleared`;
 
   return (
     <View style={styles.screen}>
@@ -52,7 +55,7 @@ export default function PathMap({ navigate, run, onEnterRoom }) {
 
         {selected && <SelectedRoom room={selected} />}
         <PrimaryButton
-          label={selected ? `Enter floor ${selected.floor}` : 'Choose a room'}
+          label={selected ? `Enter floor ${towerFloor(run, selected.floor)}` : 'Choose a room'}
           disabled={!selected}
           onPress={() => onEnterRoom(selected.id)}
         />

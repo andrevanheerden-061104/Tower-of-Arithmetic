@@ -10,6 +10,7 @@ import ProfileBar from './components/ProfileBar';
 import RunStats from './components/RunStats';
 import { usePlayerCard } from '../../hooks/usePlayerCard';
 import { floorsCleared } from '../../game/run';
+import { towerTop } from '../../game/tower';
 import styles from './Home.styles';
 
 // The main menu. Player numbers come from the saved profile (placeholders
@@ -18,7 +19,7 @@ import styles from './Home.styles';
 export default function Home({ navigate, character, run }) {
   const player = usePlayerCard();
   const savedRun = run && run.status === 'active'
-    ? { floor: Math.max(1, floorsCleared(run)), totalFloors: run.map.floors, hearts: run.hearts, maxHearts: run.maxHearts }
+    ? { floor: Math.max(1, floorsCleared(run)), totalFloors: towerTop(run), hearts: run.hearts, maxHearts: run.maxHearts }
     : null;
 
   return (

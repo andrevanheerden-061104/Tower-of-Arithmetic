@@ -61,6 +61,7 @@ export default function CastSheet({
   onClose,
   onLessonDone,
   speech = true, // speech to text, from Settings
+  overlay = null, // the potion / item popup, drawn over everything
   inline = false,
 }) {
   const { height } = useWindowDimensions();
@@ -182,6 +183,7 @@ export default function CastSheet({
       {lesson && (
         <LessonOverlay versionId={version.id} topic={question.type} backLabel="Back to the fight" onClose={() => setLesson(false)} onDone={onLessonDone} />
       )}
+      {overlay}
     </>
   );
 

@@ -4,6 +4,7 @@ import Icon from '../Icon';
 import PrimaryButton from '../PrimaryButton';
 import { getDungeonType } from '../../game/versions';
 import { currentRoom, runVersion } from '../../game/run';
+import { towerFloor, towerTop } from '../../game/tower';
 import { MAX_DECK } from '../../game/spells';
 import { colors, fonts, spacing } from '../../theme/theme';
 
@@ -12,7 +13,7 @@ import { colors, fonts, spacing } from '../../theme/theme';
 export default function MenuDrawer({ visible, onClose, run, navigate }) {
   const version = runVersion(run);
   const dungeon = getDungeonType(version, run.dungeonTypeId);
-  const floor = Math.max(1, currentRoom(run).floor);
+  const floor = Math.max(1, towerFloor(run, currentRoom(run).floor));
 
   const go = (screen) => {
     onClose();
@@ -35,7 +36,7 @@ export default function MenuDrawer({ visible, onClose, run, navigate }) {
           <View style={styles.current}>
             <Text style={styles.currentLabel}>CURRENT RUN</Text>
             <Text style={styles.currentValue}>
-              {dungeon.label} · Floor {floor} / {run.map.floors}
+              {dungeon.label} · Floor {floor} / {towerTop(run)}
             </Text>
           </View>
 

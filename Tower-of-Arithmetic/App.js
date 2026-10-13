@@ -14,19 +14,20 @@ import { setMusic } from './src/audio/music';
 import { PlayerProvider } from './src/context/PlayerContext';
 import { DEFAULT_CHARACTER_ID, getCharacter, withProgress } from './src/data/characters';
 import { DEFAULT_SETTINGS } from './src/data/settings';
-import { ITEMS } from './src/game/encounters';
 import {
   addCoins,
   addItem,
   addPotion,
   addSpell,
   clearRoom,
+  continueClimb,
   createRun,
   currentRoom,
   enterRoom,
   floorsCleared,
   grantReward,
   heal,
+  leaveTower,
   makeSpellOffers,
   moveToDeck,
   moveToStash,
@@ -276,9 +277,9 @@ function Game() {
       navigate('reward');
     },
     onDefeat: () => navigate('defeat'),
-    // Ghost event
-    onAccept: (giftId) => {
-      if (giftId === 'spell') {
+    // Mystery rooms (the ghost or the librarian): the gift says what it gives
+    onAccept: (gift) => {
+      if (gift.id === 'spell') {
         const offers = makeSpellOffers(run);
         if (offers.length) {
           updateRun((r) => ({ ...clearRoom(r), offers }));
@@ -288,12 +289,26 @@ function Game() {
         }
       }
       finishRoomToMap((r) => {
-        if (giftId === 'coins') return addCoins(r, 30);
-        if (giftId === 'xp') return { ...r, xp: r.xp + 30 };
-        if (giftId === 'heal') return heal(r, 0.5);
-        if (ITEMS[giftId]) return addItem(r, giftId);
-        return r;
+        let next = r;
+        if (gift.coins) next = addCoins(next, gift.coins);
+        if (gift.xp) next = { ...next, xp: next.xp + gift.xp };
+        if (gift.heal) next = heal(next, gift.heal);
+        if (gift.potion) next = addPotion(next, gift.potion);
+        if (gift.item) next = addItem(next, gift.item);
+        // A gift with a cost (the librarian's forbidden book) never takes the last half heart
+        if (gift.cost) next = { ...next, hearts: Math.max(0.5, next.hearts - gift.cost) };
+        return next;
       });
+    },
+    // After a boss: climb the next part of the tower, or leave with the win
+    onClimbOn: () => {
+      updateRun(continueClimb);
+      navigate('pathMap');
+      loadQuestions(run);
+    },
+    onLeaveTower: () => {
+      updateRun(leaveTower);
+      navigate('runStats');
     },
     // Rest site
     onRest: () => finishRoomToMap((r) => heal(r, 1)),

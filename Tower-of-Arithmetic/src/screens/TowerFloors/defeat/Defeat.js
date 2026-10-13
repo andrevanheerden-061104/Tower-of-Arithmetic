@@ -3,14 +3,16 @@ import Text from '../../../components/AppText';
 import PrimaryButton from '../../../components/PrimaryButton';
 import FloorProgress from '../../../components/run/FloorProgress';
 import { currentRoom, floorsCleared } from '../../../game/run';
+import { towerFloor, towerTop } from '../../../game/tower';
 import DefeatHero from './components/DefeatHero';
 import RunSummaryTiles from './components/RunSummaryTiles';
 import styles from './Defeat.styles';
 
 // Out of hearts. Shows how far the player got and what the run earned.
 export default function Defeat({ navigate, run, character, onEndRun }) {
-  const fellOn = Math.max(1, currentRoom(run).floor);
-  const total = run.map.floors;
+  // Floors of the whole tower (the bar shows this climb's floors)
+  const fellOn = Math.max(1, towerFloor(run, currentRoom(run).floor));
+  const total = towerTop(run);
 
   return (
     <View style={styles.screen}>
@@ -29,7 +31,7 @@ export default function Defeat({ navigate, run, character, onEndRun }) {
           <Text style={styles.bannerText}>◆  This run  ◆</Text>
         </View>
 
-        <FloorProgress total={total} current={fellOn} outcome="fell" label={`Fell on floor ${fellOn}`} />
+        <FloorProgress total={run.map.floors} current={Math.max(1, currentRoom(run).floor)} outcome="fell" label={`Fell on floor ${fellOn}`} />
 
         <RunSummaryTiles cleared={floorsCleared(run)} total={total} solved={run.stats.solved} xp={run.xp} />
         <Text style={styles.saved}>Your XP and badges are saved.</Text>

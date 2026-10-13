@@ -1,16 +1,18 @@
 import { levelBonus } from '../data/characterLevels';
 import { ENEMIES, ITEMS, POTIONS } from './encounters';
 import { canRevive } from './items';
-import { pickEnemyId } from './enemyAI';
+import { BOSS_IDS, pickEnemyId } from './enemyAI';
 import { gradeFor } from './generators';
 import { generateMap } from './mapGenerator';
 import { newSeed } from './random';
 import { REWARD_ROOMS, ROOMS } from './rooms';
 import { MAX_DECK, spellOffers } from './spells';
+import { canClimbOn, chooseBoss, climbOf, climbRules, towerFloor } from './tower';
 import { VERSIONS } from './versions';
 
 // ---------------------------------------------------------------------------
-// The current run (one climb of the tower).
+// The current run: a climb of the tower, and the climbs after it when the
+// player carries on past a boss (see src/game/tower.js).
 //
 // App.js keeps the run in state and hands it to the tower screens. Screens
 // never change it directly: they call updateRun(fn) with one of the helpers
@@ -32,6 +34,11 @@ export function createRun({ version, dungeonTypeId, character, grade }) {
     dungeonTypeId,
     seed,
     map: generateMap({ floors: version.floors, seed, roomTypes: version.rooms }),
+    // Which climb of the tower this is (1-3) and the boss waiting on top
+    // of it, with its background ({ id, background })
+    climb: 1,
+    boss: chooseBoss(seed, BOSS_IDS),
+    bossesSeen: [],
     currentId: 'start',  // the room the player is in (start = tower gate)
     cleared: ['start'],
     hearts,
@@ -81,10 +88,23 @@ export function screenForRoom(type) {
   return ROOMS[type]?.screen ?? 'pathMap';
 }
 
-// The enemy in the room the player is in (level depends on the floor,
-// see pickEnemyId in src/game/enemyAI.js).
+// The boss on top of this climb.
+export function bossForRun(run) {
+  return ENEMIES[run.boss?.id] ?? ENEMIES.morvath;
+}
+
+// The enemy in the room the player is in: a random one of the floor's
+// level (see pickEnemyId in src/game/enemyAI.js), or this climb's boss.
+// Higher climbs give it extra hearts and power (src/game/tower.js).
 export function enemyForRun(run) {
-  return ENEMIES[pickEnemyId(run.seed, currentRoom(run), run.map.floors)];
+  const room = currentRoom(run);
+  const rules = climbRules(run);
+  if (room.type === 'boss') {
+    const boss = bossForRun(run);
+    return { ...boss, hearts: boss.hearts + rules.bossHearts, power: rules.attack };
+  }
+  const enemy = ENEMIES[pickEnemyId(run.map.seed ?? run.seed, room, run.map.floors, climbOf(run))];
+  return { ...enemy, hearts: enemy.hearts + rules.enemyHearts, power: rules.attack };
 }
 
 export function enterRoom(run, roomId) {
@@ -131,7 +151,7 @@ export function addSpell(run, spellId) {
 
 // Three cards to choose from (cards already collected are left out).
 export function makeSpellOffers(run) {
-  return spellOffers(collectedSpells(run), currentRoom(run).floor / run.map.floors);
+  return spellOffers(collectedSpells(run), Math.min(1, towerFloor(run, currentRoom(run).floor) / run.map.floors));
 }
 
 // Deck screen: swap a deck card with a stash card.
@@ -214,7 +234,7 @@ export function markQuestionUsed(run, question) {
 // Pass the `question` and what the player `given` so a wrong answer can be
 // remembered.
 export function recordAnswer(run, { correct, hintsUsed = 0, topic, timeMs = 0, question, given }) {
-  const floor = currentRoom(run).floor;
+  const floor = towerFloor(run, currentRoom(run).floor);
   const stats = { ...run.stats };
   stats.hints += hintsUsed;
   if (correct) {
@@ -250,16 +270,21 @@ export function recordAnswer(run, { correct, hintsUsed = 0, topic, timeMs = 0, q
   return { ...run, stats, topicStats, mistakes };
 }
 
-// Rewards for finishing a fight, puzzle or the boss (placeholder amounts).
+// Rewards for finishing a fight, puzzle or the boss (placeholder amounts,
+// bigger on higher climbs). After a boss the player may climb on
+// (`climbOn`) unless this was the last climb.
 export function makeReward(run, roomType) {
   const version = runVersion(run);
   const boss = roomType === 'boss';
+  const more = climbRules(run).reward;
+  const round5 = (n) => Math.round(n / 5) * 5;
   return {
     roomType,
-    floor: currentRoom(run).floor,
+    floor: towerFloor(run, currentRoom(run).floor),
     towerCleared: boss,
-    xp: boss ? 300 : roomType === 'puzzle' ? 80 : 120,
-    coins: version.usesCoins ? (boss ? 50 : 15) : 0,
+    climbOn: boss && canClimbOn(run),
+    xp: round5((boss ? 300 : roomType === 'puzzle' ? 80 : 120) * more),
+    coins: version.usesCoins ? round5((boss ? 50 : 15) * more) : 0,
     potion: version.usesPotions && roomType === 'combat' ? 'minor' : null,
     spellChoice: !boss,
     spellTaken: false,
@@ -277,15 +302,43 @@ export function grantReward(run, roomType) {
     next.offers = makeSpellOffers(next);
     if (!next.offers.length) next.reward = { ...reward, spellChoice: false }; // every card collected
   }
-  if (reward.towerCleared) next.status = 'won';
+  if (reward.towerCleared && !reward.climbOn) next.status = 'won';
   return next;
+}
+
+// After a boss: climb the next part of the tower. A new map (new rooms,
+// enemies and boss), the same deck, items, potions and coins, and 1 heart
+// back as a breather.
+export function continueClimb(run) {
+  const version = runVersion(run);
+  const seed = newSeed();
+  const seen = [...(run.bossesSeen ?? []), run.boss?.id].filter(Boolean);
+  const next = {
+    ...run,
+    climb: climbOf(run) + 1,
+    map: generateMap({ floors: version.floors, seed, roomTypes: version.rooms }),
+    boss: chooseBoss(seed, BOSS_IDS, seen),
+    bossesSeen: seen,
+    currentId: 'start',
+    cleared: ['start'],
+    reward: null,
+    offers: null,
+    status: 'active',
+  };
+  return heal(next, 1);
+}
+
+// After a boss: leave the tower with what was won.
+export function leaveTower(run) {
+  return { ...run, status: 'won' };
 }
 
 export function needsReward(roomType) {
   return REWARD_ROOMS.includes(roomType);
 }
 
-// How many floors are done (for progress bars).
+// How many floors of the whole tower are done (for progress bars and the
+// player's best floor): earlier climbs count in full.
 export function floorsCleared(run) {
-  return Math.max(0, ...run.cleared.map((id) => run.map.nodes[id].floor));
+  return towerFloor(run, Math.max(0, ...run.cleared.map((id) => run.map.nodes[id].floor)));
 }

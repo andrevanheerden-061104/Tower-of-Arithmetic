@@ -5,8 +5,15 @@ import Shade from '../Shade';
 // dark tint over it so the text on top stays readable (darker at the top
 // and bottom, lighter in the middle where the fight happens).
 export const BACKGROUNDS = {
+  // Fight corridors (one is picked at random for each room, see
+  // floorBackground in src/game/tower.js)
   corridor: require('../../assets/backgrounds/dungaon back 1.jpg'),
+  corridorMoon: require('../../assets/backgrounds/dungaon back 2.jpg'),
+  corridorLibrary: require('../../assets/backgrounds/dungaon back 3.jpg'),
+  // Boss rooms (one is picked at random for each climb)
   bossDoor: require('../../assets/backgrounds/shadowBossBack.jpg'),
+  bossThrone: require('../../assets/backgrounds/bossBackground2.jpg'),
+  librarian: require('../../assets/backgrounds/LibaraianEncouncounter.jpg'),
   shop: require('../../assets/backgrounds/shopBack.jpg'),
   ghost: require('../../assets/backgrounds/ghostEncouncounter.jpg'),
   campfireRest: require('../../assets/backgrounds/campfireRest.jpg'),

@@ -8,8 +8,11 @@ export default function BattleStage({ character, enemy, boss, defeated }) {
   const { width } = useWindowDimensions();
   const k = width / 402;
 
-  const enemySize = (boss ? 290 : 150) * k;
-  const enemyLeft = (boss ? 146 : 218) * k;
+  // Tall enemies (the Glass Knight, the Frost Wyvern) are drawn a little
+  // bigger (`scale` in ENEMIES) so they don't look tiny
+  const base = (boss ? 290 : 150) * k;
+  const enemySize = base * (boss ? 1 : enemy.scale ?? 1);
+  const enemyLeft = (boss ? 146 : 218) * k - (enemySize - base) / 2;
   const enemyBottom = (boss ? 312 : 262) * k;
   const playerSize = 370 * k;
 

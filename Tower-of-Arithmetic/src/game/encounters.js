@@ -1,7 +1,15 @@
 import { createRandom, shuffle } from './random';
 
-// Content for the rooms: enemies, items, potions, the trader's wares and the
-// ghost's gifts. Numbers are not balanced yet.
+// Content for the rooms: enemies, bosses, items, potions, the trader's
+// wares and the gifts in mystery rooms (the ghost and the librarian).
+// Numbers are not balanced yet.
+//
+// Enemies come in two levels (tiers):
+//   level 1   2 hearts, a fixed pattern of moves (like the Slime)
+//   level 2   3 hearts for the newer ones (the Dark Owl and Fire Lizard
+//             hit harder, so they keep 2), random moves and one heal
+// How they act is in src/game/enemyAI.js. Higher climbs of the tower add
+// hearts and power to every enemy (src/game/tower.js).
 
 export const ENEMIES = {
   // Level 1: lower floors, fixed attack patterns (see src/game/enemyAI.js)
@@ -36,13 +44,61 @@ export const ENEMIES = {
     hearts: 2,
     image: require('../assets/enemys/fireLizard.png'),
   },
-  // Boss: top floor
+  bookMimic: {
+    id: 'bookMimic',
+    name: 'Book Mimic',
+    level: 1,
+    hearts: 2,
+    image: require('../assets/enemys/book_mimic.png'),
+  },
+  crystalCrawler: {
+    id: 'crystalCrawler',
+    name: 'Crystal Crawler',
+    level: 1,
+    hearts: 2,
+    image: require('../assets/enemys/crad.png'),
+  },
+  frostWyvern: {
+    id: 'frostWyvern',
+    name: 'Frost Wyvern',
+    level: 2,
+    hearts: 3,
+    scale: 1.25,
+    image: require('../assets/enemys/wyvern.png'),
+  },
+  glassKnight: {
+    id: 'glassKnight',
+    name: 'Glass Knight',
+    level: 2,
+    hearts: 3,
+    scale: 1.3,
+    image: require('../assets/enemys/glass.png'),
+  },
+  // Bosses: the top floor of each climb (picked at random, see BOSS_IDS in
+  // src/game/enemyAI.js)
   morvath: {
     id: 'morvath',
     name: 'Morvath',
     title: 'the Shadow Warden',
+    boss: true,
     hearts: 5,
     image: require('../assets/boss/boss1.png'),
+  },
+  marionetta: {
+    id: 'marionetta',
+    name: 'Marionetta',
+    title: 'the Puppet Queen',
+    boss: true,
+    hearts: 5,
+    image: require('../assets/boss/puppet.png'),
+  },
+  merlinShadow: {
+    id: 'merlinShadow',
+    name: 'Shadow of Merlin',
+    title: 'the Starless Sage',
+    boss: true,
+    hearts: 5,
+    image: require('../assets/boss/shadow-of-merlin.png'),
   },
 };
 
@@ -56,6 +112,8 @@ export const ITEMS = {
     name: 'Heartstone Amulet',
     image: require('../assets/items/heartstone-amulet-icon.png'),
     effect: '+1 heart for the rest of the run',
+    about: 'A warm red stone that beats like a second heart. It gives you 1 extra heart for the whole run.',
+    when: 'All run long',
     extraHearts: 1,
     price: 70,
   },
@@ -64,6 +122,8 @@ export const ITEMS = {
     name: 'Hourglass of First Light',
     image: require('../assets/items/hourglass-icon.png'),
     effect: 'You always move first in a fight',
+    about: 'Its sand glows with the first light of morning. In every fight you take the first turn, with no dice roll.',
+    when: 'At the start of every fight',
     price: 60,
   },
   frostwardRing: {
@@ -71,6 +131,8 @@ export const ITEMS = {
     name: 'Frostward Ring',
     image: require('../assets/items/frostward-ring-icon.png'),
     effect: 'Ice and water attacks hurt you ½ heart less',
+    about: 'A ring of ice that never melts. When an ice or water enemy hits you, you lose ½ heart less.',
+    when: 'Every ice or water attack',
     guards: 'ice',
     block: 0.5,
     price: 45,
@@ -80,6 +142,8 @@ export const ITEMS = {
     name: 'Emberguard Ring',
     image: require('../assets/items/emberguard-ring-icon.png'),
     effect: 'Fire attacks hurt you ½ heart less',
+    about: 'A ring that stays warm even in the dark. When a fire enemy hits you, you lose ½ heart less.',
+    when: 'Every fire attack',
     guards: 'fire',
     block: 0.5,
     price: 45,
@@ -89,6 +153,8 @@ export const ITEMS = {
     name: 'Veil of Dusk',
     image: require('../assets/items/veil-of-dusk-icon.png'),
     effect: 'Shadow attacks hurt you ½ heart less',
+    about: 'A thin cloth woven from twilight. When a shadow enemy hits you, you lose ½ heart less.',
+    when: 'Every shadow attack',
     guards: 'shadow',
     block: 0.5,
     price: 45,
@@ -98,6 +164,8 @@ export const ITEMS = {
     name: 'Scroll of Sharpened Spells',
     image: require('../assets/items/scroll-icon.png'),
     effect: 'Attack spells deal +½ heart',
+    about: 'Battle spells honed to a fine edge. Every attack spell you cast hits ½ heart harder.',
+    when: 'Every attack spell you cast',
     attackBonus: 0.5,
     price: 65,
   },
@@ -106,6 +174,8 @@ export const ITEMS = {
     name: 'Phoenix Feather Charm',
     image: require('../assets/items/phoenix-feather-icon.png'),
     effect: 'Once per run, rise again with 1 heart instead of falling',
+    about: 'A feather that still burns. The first time you would fall this run, you rise again with 1 heart.',
+    when: 'Once, when you would fall',
     price: 80,
   },
   // The ghost's stronger, cursed gift
@@ -114,6 +184,8 @@ export const ITEMS = {
     name: 'Cursed Scroll',
     image: require('../assets/items/scroll-icon.png'),
     effect: 'Attack spells deal +1 heart',
+    about: 'Dark words that make your spells fierce. Every attack spell you cast hits 1 heart harder.',
+    when: 'Every attack spell you cast',
     attackBonus: 1,
     cursed: true,
     curse: '½ heart less at the start of every floor',
@@ -123,13 +195,15 @@ export const ITEMS = {
 // The items the trader can sell (the cursed scroll only comes from the ghost).
 const SHOP_ITEMS = Object.keys(ITEMS).filter((id) => !ITEMS[id].cursed);
 
-// Healing potions: drunk in a fight by tapping them (up to 4 carried).
+// Healing potions: tap one in a fight to see it, then drink it (up to 4
+// carried). Drinking doesn't use up the player's turn.
 export const POTIONS = {
   minor: {
     id: 'minor',
     name: 'Minor Healing Potion',
     image: require('../assets/potions/minor-healing-icon.png'),
     effect: 'Heal ½ heart',
+    about: 'A small sip of red brew. Drink it to win back ½ heart.',
     heal: 0.5,
     price: 15,
   },
@@ -138,6 +212,7 @@ export const POTIONS = {
     name: 'Healing Potion',
     image: require('../assets/potions/healing-icon.png'),
     effect: 'Heal 1 heart',
+    about: 'A warm, glowing brew from the tower’s healers. Drink it to win back 1 heart.',
     heal: 1,
     price: 30,
   },
@@ -146,6 +221,7 @@ export const POTIONS = {
     name: 'Greater Healing Potion',
     image: require('../assets/potions/greater-healing-icon.png'),
     effect: 'Heal 2 hearts',
+    about: 'The strongest brew in the tower. Drink it to win back 2 hearts.',
     heal: 2,
     price: 60,
   },
@@ -175,25 +251,64 @@ function hash(text) {
   return h >>> 0;
 }
 
+// Gifts in mystery rooms. Each gift says what it gives:
+//   coins, xp, heal (hearts), potion (a potion id), item (an item id),
+//   cost (hearts lost for taking it); id 'spell' opens the spell picker.
+
 // The ghost's three gifts. The third gift depends on the version:
 // junior mode has no curses, so the youngest players get a gentle heal instead.
 export function ghostGifts(version) {
   const first = version.usesCoins
-    ? { id: 'coins', title: 'Ghostly coins', detail: 'Gain 30 coins.', drawback: null, icon: 'coin' }
-    : { id: 'xp', title: 'Glowing star', detail: 'Gain 30 XP.', drawback: null, icon: 'star' };
+    ? { id: 'coins', title: 'Ghostly coins', detail: 'Gain 30 coins.', drawback: null, icon: 'coin', coins: 30 }
+    : { id: 'xp', title: 'Glowing star', detail: 'Gain 30 XP.', drawback: null, icon: 'star', xp: 30 };
   const third = version.usesCurses
     ? {
         id: 'cursedScroll',
+        item: 'cursedScroll',
         title: 'Cursed Scroll',
         detail: 'A stronger item: every attack spell deals +1 heart.',
         drawback: 'Drawback: it carries a curse. Lose ½ heart at the start of every floor.',
         icon: 'cursedScroll',
         cursed: true,
       }
-    : { id: 'heal', title: 'Warm glow', detail: 'Heal ½ heart.', drawback: null, icon: 'heart' };
+    : { id: 'heal', title: 'Warm glow', detail: 'Heal ½ heart.', drawback: null, icon: 'heart', heal: 0.5 };
   return [
     first,
     { id: 'spell', title: 'Spell choice', detail: 'Choose 1 of 3 spell cards for your deck.', drawback: null, icon: 'card' },
     third,
+  ];
+}
+
+// The librarian's three gifts. `random` is the room's own random numbers,
+// so the forbidden book is the same if the player looks away and back.
+//   1. study: XP
+//   2. a Healing Potion (junior: heal 1 heart, as there are no potions)
+//   3. a random item the player doesn't have, but a book bites (lose ½
+//      heart). Junior: a picture book of spells (choose 1 of 3 cards).
+export function librarianGifts(run, version, random = Math.random) {
+  const study = { id: 'study', title: 'Study session', detail: 'Read with the librarian. Gain 40 XP.', drawback: null, icon: 'star', xp: 40 };
+  const second = version.usesPotions
+    ? { id: 'potion', title: 'A potion from the shelf', detail: 'Take a Healing Potion (heals 1 heart).', drawback: null, icon: 'heal', potion: 'heal' }
+    : { id: 'readHeal', title: 'Cosy reading nook', detail: 'Rest with a good book. Heal 1 heart.', drawback: null, icon: 'heart', heal: 1 };
+  if (!version.usesCurses) {
+    return [study, second, { id: 'spell', title: 'Picture book of spells', detail: 'Choose 1 of 3 spell cards for your deck.', drawback: null, icon: 'card' }];
+  }
+  const choices = SHOP_ITEMS.filter((id) => !run.items.includes(id));
+  if (!choices.length) {
+    return [study, second, { id: 'goldLeaf', title: 'Gold-leaf pages', detail: 'Gain 40 coins.', drawback: null, icon: 'coin', coins: 40 }];
+  }
+  const item = ITEMS[choices[Math.floor(random() * choices.length)]];
+  return [
+    study,
+    second,
+    {
+      id: 'relic',
+      title: `Forbidden shelf: ${item.name}`,
+      detail: `${item.effect}.`,
+      drawback: 'Drawback: a book bites as you take it. Lose ½ heart.',
+      icon: item.id,
+      item: item.id,
+      cost: 0.5,
+    },
   ];
 }

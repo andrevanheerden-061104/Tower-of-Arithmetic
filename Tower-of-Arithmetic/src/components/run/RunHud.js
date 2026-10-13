@@ -5,15 +5,19 @@ import Icon from '../Icon';
 import CoinIcon from './CoinIcon';
 import MenuDrawer from './MenuDrawer';
 import { runVersion } from '../../game/run';
+import { towerFloor, towerTop } from '../../game/tower';
 import { colors, fonts } from '../../theme/theme';
 
 // The bar at the top of every tower screen: menu button on the left,
 // coins and floor on the right. The menu button opens the run menu.
+// `floor` is the floor of this climb's map; it's shown as a floor of the
+// whole tower (floor 3 of the second climb is "Floor 13 / 20").
 export default function RunHud({ run, navigate, floor, floorLabel, style }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const version = runVersion(run);
-  const total = run.map.floors;
-  const label = floorLabel ?? (version.id === 'junior' ? `Floor ${floor} of ${total}` : `Floor ${floor} / ${total}`);
+  const total = towerTop(run);
+  const shown = towerFloor(run, floor ?? 0);
+  const label = floorLabel ?? (version.id === 'junior' ? `Floor ${shown} of ${total}` : `Floor ${shown} / ${total}`);
 
   return (
     <View style={[styles.row, style]}>

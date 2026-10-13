@@ -6,6 +6,7 @@ import ScreenBackground from '../../../components/ScreenBackground';
 import Shade from '../../../components/Shade';
 import { getDungeonType } from '../../../game/versions';
 import { floorsCleared, runVersion } from '../../../game/run';
+import { towerTop } from '../../../game/tower';
 import { topicResults } from '../../../game/runSummary';
 import { useRunSummary } from '../../../hooks/useRunSummary';
 import AccuracyCard from './components/AccuracyCard';
@@ -38,7 +39,7 @@ export default function RunStats({ run, onEndRun, onNewRun }) {
         <ScreenHeader title="Run stats" onBack={onEndRun} />
         <Text style={styles.subtitle}>
           {dungeon.label}
-          {dungeon.id === 'mixed' ? '' : ' dungeon'}  ·  {run.status === 'won' ? 'tower cleared!' : `reached floor ${reached} of ${run.map.floors}`}
+          {dungeon.id === 'mixed' ? '' : ' dungeon'}  ·  {run.status === 'won' ? `${reached} floors cleared!` : `reached floor ${reached} of ${towerTop(run)}`}
         </Text>
 
         <AccuracyCard accuracy={accuracy} solved={solved} hints={hints} errors={errors} bestStreak={bestStreak} />
