@@ -4,6 +4,7 @@ import { useWorkingSteps } from '../../../../hooks/useWorkingSteps';
 import PrimaryButton from '../../../../components/PrimaryButton';
 import AnswerInput from '../../../../components/run/answer/AnswerInput';
 import StepRow from '../../../../components/run/StepRow';
+import VisualHelper from '../../../../components/run/visual/VisualHelper';
 import QuestionBox from './QuestionBox';
 import SheetBody from './SheetBody';
 
@@ -34,6 +35,7 @@ export default function StepsAnswer({ question, onSubmit, onOverflow, speech }) 
               <StepRow key={i} number={i + 1} value={value} status={i === last ? 'active' : 'done'} />
             ))}
           </View>
+          <VisualHelper question={question} />
         </>
       }
       footer={

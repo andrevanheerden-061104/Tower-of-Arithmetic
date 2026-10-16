@@ -9,6 +9,8 @@ import { isCorrect } from '../../game/questions';
 import { VERSIONS } from '../../game/versions';
 import DotPicture from '../../screens/TowerFloors/combat/components/DotPicture';
 import QuestionBox from '../../screens/TowerFloors/combat/components/QuestionBox';
+import VisualHelper from '../run/visual/VisualHelper';
+import { playSfx } from '../../audio/sfx';
 import PuzzleAnswer from '../../screens/TowerFloors/puzzle/components/PuzzleAnswer';
 import { colors, fonts } from '../../theme/theme';
 
@@ -36,9 +38,11 @@ export default function PracticePage({ lesson, onFinished }) {
     const count = tries + 1;
     setTries(count);
     if (isCorrect(question, answer)) {
+      playSfx('correct');
       setResult('right');
       return;
     }
+    playSfx('wrong');
     if (count >= MAX_TRIES) {
       setResult('shown');
       return;
@@ -66,6 +70,7 @@ export default function PracticePage({ lesson, onFinished }) {
       </View>
 
       <QuestionBox question={question}>{junior && question.picture ? <DotPicture picture={question.picture} /> : null}</QuestionBox>
+      <VisualHelper question={question} />
 
       {result === 'wrong' && (
         <Text style={styles.wrong} accessibilityLiveRegion="assertive">

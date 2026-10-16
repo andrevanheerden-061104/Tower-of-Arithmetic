@@ -19,6 +19,8 @@ import { colors } from '../../../theme/theme';
 import DotPicture from '../combat/components/DotPicture';
 import QuestionBox from '../combat/components/QuestionBox';
 import PuzzleAnswer from './components/PuzzleAnswer';
+import { playSfx } from '../../../audio/sfx';
+import VisualHelper from '../../../components/run/visual/VisualHelper';
 import styles from './Puzzle.styles';
 
 // A puzzle room: a sealed door that opens when its sum is solved. The sum
@@ -56,8 +58,10 @@ export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer, o
     updateRun((r) => recordAnswer(r, { correct, hintsUsed, topic: question.type, timeMs, question, given: answer }));
     onAnswer?.({ topic: question.type, version: version.id, correct, timeMs, hints: hintsUsed });
     if (correct) {
+      playSfx('correct');
       onSolved();
     } else {
+      playSfx('wrong');
       setWrong(true);
       nextHint();
     }
@@ -97,6 +101,7 @@ export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer, o
         <TutorialTarget id="puzzle">
           <View style={styles.door}>
             <QuestionBox question={question}>{junior && <DotPicture picture={question.picture} />}</QuestionBox>
+            <VisualHelper question={question} />
 
             {wrong && <Text style={styles.wrong}>Not quite. No hearts lost, take your time.</Text>}
             {hintIndex >= 0 && <ArchmageHint title="Orrin" hint={question.hints[hintIndex]} index={hintIndex} total={question.hints.length} />}

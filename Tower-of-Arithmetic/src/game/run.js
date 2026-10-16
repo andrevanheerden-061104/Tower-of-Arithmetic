@@ -6,7 +6,7 @@ import { gradeFor } from './generators';
 import { generateMap } from './mapGenerator';
 import { newSeed } from './random';
 import { REWARD_ROOMS, ROOMS } from './rooms';
-import { MAX_DECK, spellOffers } from './spells';
+import { MAX_DECK, bossSpellOffers, isLegendary, spellOffers } from './spells';
 import { canClimbOn, chooseBoss, climbOf, climbRules, towerFloor } from './tower';
 import { VERSIONS } from './versions';
 
@@ -150,7 +150,9 @@ export function addSpell(run, spellId) {
 }
 
 // Three cards to choose from (cards already collected are left out).
-export function makeSpellOffers(run) {
+// After a boss, legendary cards are offered first (bossSpellOffers).
+export function makeSpellOffers(run, boss = false) {
+  if (boss) return bossSpellOffers(collectedSpells(run));
   return spellOffers(collectedSpells(run), Math.min(1, towerFloor(run, currentRoom(run).floor) / run.map.floors));
 }
 
@@ -286,7 +288,8 @@ export function makeReward(run, roomType) {
     xp: round5((boss ? 300 : roomType === 'puzzle' ? 80 : 120) * more),
     coins: version.usesCoins ? round5((boss ? 50 : 15) * more) : 0,
     potion: version.usesPotions && roomType === 'combat' ? 'minor' : null,
-    spellChoice: !boss,
+    // A boss gives a legendary card when there's another climb to use it in
+    spellChoice: !boss || canClimbOn(run),
     spellTaken: false,
   };
 }
@@ -299,8 +302,9 @@ export function grantReward(run, roomType) {
   if (reward.potion) next = addPotion(next, reward.potion);
   if (reward.spellChoice) {
     // Picked now so the cards don't change if the player looks away
-    next.offers = makeSpellOffers(next);
+    next.offers = makeSpellOffers(next, roomType === 'boss');
     if (!next.offers.length) next.reward = { ...reward, spellChoice: false }; // every card collected
+    else if (next.offers.some(isLegendary)) next.reward = { ...reward, legendary: true };
   }
   if (reward.towerCleared && !reward.climbOn) next.status = 'won';
   return next;

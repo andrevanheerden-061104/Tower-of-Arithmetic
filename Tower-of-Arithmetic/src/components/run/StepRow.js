@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
 import Text from '../AppText';
 import Icon from '../Icon';
+import { useDyscalculia } from '../../context/DyscalculiaContext';
 import { colors, fonts } from '../../theme/theme';
 
 // One line of working ("Step 2   2x = 14"). status: 'done' shows a tick,
@@ -8,6 +9,7 @@ import { colors, fonts } from '../../theme/theme';
 export default function StepRow({ number, value, status = 'done', unit, onPress }) {
   const active = status === 'active';
   const wrong = status === 'wrong';
+  const big = useDyscalculia();
   return (
     <Pressable
       onPress={onPress}
@@ -16,7 +18,7 @@ export default function StepRow({ number, value, status = 'done', unit, onPress 
       style={[styles.row, active && styles.active, wrong && styles.wrong]}
     >
       <Text style={styles.label}>Step {number}</Text>
-      <Text style={[styles.value, active && styles.activeValue]}>
+      <Text style={[styles.value, big && styles.big, active && styles.activeValue]}>
         {value}
         {active ? '|' : ''}
       </Text>
@@ -44,5 +46,6 @@ const styles = StyleSheet.create({
   label: { fontFamily: fonts.medium, fontSize: 12, color: colors.mute },
   value: { flex: 1, fontFamily: fonts.bold, fontSize: 17, color: colors.white },
   activeValue: { color: colors.gold },
+  big: { fontSize: 22, letterSpacing: 1 },
   unit: { fontFamily: fonts.bold, fontSize: 15, color: colors.white },
 });

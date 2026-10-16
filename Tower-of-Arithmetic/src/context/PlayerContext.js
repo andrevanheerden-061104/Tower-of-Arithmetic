@@ -11,6 +11,10 @@ import {
   updateProfile as saveProfile,
   verifyEmailCode,
 } from '../services/playerData';
+import { xpToNextLevel } from '../data/playerLevels';
+
+// XP for finishing a Spell School lesson (the first time, logged in only)
+export const LESSON_XP = 50;
 
 // ---------------------------------------------------------------------------
 // The signed-in player, shared with every screen (read it with usePlayer()).
@@ -23,8 +27,11 @@ import {
 //   topics      [{ topic, attempts, correct, time_ms_total, hints_total }]
 //   pendingEmail  the email waiting for its confirmation code (or null)
 //
+//   guestStats  a guest's runs and highest floor, kept only while the app
+//               is open (for badges); nothing of a guest's is saved
+//
 // and the actions: signUp, verifyCode, resendCode, signIn, signOut,
-// updateProfile, recordAnswer, finishRun. Saving never blocks the game: if it fails, the answer is kept
+// updateProfile, recordAnswer, finishRun, xpChanges, lessonXpFor. Saving never blocks the game: if it fails, the answer is kept
 // and sent again with the next one.
 // ---------------------------------------------------------------------------
 
@@ -38,6 +45,7 @@ export function PlayerProvider({ children }) {
   const [data, setData] = useState(EMPTY);
   const pending = useRef([]); // answers still waiting to be saved
   const [pendingEmail, setPendingEmail] = useState(null);
+  const [guestStats, setGuestStats] = useState({ runs_completed: 0, highest_floor: 0 });
   const userId = session?.user?.id ?? null;
 
   // Who is logged in (and stay up to date as that changes)
@@ -158,7 +166,11 @@ export function PlayerProvider({ children }) {
   // End of a run: save XP, levels and run totals, then reload everything
   const finishRun = useCallback(
     async (result) => {
-      if (!supabase || !userId) return;
+      if (!supabase || !userId) {
+        // A guest: count it for this visit only (badges), save nothing
+        setGuestStats((s) => ({ runs_completed: s.runs_completed + 1, highest_floor: Math.max(s.highest_floor, result.floorsCleared ?? 0) }));
+        return;
+      }
       try {
         await saveRun(result);
         const loaded = await loadPlayer(userId);
@@ -168,6 +180,29 @@ export function PlayerProvider({ children }) {
       }
     },
     [userId],
+  );
+
+  // The profile changes ({ xp, level }) for gaining `amount` XP, levelling
+  // up like finish_run does on the server. null for a guest.
+  const profileNow = mine.profile;
+  const xpChanges = useCallback(
+    (amount) => {
+      if (!profileNow || !userId) return null;
+      let xp = (profileNow.xp ?? 0) + amount;
+      let level = profileNow.level ?? 1;
+      while (xp >= xpToNextLevel(level)) {
+        xp -= xpToNextLevel(level);
+        level += 1;
+      }
+      return { xp, level };
+    },
+    [profileNow, userId],
+  );
+
+  // XP a lesson will give when finished: only the first time, logged in
+  const lessonXpFor = useCallback(
+    (lessonId) => (profileNow && userId && !(profileNow.settings?.lessonsDone ?? []).includes(lessonId) ? LESSON_XP : 0),
+    [profileNow, userId],
   );
 
   const value = useMemo(
@@ -188,8 +223,11 @@ export function PlayerProvider({ children }) {
       updateProfile,
       recordAnswer,
       finishRun,
+      guestStats,
+      xpChanges,
+      lessonXpFor,
     }),
-    [ready, userId, session, mine, pendingEmail, signUp, verifyCode, resendCode, signIn, signOut, updateProfile, recordAnswer, finishRun],
+    [ready, userId, session, mine, pendingEmail, signUp, verifyCode, resendCode, signIn, signOut, updateProfile, recordAnswer, finishRun, guestStats, xpChanges, lessonXpFor],
   );
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

@@ -12,7 +12,7 @@ import styles from './Profile.styles';
 
 // The player's profile: level, a few stats, strengths by maths type
 // (accuracy per topic) and badges. Numbers come from the saved profile and
-// topic totals; badges are still placeholders (src/data/player.js).
+// topic totals; badges unlock at milestones (src/data/badges.js).
 export default function Profile({ navigate, character, grade }) {
   const player = usePlayerCard();
   return (

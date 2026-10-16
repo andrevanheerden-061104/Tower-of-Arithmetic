@@ -3,7 +3,7 @@ import Text from '../AppText';
 import { colors, fonts } from '../../theme/theme';
 
 // Last page: the badge, "Lesson complete" and two small result tiles.
-export default function CompletePage({ lesson, symbol, practice }) {
+export default function CompletePage({ lesson, symbol, practice, xp = 0 }) {
   const solved = practice?.result === 'right';
   return (
     <View style={styles.wrap}>
@@ -14,6 +14,7 @@ export default function CompletePage({ lesson, symbol, practice }) {
         Lesson complete
       </Text>
       <Text style={styles.earned}>Badge earned: {lesson.badge}</Text>
+      {xp > 0 ? <Text style={styles.xp}>+{xp} XP</Text> : null}
       <View style={styles.tiles}>
         <View style={styles.tile}>
           <Text style={styles.tileValue}>{lesson.pages.length} ideas</Text>
@@ -46,6 +47,7 @@ const styles = StyleSheet.create({
   symbol: { fontFamily: fonts.bold, fontSize: 46, color: colors.gold },
   title: { marginTop: 6, fontFamily: fonts.display, fontSize: 24, letterSpacing: 1, textTransform: 'uppercase', color: colors.gold },
   earned: { fontFamily: fonts.semibold, fontSize: 15, color: colors.white },
+  xp: { fontFamily: fonts.bold, fontSize: 18, color: colors.gold },
   tiles: { flexDirection: 'row', gap: 10, alignSelf: 'stretch' },
   tile: {
     flex: 1,

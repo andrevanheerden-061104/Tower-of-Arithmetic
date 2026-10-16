@@ -5,6 +5,7 @@ import ScreenBackground from '../ScreenBackground';
 import Shade from '../Shade';
 import { getLesson, pageCount } from '../../data/lessons';
 import { VERSIONS } from '../../game/versions';
+import { usePlayer } from '../../hooks/usePlayer';
 import { colors, fonts, spacing } from '../../theme/theme';
 import CompletePage from './CompletePage';
 import IntroPage from './IntroPage';
@@ -27,6 +28,10 @@ export default function LessonView({ versionId, topic, onClose, onFinish, finish
   const [practice, setPractice] = useState(null);
   const scroll = useRef(null);
   const reported = useRef(false);
+  // XP this lesson gives when finished (worked out at the start, before
+  // finishing marks it done)
+  const { lessonXpFor } = usePlayer();
+  const [xp] = useState(() => (lesson ? lessonXpFor(lesson.id) : 0));
 
   const total = lesson ? pageCount(lesson) : 1;
   const last = total - 1;
@@ -83,7 +88,7 @@ export default function LessonView({ versionId, topic, onClose, onFinish, finish
       </View>
     );
   } else if (complete) {
-    body = <CompletePage lesson={lesson} symbol={type?.symbol ?? '★'} practice={practice} />;
+    body = <CompletePage lesson={lesson} symbol={type?.symbol ?? '★'} practice={practice} xp={xp} />;
     guide = (
       <LessonGuide
         junior={junior}

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Text from '../AppText';
 import Icon from '../Icon';
+import { useDyscalculia } from '../../context/DyscalculiaContext';
 import { colors, fonts } from '../../theme/theme';
 
 const SYMBOLS = ['+', '−', '×', '÷', '=', '(', ')', '[', ']', 'x', 'n', 'y', '/', '.', '^', '√', '²', '³', 'π', '%', '<', '>', '≤', '≥', '°', '±', '∴', ':', ','];
@@ -38,6 +39,7 @@ const NAMES = {
 };
 
 function Keys({ keys, columns, onKey, keyHeight, even }) {
+  const big = useDyscalculia();
   const rows = [];
   for (let i = 0; i < keys.length; i += columns) rows.push(keys.slice(i, i + columns));
   return (
@@ -57,7 +59,7 @@ function Keys({ keys, columns, onKey, keyHeight, even }) {
                 {key === '⌫' ? (
                   <Icon name="backspace" size={22} />
                 ) : (
-                  <Text style={[styles.label, SYMBOLS.includes(key) && styles.symbol, action && styles.actionLabel]}>
+                  <Text style={[styles.label, big && styles.bigLabel, SYMBOLS.includes(key) && styles.symbol, action && styles.actionLabel]}>
                     {key === 'next' ? 'Next' : key === 'ok' ? 'OK' : key}
                   </Text>
                 )}
@@ -160,6 +162,7 @@ const styles = StyleSheet.create({
   action: { backgroundColor: colors.indigo, borderColor: '#8C82A3' },
   pressed: { opacity: 0.7 },
   label: { fontFamily: fonts.bold, fontSize: 20, color: colors.white },
+  bigLabel: { fontSize: 24 },
   symbol: { color: colors.gold },
   actionLabel: { fontSize: 15 },
   switcher: { flexDirection: 'row', alignItems: 'center', gap: 8 },

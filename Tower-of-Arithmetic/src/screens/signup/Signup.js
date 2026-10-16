@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthLayout from '../../components/auth/AuthLayout';
 import AuthTabs from '../../components/auth/AuthTabs';
+import GuestButton from '../../components/auth/GuestButton';
 import { usePlayer } from '../../hooks/usePlayer';
 import { checkSignup, friendlyAuthError } from '../../services/authErrors';
 import SignupForm from './components/SignupForm';
@@ -13,7 +14,8 @@ import styles from './Signup.styles';
 // in on the next screen (VerifyEmail). If email confirmation is switched
 // off in Supabase, it goes straight on to choosing a grade. Without
 // Supabase set up, it just moves on as a guest.
-export default function Signup({ navigate }) {
+export default function Signup({ navigate, onPlayAsGuest }) {
+  const onGuest = onPlayAsGuest ?? (() => navigate('onboarding'));
   const { signUp, online } = usePlayer();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(null);
@@ -44,6 +46,7 @@ export default function Signup({ navigate }) {
       <View style={styles.form}>
         <AuthTabs active="signup" onChange={(tab) => tab === 'login' && navigate('login')} />
         <SignupForm onSubmit={submit} onSwitch={() => navigate('login')} busy={busy} message={message} />
+        <GuestButton onPress={onGuest} />
       </View>
     </AuthLayout>
   );

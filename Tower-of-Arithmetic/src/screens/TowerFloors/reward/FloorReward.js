@@ -65,8 +65,16 @@ export default function FloorReward({ navigate, run, character, onClimbOn, onLea
             <TutorialTarget id="spellReward">
               <RewardRow
                 icon="card"
-                title={reward.spellTaken ? 'New spell added' : junior ? 'New spell!' : 'Spell +1'}
-                detail={reward.spellTaken ? (reward.spellPlace === 'stash' ? 'In your stash' : 'In your deck') : 'Tap to choose 1 of 3 spells'}
+                title={reward.spellTaken ? 'New spell added' : reward.legendary ? 'Legendary spell!' : junior ? 'New spell!' : 'Spell +1'}
+                detail={
+                  reward.spellTaken
+                    ? reward.spellPlace === 'stash'
+                      ? 'In your stash'
+                      : 'In your deck'
+                    : reward.legendary
+                      ? 'The boss dropped a legendary card. Tap to choose'
+                      : 'Tap to choose 1 of 3 spells'
+                }
                 done={reward.spellTaken}
                 highlight={!reward.spellTaken}
                 onPress={reward.spellTaken ? undefined : () => navigate('chooseSpell')}
@@ -86,7 +94,11 @@ export default function FloorReward({ navigate, run, character, onClimbOn, onLea
                 ? `You beat the boss! Climb ${run.map.floors} more floors? The monsters are stronger up there.`
                 : `The stairs go on. Climb floors ${total + 1}–${total + run.map.floors}, where the enemies are tougher and the rewards bigger (climb ${climb + 1} of ${MAX_CLIMBS}), or leave the tower now.`}
             </Text>
-            <PrimaryButton label={junior ? 'Keep climbing!' : `Climb to floor ${total + run.map.floors}`} onPress={onClimbOn} />
+            <PrimaryButton
+              label={mustPick ? 'Choose a spell first' : junior ? 'Keep climbing!' : `Climb to floor ${total + run.map.floors}`}
+              disabled={mustPick}
+              onPress={onClimbOn}
+            />
             <PrimaryButton label="Leave the tower" variant="secondary" onPress={onLeaveTower} />
           </View>
         ) : (

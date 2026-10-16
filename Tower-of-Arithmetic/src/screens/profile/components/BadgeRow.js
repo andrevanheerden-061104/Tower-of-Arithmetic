@@ -3,8 +3,8 @@ import Text from '../../../components/AppText';
 import Badge from './Badge';
 import { colors, fonts } from '../../../theme/theme';
 
-// Heading with the badge count, then a row of medals.
-export default function BadgeRow({ badges, total }) {
+// Heading with the badge count, then a row of badges (src/data/badges.js).
+export default function BadgeRow({ badges, total = badges.length }) {
   const earned = badges.filter((b) => b.earned).length;
 
   return (
@@ -13,8 +13,8 @@ export default function BadgeRow({ badges, total }) {
         Badges · {earned} of {total}
       </Text>
       <View style={styles.row}>
-        {badges.map((badge, i) => (
-          <Badge key={`${badge.name}-${i}`} name={badge.name} earned={badge.earned} />
+        {badges.map((badge) => (
+          <Badge key={badge.id ?? badge.name} name={badge.name} description={badge.description} image={badge.image} earned={badge.earned} />
         ))}
       </View>
     </View>
@@ -22,7 +22,7 @@ export default function BadgeRow({ badges, total }) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: 8 },
+  wrap: { gap: 10 },
   heading: {
     fontFamily: fonts.semibold,
     fontSize: 12,
@@ -30,5 +30,5 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: colors.mute,
   },
-  row: { flexDirection: 'row', gap: 11 },
+  row: { flexDirection: 'row', gap: 11, alignItems: 'flex-start' },
 });

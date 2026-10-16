@@ -34,7 +34,7 @@ export function useVoiceAnswer() {
         // already stopped, or the recorder was let go
       }
     }
-    await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true }).catch(() => {});
+    await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true, interruptionMode: 'mixWithOthers' }).catch(() => {});
     holdMusic(false);
   };
 

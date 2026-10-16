@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthLayout from '../../components/auth/AuthLayout';
 import AuthTabs from '../../components/auth/AuthTabs';
+import GuestButton from '../../components/auth/GuestButton';
 import { usePlayer } from '../../hooks/usePlayer';
 import { checkLogin, friendlyAuthError } from '../../services/authErrors';
 import LoginForm from './components/LoginForm';
@@ -10,7 +11,8 @@ import styles from './Login.styles';
 
 // Log in, then straight to Home (or to choosing a grade, if the player
 // hasn't picked one yet). Without Supabase set up, it moves on as a guest.
-export default function Login({ navigate }) {
+export default function Login({ navigate, onPlayAsGuest }) {
+  const onGuest = onPlayAsGuest ?? (() => navigate('onboarding'));
   const { signIn, resendCode, online } = usePlayer();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(null);
@@ -44,6 +46,7 @@ export default function Login({ navigate }) {
       <View style={styles.form}>
         <AuthTabs active="login" onChange={(tab) => tab === 'signup' && navigate('signup')} />
         <LoginForm onSubmit={submit} onSwitch={() => navigate('signup')} busy={busy} message={message} />
+        <GuestButton onPress={onGuest} />
       </View>
     </AuthLayout>
   );

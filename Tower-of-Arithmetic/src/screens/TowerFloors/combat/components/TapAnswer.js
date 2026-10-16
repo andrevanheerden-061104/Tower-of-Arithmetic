@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Text from '../../../../components/AppText';
 import Icon from '../../../../components/Icon';
 import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
+import VisualHelper from '../../../../components/run/visual/VisualHelper';
 import DotPicture from './DotPicture';
 import QuestionBox from './QuestionBox';
 import SheetBody from './SheetBody';
@@ -13,9 +14,12 @@ export default function TapAnswer({ question, onSubmit, onHelp }) {
   return (
     <SheetBody
       scroll={
-        <QuestionBox question={question}>
-          <DotPicture picture={question.picture} />
-        </QuestionBox>
+        <>
+          <QuestionBox question={question}>
+            <DotPicture picture={question.picture} />
+          </QuestionBox>
+          <VisualHelper question={question} />
+        </>
       }
       footer={
         <>

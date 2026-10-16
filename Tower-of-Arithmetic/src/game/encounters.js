@@ -10,6 +10,11 @@ import { createRandom, shuffle } from './random';
 //             hit harder, so they keep 2), random moves and one heal
 // How they act is in src/game/enemyAI.js. Higher climbs of the tower add
 // hearts and power to every enemy (src/game/tower.js).
+//
+// Where each picture stands (src/screens/TowerFloors/combat/components/BattleStage.js):
+//   ground  the empty space under the feet in the picture, as a part of
+//           its height (measured from each PNG), so the feet touch the floor
+//   flying  hovers above its shadow and bobs up and down
 
 export const ENEMIES = {
   // Level 1: lower floors, fixed attack patterns (see src/game/enemyAI.js)
@@ -18,6 +23,7 @@ export const ENEMIES = {
     name: 'Slime',
     level: 1,
     hearts: 2,
+    ground: 0.033,
     image: require('../assets/enemys/slime.png'),
   },
   pumpkin: {
@@ -25,6 +31,7 @@ export const ENEMIES = {
     name: 'Pumpkin',
     level: 1,
     hearts: 2,
+    ground: 0.049,
     image: require('../assets/enemys/pumken.png'),
   },
   // Level 2: higher floors, random attacks, heal once per fight
@@ -35,6 +42,8 @@ export const ENEMIES = {
     // Same hearts as level 1, but they hit harder. With 2.5 hearts a
     // player still using ½-heart spells almost never won (balance test).
     hearts: 2,
+    ground: 0.076,
+    flying: true, // flaps above the floor
     image: require('../assets/enemys/darkowl.png'),
   },
   fireLizard: {
@@ -42,6 +51,7 @@ export const ENEMIES = {
     name: 'Fire Lizard',
     level: 2,
     hearts: 2,
+    ground: 0.037,
     image: require('../assets/enemys/fireLizard.png'),
   },
   bookMimic: {
@@ -49,6 +59,7 @@ export const ENEMIES = {
     name: 'Book Mimic',
     level: 1,
     hearts: 2,
+    ground: 0.127,
     image: require('../assets/enemys/book_mimic.png'),
   },
   crystalCrawler: {
@@ -56,6 +67,7 @@ export const ENEMIES = {
     name: 'Crystal Crawler',
     level: 1,
     hearts: 2,
+    ground: 0.13,
     image: require('../assets/enemys/crad.png'),
   },
   frostWyvern: {
@@ -64,6 +76,8 @@ export const ENEMIES = {
     level: 2,
     hearts: 3,
     scale: 1.25,
+    ground: 0.034,
+    flying: true, // wings up, legs hanging
     image: require('../assets/enemys/wyvern.png'),
   },
   glassKnight: {
@@ -72,6 +86,7 @@ export const ENEMIES = {
     level: 2,
     hearts: 3,
     scale: 1.3,
+    ground: 0.003,
     image: require('../assets/enemys/glass.png'),
   },
   // Bosses: the top floor of each climb (picked at random, see BOSS_IDS in
@@ -82,6 +97,7 @@ export const ENEMIES = {
     title: 'the Shadow Warden',
     boss: true,
     hearts: 5,
+    ground: 0.008,
     image: require('../assets/boss/boss1.png'),
   },
   marionetta: {
@@ -90,6 +106,8 @@ export const ENEMIES = {
     title: 'the Puppet Queen',
     boss: true,
     hearts: 5,
+    ground: 0.029,
+    flying: true, // hangs from her strings
     image: require('../assets/boss/puppet.png'),
   },
   merlinShadow: {
@@ -98,6 +116,7 @@ export const ENEMIES = {
     title: 'the Starless Sage',
     boss: true,
     hearts: 5,
+    ground: 0.019,
     image: require('../assets/boss/shadow-of-merlin.png'),
   },
 };

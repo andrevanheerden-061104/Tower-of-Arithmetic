@@ -5,6 +5,8 @@ import Icon from '../../../../components/Icon';
 import PrimaryButton from '../../../../components/PrimaryButton';
 import AnswerInput from '../../../../components/run/answer/AnswerInput';
 import { TYPE_COLUMNS, TYPE_KEYS } from '../../../../game/keypads';
+import VisualHelper from '../../../../components/run/visual/VisualHelper';
+import { useDyscalculia } from '../../../../context/DyscalculiaContext';
 import BreakdownPicture from './BreakdownPicture';
 import QuestionBox from './QuestionBox';
 import SheetBody from './SheetBody';
@@ -16,7 +18,8 @@ import { colors, fonts } from '../../../../theme/theme';
 // Speak or Draw fill in the answer box (just the final number).
 export default function TypeAnswer({ question, onSubmit, speech }) {
   const [answer, setAnswer] = useState('');
-  const [picture, setPicture] = useState(false);
+  // Dyscalculia mode opens the picture straight away
+  const [picture, setPicture] = useState(useDyscalculia());
 
   const press = (key) => {
     if (key === '⌫') setAnswer((a) => a.slice(0, -1));
@@ -50,6 +53,7 @@ export default function TypeAnswer({ question, onSubmit, speech }) {
             <Icon name="image" size={20} color={colors.gold} />
             <Text style={styles.pictureText}>{picture ? 'Hide the picture' : 'Show me a picture'}</Text>
           </Pressable>
+          <VisualHelper question={question} />
           {picture && <BreakdownPicture picture={question.picture} />}
         </>
       }

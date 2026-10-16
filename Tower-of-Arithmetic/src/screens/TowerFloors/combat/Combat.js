@@ -18,9 +18,11 @@ import SupplyColumn from './components/SupplyColumn';
 import SupplyDetails from './components/SupplyDetails';
 import TurnPrompt from './components/TurnPrompt';
 import { floorBackground } from '../../../game/tower';
+import { playSfx, spellSound } from '../../../audio/sfx';
 import styles from './Combat.styles';
 
 const ENEMY_DELAY = 700; // ms before the enemy acts
+const HIT_DELAY = 650; // ms from casting to the spell landing (sound + red flash)
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -67,6 +69,9 @@ export default function Combat({
   const [hintsUsed, setHintsUsed] = useState(0);
   const [toast, setToast] = useState(null); // { id, text, tone }
   const [detail, setDetail] = useState(null); // the potion or item popup that is open
+  // Who was just hurt: { who: 'enemy' | 'player', n, crit }. A new n makes
+  // that side shake and flash red (BattleStage).
+  const [hit, setHit] = useState(null);
   const closeToast = useRef(null); // resolves the message on screen
 
   const hand = run.deck; // up to 5 cards
@@ -120,7 +125,11 @@ export default function Combat({
     // The Phoenix Feather Charm saves the player once per run
     const revived = heartsLeft <= 0 && canRevive(run);
     if (revived) heartsLeft = 1;
-    if (hurt > 0) updateRun((r) => damage(r, hurt));
+    if (hurt > 0) {
+      updateRun((r) => damage(r, hurt));
+      playSfx('hit');
+      setHit({ who: 'player', n: Date.now() });
+    }
     const message = guard
       ? `${enemy.name} uses ${result.action.name}! Your ${ITEMS[guard].name} blocks ½ heart${hurt > 0 ? `: you lose ${hearts(hurt)}.` : ', so it does no harm.'}`
       : result.message;
@@ -129,6 +138,7 @@ export default function Combat({
 
     if (heartsLeft <= 0) {
       setPhase('over');
+      playSfx('defeat');
       onDefeat();
     } else {
       setPhase('player');
@@ -143,7 +153,12 @@ export default function Combat({
     onAnswer?.({ topic: question.type, version: version.id, correct: right, timeMs, hints: hintsUsed });
     // Hints are counted per sum: start again for the next one
     setHintsUsed(0);
-    if (!right) return 'wrong'; // the sheet shows a hint, then calls fizzled()
+    if (!right) {
+      playSfx('wrong');
+      return 'wrong'; // the sheet shows a hint, then calls fizzled()
+    }
+    playSfx('correct');
+    playSfx(spellSound(spell), 250);
 
     setPhase('enemy');
 
@@ -165,6 +180,10 @@ export default function Combat({
     const { amount, crit } = spellDamage(spell, enemy.id, bonus);
     const hit = hitEnemy(foe, amount);
     setFoe(hit);
+    setTimeout(() => {
+      playSfx(crit ? 'crit' : 'hit');
+      setHit({ who: 'enemy', n: Date.now(), crit });
+    }, HIT_DELAY);
     (async () => {
       await announce(
         crit
@@ -174,6 +193,7 @@ export default function Combat({
       );
       if (hit.hearts <= 0) {
         setPhase('over');
+        playSfx('victory', HIT_DELAY + 300);
         await announce(`${enemy.name} defeated!`, 'win');
         onVictory();
       } else {
@@ -227,7 +247,7 @@ export default function Combat({
       <RunBackground image={background ?? floorBackground(run)} />
       {supplies}
 
-      <BattleStage character={character} enemy={enemy} boss={boss} defeated={foe.hearts <= 0} />
+      <BattleStage character={character} enemy={enemy} boss={boss} defeated={foe.hearts <= 0} hit={hit} reduceMotion={Boolean(settings?.reduceMotion)} />
 
       {/* Whoever's turn it is gets a glowing aura (gold for the player, purple for the enemy) */}
       <HealthPanel side="left" name={character.name} hearts={run.hearts} max={run.maxHearts} active={playerTurn} aura="gold" tutorialId="playerHealth" />

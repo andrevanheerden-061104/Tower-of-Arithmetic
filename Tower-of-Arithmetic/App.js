@@ -10,8 +10,10 @@ import { Montserrat_500Medium } from '@expo-google-fonts/montserrat/500Medium';
 import { Montserrat_600SemiBold } from '@expo-google-fonts/montserrat/600SemiBold';
 import { Montserrat_700Bold } from '@expo-google-fonts/montserrat/700Bold';
 import { TEXT_SCALES, TextSizeProvider } from './src/context/TextSizeContext';
+import { DyscalculiaProvider } from './src/context/DyscalculiaContext';
 import { setMusic } from './src/audio/music';
-import { PlayerProvider } from './src/context/PlayerContext';
+import { setSoundEffects } from './src/audio/sfx';
+import { LESSON_XP, PlayerProvider } from './src/context/PlayerContext';
 import { DEFAULT_CHARACTER_ID, getCharacter, withProgress } from './src/data/characters';
 import { DEFAULT_SETTINGS } from './src/data/settings';
 import {
@@ -40,6 +42,8 @@ import { mergePools, poolDisplays, unusedInPool } from './src/game/questionPool'
 import { topicsForRun } from './src/game/questions';
 import { versionForGrade } from './src/game/versions';
 import { usePlayer } from './src/hooks/usePlayer';
+import { BADGES, earnedBadgeIds, topCharacterLevel } from './src/data/badges';
+import BadgeUnlocked from './src/components/BadgeUnlocked';
 import { fetchQuestionPool } from './src/services/ai';
 import Characters from './src/screens/characters/Characters';
 import Home from './src/screens/home/Home';
@@ -108,6 +112,9 @@ const SCREENS = {
 // playing, so opening it from the run menu doesn't switch the tower music off.
 const MENU_MUSIC = ['splash', 'signup', 'login', 'verifyEmail', 'onboarding', 'home', 'characters', 'profile'];
 const BATTLE_MUSIC = ['combat', 'boss'];
+
+// Screens where a newly unlocked badge may pop up
+const BADGE_SCREENS = ['home', 'profile', 'characters', 'dungeonType', 'pathMap', 'reward', 'defeat', 'runStats'];
 
 function musicFor(screen, playing) {
   if (screen === 'settings' || screen === 'tutorial') return playing ?? 'menu';
@@ -239,6 +246,24 @@ function Game() {
     });
   };
 
+  // Badges (src/data/badges.js): unlocked by the player's totals (and, in a
+  // run going now, the floor it has reached). Each new one pops up once,
+  // on a calm screen (never mid-fight), and is then remembered in the
+  // settings as badgesSeen. A guest's badges last only this visit.
+  const totals = profile
+    ? { runsCompleted: profile.runs_completed ?? 0, highestFloor: profile.highest_floor ?? 0 }
+    : { runsCompleted: player.guestStats.runs_completed, highestFloor: player.guestStats.highest_floor };
+  const badgeStats = {
+    ...totals,
+    highestFloor: Math.max(totals.highestFloor, run ? floorsCleared(run) : 0),
+    topCharacterLevel: topCharacterLevel(player.characters),
+  };
+  const badgesSeen = settings.badgesSeen ?? [];
+  const unlocked = earnedBadgeIds(badgeStats);
+  const newBadge = BADGES.find((b) => unlocked.includes(b.id) && !badgesSeen.includes(b.id)) ?? null;
+  const showBadge = Boolean(newBadge) && BADGE_SCREENS.includes(screen);
+  const closeBadge = () => changeSetting('badgesSeen', [...badgesSeen, newBadge.id]);
+
   const runActions = {
     // Spell School
     lessonTopic,
@@ -247,8 +272,13 @@ function Game() {
       setLessonTopic(topic);
       navigate('lesson');
     },
+    // A lesson finished for the first time: remember it and, when logged
+    // in, give LESSON_XP (one save, so the two changes can't race)
     onLessonDone: (id) => {
-      if (!lessonsDone.includes(id)) changeSetting('lessonsDone', [...lessonsDone, id]);
+      if (lessonsDone.includes(id)) return;
+      const next = { ...settings, lessonsDone: [...lessonsDone, id] };
+      setGuest((g) => ({ ...g, settings: next }));
+      player.updateProfile({ settings: next, ...(player.xpChanges(LESSON_XP) ?? {}) });
     },
     onStartRun: (dungeonTypeId) => {
       if (run?.status === 'active' && run.xp > 0) saveRun(run); // left unfinished
@@ -364,6 +394,7 @@ function Game() {
     musicRef.current = musicFor(shownScreen, musicRef.current);
     setMusic(musicRef.current, settings.music);
   }, [shownScreen, settings.music]);
+  useEffect(() => setSoundEffects(settings.soundEffects), [settings.soundEffects]);
 
   if (!fontsLoaded) {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
@@ -376,6 +407,7 @@ function Game() {
   return (
     // Everything inside reads the text size chosen in Settings
     <TextSizeProvider value={TEXT_SCALES[settings.textSize] ?? 1}>
+    <DyscalculiaProvider value={Boolean(settings.dyscalculiaMode)}>
       {/* Full screen on every page: hide the top status bar (clock, battery)
           and Android's back / home / recent-apps bar. The player swipes in
           from the top or bottom edge to bring them back for a moment. */}
@@ -395,8 +427,11 @@ function Game() {
         onSettingChange={changeSetting}
         run={run}
         updateRun={updateRun}
+        onPlayAsGuest={() => navigate(grade ? 'home' : 'onboarding')}
         {...runActions}
       />
+      {showBadge && <BadgeUnlocked key={newBadge.id} badge={newBadge} guest={!profile} onClose={closeBadge} />}
+    </DyscalculiaProvider>
     </TextSizeProvider>
   );
 }

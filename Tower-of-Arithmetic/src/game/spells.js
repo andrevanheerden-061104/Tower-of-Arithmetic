@@ -168,7 +168,7 @@ export function baseDamage(spell) {
 // Three spells offered after a fight, picked at random. Spells the player
 // already has are left out. Level 2 cards can turn up from 30% of the way
 // up. Legendary (level 3) cards are never offered here: they are only won
-// by defeating a boss.
+// by defeating a boss (bossSpellOffers).
 export function spellOffers(deck, progress, count = 3) {
   const pool = SPELL_IDS.filter((id) => !deck.includes(id)).filter((id) => {
     const level = SPELLS[id].level;
@@ -190,4 +190,25 @@ export function spellOffers(deck, progress, count = 3) {
     offers.push(left.splice(i < 0 ? 0 : i, 1)[0]);
   }
   return offers;
+}
+
+// The reward for beating a boss: every legendary card the player doesn't
+// have yet comes first, then strong (level 2) cards, then level 1, until
+// there are `count` to choose from.
+export function bossSpellOffers(deck, count = 3) {
+  const missing = (level) => shuffled(SPELL_IDS.filter((id) => SPELLS[id].level === level && !deck.includes(id)));
+  return [...missing(3), ...missing(2), ...missing(1)].slice(0, count);
+}
+
+export function isLegendary(id) {
+  return Boolean(SPELLS[id]?.legendary);
+}
+
+function shuffled(list) {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
 }
