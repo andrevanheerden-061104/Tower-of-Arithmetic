@@ -1,5 +1,6 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { VideoView, useVideoPlayer } from 'expo-video';
+import SplashVideoWeb from './SplashVideoWeb';
 
 // Cut so the last frame flows into the first, so the loop has no visible jump.
 const splashVideo = require('../../../assets/vidoes/splashScreen_seamless.mp4');
@@ -7,7 +8,13 @@ const splashVideo = require('../../../assets/vidoes/splashScreen_seamless.mp4');
 // The moving tower background, only used on the splash screen
 // (every other screen keeps the still ScreenBackground image).
 // Plays silently on a loop and fills the screen, trimming any edges that stick out.
+// On the web a plain <video> is used instead (SplashVideoWeb), because
+// expo-video doesn't fit the video to the screen in a browser.
 export default function SplashVideo() {
+  return Platform.OS === 'web' ? <SplashVideoWeb /> : <PhoneSplashVideo />;
+}
+
+function PhoneSplashVideo() {
   const player = useVideoPlayer(splashVideo, (p) => {
     p.loop = true;
     p.muted = true;
