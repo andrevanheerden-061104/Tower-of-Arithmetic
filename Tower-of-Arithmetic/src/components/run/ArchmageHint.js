@@ -1,10 +1,13 @@
 import { Image, StyleSheet, View } from 'react-native';
 import Text from '../AppText';
 import { GUIDE } from '../../data/guide';
+import { useReadAloud } from '../../hooks/useReadAloud';
 import { colors, fonts } from '../../theme/theme';
 
 // The Archmage helper with one hint at a time ("Hint 1 of 3").
+// With Read aloud on, each new hint is read out.
 export default function ArchmageHint({ hint, index, total, title = GUIDE.name }) {
+  useReadAloud(hint);
   return (
     <View style={styles.card} accessibilityLiveRegion="polite">
       <View style={styles.header}>

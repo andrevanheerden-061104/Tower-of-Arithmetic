@@ -20,6 +20,8 @@ import DotPicture from '../combat/components/DotPicture';
 import QuestionBox from '../combat/components/QuestionBox';
 import PuzzleAnswer from './components/PuzzleAnswer';
 import { playSfx } from '../../../audio/sfx';
+import { questionWords, speak } from '../../../audio/speech';
+import { useReadAloud } from '../../../hooks/useReadAloud';
 import VisualHelper from '../../../components/run/visual/VisualHelper';
 import styles from './Puzzle.styles';
 
@@ -68,6 +70,9 @@ export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer, o
   };
 
   const junior = version.id === 'junior';
+  // Read aloud: the door's words and the sum (by itself with the setting on)
+  const words = questionWords(question, puzzle.intro);
+  useReadAloud(lesson ? null : words, { slow: junior });
 
   return (
     <View style={styles.screen}>
@@ -89,7 +94,7 @@ export default function Puzzle({ navigate, run, updateRun, onSolved, onAnswer, o
             <Text style={styles.question}>{puzzle.intro}</Text>
           </View>
           <Pressable
-            onPress={junior ? () => console.log('Read aloud (placeholder)') : nextHint}
+            onPress={junior ? () => speak(words, { slow: true }) : nextHint}
             accessibilityRole="button"
             accessibilityLabel={junior ? 'Read aloud' : 'Get a hint'}
             style={[styles.roundButton, junior && styles.speaker]}

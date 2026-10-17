@@ -8,7 +8,7 @@ import ForgotPasswordLink from './ForgotPasswordLink';
 
 // Email and password. "Enter the tower" hands them to the screen, which
 // logs in. `message` is { text, tone }.
-export default function LoginForm({ onSubmit, onSwitch, busy = false, message }) {
+export default function LoginForm({ onSubmit, onSwitch, onForgot, busy = false, message }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -33,7 +33,7 @@ export default function LoginForm({ onSubmit, onSwitch, busy = false, message })
           secure
           autoComplete="current-password"
         />
-        <ForgotPasswordLink onPress={() => {}} />
+        <ForgotPasswordLink onPress={() => onForgot?.(email.trim())} />
       </View>
 
       <FormMessage text={message?.text} tone={message?.tone} />

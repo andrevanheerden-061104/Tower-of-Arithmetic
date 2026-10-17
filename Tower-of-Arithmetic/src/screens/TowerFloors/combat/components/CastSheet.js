@@ -10,6 +10,8 @@ import { hasLesson } from '../../../../data/lessons';
 import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 import { hearts } from '../../../../game/enemyAI';
 import { useAiHint } from '../../../../hooks/useAiHint';
+import { useReadAloud } from '../../../../hooks/useReadAloud';
+import { questionWords, readAloudOn, speak } from '../../../../audio/speech';
 import QuestionBox from './QuestionBox';
 import SheetBody from './SheetBody';
 import StepsAnswer from './StepsAnswer';
@@ -74,6 +76,11 @@ export default function CastSheet({
   // Orrin (the AI) explains a wrong answer; the bank's hints show either way
   const ai = useAiHint(version, question, panel === 'wrong' && !inline ? wrongAnswer : null, grade);
   const junior = version.id === 'junior';
+  // Read aloud: the speaker button reads the sum; with the setting on it is
+  // read out by itself when the sheet opens (not in the tutorial's still)
+  const words = questionWords(question);
+  useReadAloud(inline ? null : words, { slow: junior });
+  const showSpeaker = junior || readAloudOn();
 
   const nextHint = () => {
     setHintIndex((i) => Math.min(i + 1, question.hints.length - 1));
@@ -128,9 +135,9 @@ export default function CastSheet({
               <Icon name="lightbulb" size={22} color={colors.gold} />
             </Pressable>
           )}
-          {junior && (
+          {showSpeaker && (
             <Pressable
-              onPress={() => console.log('Read aloud (placeholder)')}
+              onPress={() => speak(words, { slow: junior })}
               accessibilityRole="button"
               accessibilityLabel="Read the question aloud"
               style={[styles.iconButton, styles.speaker]}

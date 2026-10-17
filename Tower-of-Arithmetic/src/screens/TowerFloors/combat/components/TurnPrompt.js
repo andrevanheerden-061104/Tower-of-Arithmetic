@@ -2,11 +2,12 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Text from '../../../../components/AppText';
 import Icon from '../../../../components/Icon';
 import { MAX_DECK } from '../../../../game/spells';
+import { speak } from '../../../../audio/speech';
 import { colors, fonts, spacing } from '../../../../theme/theme';
 
 // "Your turn · choose a spell" above the hand (or "Slime's turn…" while the
 // enemy acts). Junior mode shows a bigger, friendlier "Pick a spell!" with a
-// read-aloud button instead.
+// read-aloud button that says it out loud.
 export default function TurnPrompt({ version, deckSize, waiting, enemyName }) {
   const message = waiting ? `${enemyName}’s turn…` : null;
   if (version.id === 'junior') {
@@ -16,7 +17,7 @@ export default function TurnPrompt({ version, deckSize, waiting, enemyName }) {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Read aloud"
-            onPress={() => console.log('Read aloud (placeholder: speech not added yet)')}
+            onPress={() => speak(message ?? 'Pick a spell! Tap a card to cast it.', { slow: true })}
             style={styles.speaker}
           >
             <Icon name="volume" size={22} color={colors.bg} />

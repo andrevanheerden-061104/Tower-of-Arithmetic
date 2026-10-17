@@ -7,6 +7,8 @@ import {
   signIn as logIn,
   signOut as logOut,
   resendEmailCode,
+  resetPasswordWithCode,
+  sendPasswordReset,
   signUp as createAccount,
   updateProfile as saveProfile,
   verifyEmailCode,
@@ -31,7 +33,8 @@ export const LESSON_XP = 50;
 //               is open (for badges); nothing of a guest's is saved
 //
 // and the actions: signUp, verifyCode, resendCode, signIn, signOut,
-// updateProfile, recordAnswer, finishRun, xpChanges, lessonXpFor. Saving never blocks the game: if it fails, the answer is kept
+// requestPasswordReset, resetPassword, updateProfile, recordAnswer,
+// finishRun, xpChanges, lessonXpFor. Saving never blocks the game: if it fails, the answer is kept
 // and sent again with the next one.
 // ---------------------------------------------------------------------------
 
@@ -107,6 +110,19 @@ export function PlayerProvider({ children }) {
   const signIn = useCallback(async (values) => {
     if (!supabase) return null;
     const next = await logIn(values);
+    const loaded = await loadPlayer(next.user.id);
+    setData({ userId: next.user.id, ...loaded });
+    return loaded.profile;
+  }, []);
+
+  // Forgot password: email a reset code, then the code + a new password log
+  // the player in. Returns their profile.
+  const requestPasswordReset = useCallback(async (email) => {
+    if (!supabase) return;
+    await sendPasswordReset(email);
+  }, []);
+  const resetPassword = useCallback(async (values) => {
+    const next = await resetPasswordWithCode(values);
     const loaded = await loadPlayer(next.user.id);
     setData({ userId: next.user.id, ...loaded });
     return loaded.profile;
@@ -220,6 +236,8 @@ export function PlayerProvider({ children }) {
       resendCode,
       signIn,
       signOut,
+      requestPasswordReset,
+      resetPassword,
       updateProfile,
       recordAnswer,
       finishRun,
@@ -227,7 +245,7 @@ export function PlayerProvider({ children }) {
       xpChanges,
       lessonXpFor,
     }),
-    [ready, userId, session, mine, pendingEmail, signUp, verifyCode, resendCode, signIn, signOut, updateProfile, recordAnswer, finishRun, guestStats, xpChanges, lessonXpFor],
+    [ready, userId, session, mine, pendingEmail, signUp, verifyCode, resendCode, signIn, signOut, requestPasswordReset, resetPassword, updateProfile, recordAnswer, finishRun, guestStats, xpChanges, lessonXpFor],
   );
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

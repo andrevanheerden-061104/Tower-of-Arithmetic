@@ -49,6 +49,19 @@ export async function resendEmailCode(email) {
   check(await supabase.auth.resend({ type: 'signup', email }));
 }
 
+// Forgot password, step 1: Supabase emails a 6-digit reset code (the
+// "Reset Password" email template must show {{ .Token }}).
+export async function sendPasswordReset(email) {
+  check(await supabase.auth.resetPasswordForEmail(email));
+}
+
+// Step 2: the code logs the player in, then the new password is saved.
+export async function resetPasswordWithCode({ email, code, password }) {
+  const { session } = check(await supabase.auth.verifyOtp({ email, token: code, type: 'recovery' }));
+  check(await supabase.auth.updateUser({ password }));
+  return session;
+}
+
 export async function signIn({ email, password }) {
   return check(await supabase.auth.signInWithPassword({ email, password })).session;
 }

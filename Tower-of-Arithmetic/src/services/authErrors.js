@@ -8,6 +8,7 @@ export function friendlyAuthError(message = '') {
   if (m.includes('security purposes') || m.includes('only request this after')) return 'A code was just sent. Wait a minute before asking for another one.';
   if (m.includes('sending confirmation') || m.includes('sending email')) return 'The tower couldn’t send the email. Please try again later.';
   if (m.includes('expired') || m.includes('invalid') && m.includes('token')) return 'That code is wrong or too old. Ask for a new code.';
+  if (m.includes('different from the old')) return 'Choose a new password that’s different from your old one.';
   if (m.includes('password')) return 'Your password needs at least 8 characters.';
   if (m.includes('rate limit') || m.includes('too many')) return 'Too many tries. Wait a minute, then try again.';
   if (m.includes('network') || m.includes('fetch')) return 'Can’t reach the tower. Check your internet connection.';

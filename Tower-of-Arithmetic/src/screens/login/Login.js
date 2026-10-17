@@ -7,6 +7,7 @@ import GuestButton from '../../components/auth/GuestButton';
 import { usePlayer } from '../../hooks/usePlayer';
 import { checkLogin, friendlyAuthError } from '../../services/authErrors';
 import LoginForm from './components/LoginForm';
+import { rememberEmail } from '../forgotPassword/ForgotPassword';
 import styles from './Login.styles';
 
 // Log in, then straight to Home (or to choosing a grade, if the player
@@ -45,7 +46,16 @@ export default function Login({ navigate, onPlayAsGuest }) {
 
       <View style={styles.form}>
         <AuthTabs active="login" onChange={(tab) => tab === 'signup' && navigate('signup')} />
-        <LoginForm onSubmit={submit} onSwitch={() => navigate('signup')} busy={busy} message={message} />
+        <LoginForm
+          onSubmit={submit}
+          onSwitch={() => navigate('signup')}
+          onForgot={(email) => {
+            rememberEmail(email);
+            navigate('forgotPassword');
+          }}
+          busy={busy}
+          message={message}
+        />
         <GuestButton onPress={onGuest} />
       </View>
     </AuthLayout>

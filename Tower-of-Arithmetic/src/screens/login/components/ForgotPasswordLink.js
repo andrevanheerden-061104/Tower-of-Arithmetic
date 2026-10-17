@@ -2,7 +2,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import Text from '../../../components/AppText';
 import { colors, fonts } from '../../../theme/theme';
 
-// Does nothing yet: password reset needs the backend.
+// Opens the Forgot password screen (a reset code by email).
 export default function ForgotPasswordLink({ onPress }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="link" style={styles.wrap} hitSlop={8}>

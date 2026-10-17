@@ -13,6 +13,7 @@ import { TEXT_SCALES, TextSizeProvider } from './src/context/TextSizeContext';
 import { DyscalculiaProvider } from './src/context/DyscalculiaContext';
 import { setMusic } from './src/audio/music';
 import { setSoundEffects } from './src/audio/sfx';
+import { setReadAloud } from './src/audio/speech';
 import { LESSON_XP, PlayerProvider } from './src/context/PlayerContext';
 import { DEFAULT_CHARACTER_ID, getCharacter, withProgress } from './src/data/characters';
 import { DEFAULT_SETTINGS } from './src/data/settings';
@@ -56,6 +57,7 @@ import Signup from './src/screens/signup/Signup';
 import Splash from './src/screens/splash/Splash';
 import Tutorial from './src/screens/tutorial/Tutorial';
 import VerifyEmail from './src/screens/verifyEmail/VerifyEmail';
+import ForgotPassword from './src/screens/forgotPassword/ForgotPassword';
 import BossRoom from './src/screens/TowerFloors/bossRoom/BossRoom';
 import ChooseSpell from './src/screens/TowerFloors/chooseSpell/ChooseSpell';
 import Combat from './src/screens/TowerFloors/combat/Combat';
@@ -79,6 +81,7 @@ const SCREENS = {
   signup: Signup,
   login: Login,
   verifyEmail: VerifyEmail,
+  forgotPassword: ForgotPassword,
   onboarding: Onboarding,
   home: Home,
   characters: Characters,
@@ -110,7 +113,7 @@ const SCREENS = {
 //   tower   Thunderbird       every other screen in the tower
 // Settings (and the tutorial opened from it) keeps whatever was already
 // playing, so opening it from the run menu doesn't switch the tower music off.
-const MENU_MUSIC = ['splash', 'signup', 'login', 'verifyEmail', 'onboarding', 'home', 'characters', 'profile'];
+const MENU_MUSIC = ['splash', 'signup', 'login', 'verifyEmail', 'forgotPassword', 'onboarding', 'home', 'characters', 'profile'];
 const BATTLE_MUSIC = ['combat', 'boss'];
 
 // Screens where a newly unlocked badge may pop up
@@ -395,6 +398,7 @@ function Game() {
     setMusic(musicRef.current, settings.music);
   }, [shownScreen, settings.music]);
   useEffect(() => setSoundEffects(settings.soundEffects), [settings.soundEffects]);
+  useEffect(() => setReadAloud(settings.readAloud), [settings.readAloud]);
 
   if (!fontsLoaded) {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
