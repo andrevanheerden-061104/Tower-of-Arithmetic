@@ -3,20 +3,23 @@ import { Animated, Image, Modal, StyleSheet, View } from 'react-native';
 import Text from './AppText';
 import PrimaryButton from './PrimaryButton';
 import { playSfx } from '../audio/sfx';
+import { useReduceMotion } from '../context/MotionContext';
 import { colors, fonts } from '../theme/theme';
 
 // The popup when a badge unlocks: the badge grows in with a glow, its
 // name and what it was for. App.js shows it on calm screens (not in the
 // middle of a fight).
 export default function BadgeUnlocked({ badge, guest, onClose }) {
-  const [grow] = useState(() => new Animated.Value(0.4));
+  const still = useReduceMotion(); // Reduce motion: no bounce, no fade
+  const [grow] = useState(() => new Animated.Value(still ? 1 : 0.4));
   useEffect(() => {
     playSfx('victory');
+    if (still) return;
     Animated.spring(grow, { toValue: 1, friction: 5, tension: 70, useNativeDriver: true }).start();
-  }, [grow]);
+  }, [grow, still]);
 
   return (
-    <Modal transparent animationType="fade" visible onRequestClose={onClose} statusBarTranslucent>
+    <Modal transparent animationType={still ? 'none' : 'fade'} visible onRequestClose={onClose} statusBarTranslucent>
       <View style={styles.backdrop}>
         <View style={styles.card} accessibilityViewIsModal>
           <Text style={styles.kicker}>Badge unlocked!</Text>

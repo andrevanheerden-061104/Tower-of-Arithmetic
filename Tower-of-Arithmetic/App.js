@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useFonts } from 'expo-font';
 import { NavigationBar } from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
@@ -11,6 +11,7 @@ import { Montserrat_600SemiBold } from '@expo-google-fonts/montserrat/600SemiBol
 import { Montserrat_700Bold } from '@expo-google-fonts/montserrat/700Bold';
 import { TEXT_SCALES, TextSizeProvider } from './src/context/TextSizeContext';
 import { DyscalculiaProvider } from './src/context/DyscalculiaContext';
+import { MotionProvider } from './src/context/MotionContext';
 import { setMusic } from './src/audio/music';
 import { setSoundEffects } from './src/audio/sfx';
 import { setReadAloud } from './src/audio/speech';
@@ -116,6 +117,12 @@ const SCREENS = {
 const MENU_MUSIC = ['splash', 'signup', 'login', 'verifyEmail', 'forgotPassword', 'onboarding', 'home', 'characters', 'profile'];
 const BATTLE_MUSIC = ['combat', 'boss'];
 
+// Screens opened from the run menu (and the tutorial from Settings). They
+// are drawn over the room the player was in, which stays open underneath
+// exactly as it was, so looking at the deck or changing a setting never
+// restarts a fight, re-rolls a puzzle or uses up a turn.
+const OVER_ROOM = ['deck', 'settings', 'tutorial'];
+
 // Screens where a newly unlocked badge may pop up
 const BADGE_SCREENS = ['home', 'profile', 'characters', 'dungeonType', 'pathMap', 'reward', 'defeat', 'runStats'];
 
@@ -178,7 +185,9 @@ function Game() {
   // The player's grade, character and settings. Saved in their profile when
   // logged in; for a guest they're only kept while the app is open.
   const { profile } = player;
-  const [guest, setGuest] = useState({ grade: null, characterId: DEFAULT_CHARACTER_ID, settings: DEFAULT_SETTINGS });
+  const [guest, setGuest] = useState({ grade: null, characterId: DEFAULT_CHARACTER_ID, settings: DEFAULT_SETTINGS, tutorialDone: false });
+  // A new player (new account or guest) gets the tutorial after choosing a grade
+  const needsTutorial = profile ? !profile.tutorial_done : !guest.tutorialDone;
   const grade = profile ? profile.grade : guest.grade;
   const characterId = profile ? profile.character_id : guest.characterId;
   const settings = profile ? { ...DEFAULT_SETTINGS, ...profile.settings } : guest.settings;
@@ -392,7 +401,14 @@ function Game() {
   // Keep the right music playing. The same track carries on between
   // screens; a different track starts from the beginning.
   const musicRef = useRef(null);
-  const shownScreen = RUN_SCREENS.includes(screen) && !run ? 'home' : screen;
+  // A run screen with no run (e.g. after the app reloads) goes home instead.
+  const name = RUN_SCREENS.includes(screen) && !run ? 'home' : screen;
+  // The room still open under the deck / settings / tutorial (or null)
+  const under = OVER_ROOM.includes(name) && run ? [...history].reverse().find((s) => !OVER_ROOM.includes(s)) : null;
+  const base = under && RUN_SCREENS.includes(under) ? under : name;
+  const overlay = base !== name ? name : null;
+  // The music follows the room, so the fight music keeps playing in the deck
+  const shownScreen = base;
   useEffect(() => {
     musicRef.current = musicFor(shownScreen, musicRef.current);
     setMusic(musicRef.current, settings.music);
@@ -404,14 +420,34 @@ function Game() {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
   }
 
-  // A run screen with no run (e.g. after the app reloads) goes home instead.
-  const name = RUN_SCREENS.includes(screen) && !run ? 'home' : screen;
-  const Screen = SCREENS[name] ?? Splash;
+  const Screen = SCREENS[base] ?? Splash;
+  const Overlay = overlay ? SCREENS[overlay] : null;
+  const screenProps = {
+    navigate,
+    goBack,
+    grade,
+    onGradeChosen: setGrade,
+    character,
+    onCharacterChosen: setCharacterId,
+    settings,
+    onSettingChange: changeSetting,
+    run,
+    updateRun,
+    onPlayAsGuest: () => navigate(grade ? 'home' : 'onboarding'),
+    // After choosing a grade: the tutorial the first time, then Home
+    afterGrade: needsTutorial ? 'tutorial' : 'home',
+    onTutorialDone: () => setGuest((g) => ({ ...g, tutorialDone: true })),
+    ...runActions,
+  };
+  // The tutorial that starts after choosing a grade goes on to Home, not
+  // back to the grade screen
+  const tutorialProps = name === 'tutorial' && history.at(-1) === 'onboarding' ? { goBack: () => navigate('home') } : {};
 
   return (
     // Everything inside reads the text size chosen in Settings
     <TextSizeProvider value={TEXT_SCALES[settings.textSize] ?? 1}>
     <DyscalculiaProvider value={Boolean(settings.dyscalculiaMode)}>
+    <MotionProvider value={Boolean(settings.reduceMotion)}>
       {/* Full screen on every page: hide the top status bar (clock, battery)
           and Android's back / home / recent-apps bar. The player swipes in
           from the top or bottom edge to bring them back for a moment. */}
@@ -420,22 +456,26 @@ function Game() {
       <Screen
         // key makes a fresh screen each time a room is entered, so a new
         // fight never starts with the last fight's state
-        key={`${name}-${run?.currentId ?? ''}`}
-        navigate={navigate}
-        goBack={goBack}
-        grade={grade}
-        onGradeChosen={setGrade}
-        character={character}
-        onCharacterChosen={setCharacterId}
-        settings={settings}
-        onSettingChange={changeSetting}
-        run={run}
-        updateRun={updateRun}
-        onPlayAsGuest={() => navigate(grade ? 'home' : 'onboarding')}
-        {...runActions}
+        key={`${base}-${run?.currentId ?? ''}`}
+        {...screenProps}
+        {...(overlay ? {} : tutorialProps)}
+        // the deck or settings is open over this room: the fight waits
+        paused={Boolean(overlay)}
       />
+      {/* The deck / settings / tutorial over the room that stays open */}
+      {Overlay && (
+        <View style={styles.overRoom}>
+          <Overlay key={overlay} {...screenProps} {...tutorialProps} />
+        </View>
+      )}
       {showBadge && <BadgeUnlocked key={newBadge.id} badge={newBadge} guest={!profile} onClose={closeBadge} />}
+    </MotionProvider>
     </DyscalculiaProvider>
     </TextSizeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  // Covers the room underneath completely, so it can't be tapped
+  overRoom: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.bg },
+});

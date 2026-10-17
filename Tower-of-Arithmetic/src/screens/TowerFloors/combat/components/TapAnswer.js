@@ -10,9 +10,10 @@ import { colors, fonts } from '../../../../theme/theme';
 
 // Junior: the sum with dots to count (scrolls if needed), then three big
 // answers and "Help me", which always stay at the bottom.
-export default function TapAnswer({ question, onSubmit, onHelp }) {
+export default function TapAnswer({ question, onSubmit, onHelp, onOverflow }) {
   return (
     <SheetBody
+      onOverflow={onOverflow}
       scroll={
         <>
           <QuestionBox question={question}>

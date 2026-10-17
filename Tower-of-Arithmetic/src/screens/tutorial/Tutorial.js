@@ -57,9 +57,9 @@ function guideTop(holes, screenHeight, guideHeight) {
 // screens, one step at a time (steps in src/data/tutorialSteps.js). Each
 // step's line is read out, the word being said lights up, and the speaker
 // button plays it again.
-// Opened from Settings for now; later it will also start by itself after
-// a new account is made.
-export default function Tutorial({ goBack, grade, character }) {
+// Starts by itself after choosing a grade, for a new account or a guest
+// who hasn't seen it yet (App.js), and can be played again from Settings.
+export default function Tutorial({ goBack, grade, character, onTutorialDone }) {
   const version = versionForGrade(grade);
   const steps = useMemo(() => tutorialSteps(version), [version]);
   const [index, setIndex] = useState(0);
@@ -126,6 +126,7 @@ export default function Tutorial({ goBack, grade, character }) {
   const finish = () => {
     stopVoice();
     updateProfile({ tutorial_done: true });
+    onTutorialDone?.();
     goBack();
   };
   const next = () => (index === steps.length - 1 ? finish() : setIndex(index + 1));

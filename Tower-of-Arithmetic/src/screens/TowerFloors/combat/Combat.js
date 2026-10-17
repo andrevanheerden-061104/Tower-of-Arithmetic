@@ -55,6 +55,8 @@ export default function Combat({
   // { phase: 'player' } or { phase: 'casting', selected: 0 }. Nothing happens
   // on its own then (no dice roll or enemy turn).
   demo = null,
+  // The deck or settings is open over the fight (App.js): the enemy waits
+  paused = false,
 }) {
   const version = runVersion(run);
   const room = currentRoom(run);
@@ -72,6 +74,14 @@ export default function Combat({
   // Who was just hurt: { who: 'enemy' | 'player', n, crit }. A new n makes
   // that side shake and flash red (BattleStage).
   const [hit, setHit] = useState(null);
+  // Nothing happens in the fight while the deck or settings is open
+  const pausedRef = useRef(paused);
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
+  const untilPlaying = async () => {
+    while (pausedRef.current) await wait(200);
+  };
   const closeToast = useRef(null); // resolves the message on screen
 
   const hand = run.deck; // up to 5 cards
@@ -117,6 +127,7 @@ export default function Combat({
   const enemyTurn = async (foeNow, heartsNow = run.hearts) => {
     setPhase('enemy');
     await wait(ENEMY_DELAY);
+    await untilPlaying();
     const result = takeTurn(foeNow, enemy.name);
     setFoe(result.state);
     // A ring or the veil blocks part of an attack of its element

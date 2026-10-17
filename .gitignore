@@ -16,3 +16,4 @@ npm-debug.log*
 
 # Scratch files (never commit)
 _to_delete/
+_scratch/

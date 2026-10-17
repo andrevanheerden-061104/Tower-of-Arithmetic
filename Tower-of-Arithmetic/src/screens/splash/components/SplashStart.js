@@ -3,6 +3,7 @@ import { Animated, Easing, StyleSheet } from 'react-native';
 import Text from '../../../components/AppText';
 import PrimaryButton from '../../../components/PrimaryButton';
 import SplashLoading from './SplashLoading';
+import { useReduceMotion } from '../../../context/MotionContext';
 import { colors, fonts } from '../../../theme/theme';
 
 const SHOW_DELAY = 1200; // ms before the button fades in
@@ -11,10 +12,13 @@ const SHOW_DELAY = 1200; // ms before the button fades in
 // for a loading bar once it has been pressed.
 export default function SplashStart({ onStart }) {
   // useState keeps the same animated value for the life of the component
-  const [opacity] = useState(() => new Animated.Value(0));
+  // Reduce motion: the button is there straight away, no fade
+  const still = useReduceMotion();
+  const [opacity] = useState(() => new Animated.Value(still ? 1 : 0));
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (still) return undefined;
     const animation = Animated.sequence([
       Animated.delay(SHOW_DELAY),
       Animated.timing(opacity, {
@@ -26,7 +30,7 @@ export default function SplashStart({ onStart }) {
     ]);
     animation.start();
     return () => animation.stop();
-  }, [opacity]);
+  }, [opacity, still]);
 
   // useCallback keeps the same function between renders, so the loading
   // bar's animation is not restarted.

@@ -8,7 +8,8 @@
 // level      the character's own level, 1 to 20 (see characterLevels.js).
 //            Every character is level 1 until the backend saves progress.
 // xp         XP earned towards the next level
-// locked     locked characters are shown as a black silhouette
+// unlockLevel  the player level that unlocks the character (locked until
+//            then, shown as a black silhouette; see withUnlock)
 // starter    the one spell card the character takes into the tower.
 //            Every other card is collected on the way up.
 // spell      how the starting spell is shown on the Characters screen
@@ -67,8 +68,8 @@ export const CHARACTERS = [
     face: { x: 0.54, y: 0.155 },
     level: 1,
     xp: 0,
-    locked: true,
-    unlockHint: 'Keep climbing the tower to unlock this sorceress.',
+    unlockLevel: 30,
+    unlockHint: 'Reach player level 30 to unlock Lumina, the light sorceress.',
     starter: 'flash',
     spell: starterInfo('flash'),
   },
@@ -78,6 +79,12 @@ export const DEFAULT_CHARACTER_ID = 'shadow';
 
 export function getCharacter(id) {
   return CHARACTERS.find((c) => c.id === id) ?? CHARACTERS[0];
+}
+
+// The character with `locked` set from the player's level (characters
+// with an unlockLevel stay locked until the player reaches it)
+export function withUnlock(character, playerLevel = 1) {
+  return { ...character, locked: Boolean(character.unlockLevel) && playerLevel < character.unlockLevel };
 }
 
 // The character with the player's saved level and XP for it

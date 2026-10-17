@@ -4,7 +4,7 @@ import PrimaryButton from '../../components/PrimaryButton';
 import ScreenHeader from '../../components/ScreenHeader';
 import Shade from '../../components/Shade';
 import ScreenBackground from '../../components/ScreenBackground';
-import { CHARACTERS, withProgress } from '../../data/characters';
+import { CHARACTERS, withProgress, withUnlock } from '../../data/characters';
 import { usePlayer } from '../../hooks/usePlayer';
 import CharacterHero from './components/CharacterHero';
 import CharacterInfo from './components/CharacterInfo';
@@ -18,8 +18,9 @@ import styles from './Characters.styles';
 // `character` is the one currently chosen (kept in App.js).
 export default function Characters({ navigate, character, onCharacterChosen }) {
   // Every character, with the player's saved level for each
-  const { characters: progress } = usePlayer();
-  const characters = CHARACTERS.map((c) => withProgress(c, progress));
+  // and locked or not by the player's own level (Lumina: level 30)
+  const { characters: progress, profile } = usePlayer();
+  const characters = CHARACTERS.map((c) => withUnlock(withProgress(c, progress), profile?.level ?? 1));
   // Which character is on screen right now (not chosen until confirmed)
   const [index, setIndex] = useState(() =>
     Math.max(0, characters.findIndex((c) => c.id === character.id))

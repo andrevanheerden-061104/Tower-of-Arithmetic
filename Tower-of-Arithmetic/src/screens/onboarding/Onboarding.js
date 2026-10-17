@@ -17,13 +17,13 @@ const PHASES = [
 ];
 
 // The player picks their school grade. The choice is handed to App.js
-// (kept in memory only) and then we move on to the home screen.
-export default function Onboarding({ navigate, onGradeChosen }) {
+// and then we move on: to the tutorial for a new player, otherwise Home.
+export default function Onboarding({ navigate, onGradeChosen, afterGrade = 'home' }) {
   const [grade, setGrade] = useState(null);
 
   const handleContinue = () => {
     onGradeChosen?.(grade);
-    navigate('home');
+    navigate(afterGrade); // the tutorial the first time, otherwise Home
   };
 
   return (

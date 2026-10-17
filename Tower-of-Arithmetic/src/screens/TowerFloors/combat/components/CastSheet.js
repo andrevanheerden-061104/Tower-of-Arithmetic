@@ -11,6 +11,7 @@ import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 import { hearts } from '../../../../game/enemyAI';
 import { useAiHint } from '../../../../hooks/useAiHint';
 import { useReadAloud } from '../../../../hooks/useReadAloud';
+import { useReduceMotion } from '../../../../context/MotionContext';
 import { questionWords, readAloudOn, speak } from '../../../../audio/speech';
 import QuestionBox from './QuestionBox';
 import SheetBody from './SheetBody';
@@ -20,6 +21,9 @@ import TypeAnswer from './TypeAnswer';
 import { colors, fonts, spacing } from '../../../../theme/theme';
 
 const MIN_SHEET = 600; // the sheet never gets shorter than this
+// Junior (tap the answer) needs less room: it starts this tall and grows
+// only when there's more to show (dots, a story, a hint, a picture)
+const TAP_SHEET = 470;
 const HIGHEST = spacing.top + 44 + 8; // just under the menu button
 
 // Where the potion / item columns end (they start under the top bar).
@@ -76,6 +80,7 @@ export default function CastSheet({
   // Orrin (the AI) explains a wrong answer; the bank's hints show either way
   const ai = useAiHint(version, question, panel === 'wrong' && !inline ? wrongAnswer : null, grade);
   const junior = version.id === 'junior';
+  const still = useReduceMotion(); // Reduce motion: the sheet just appears
   // Read aloud: the speaker button reads the sum; with the setting on it is
   // read out by itself when the sheet opens (not in the tutorial's still)
   const words = questionWords(question);
@@ -102,8 +107,11 @@ export default function CastSheet({
   };
 
   // A sum with a drawing needs a taller sheet
-  const minSheet = MIN_SHEET + (question.figure ? 150 : 0);
-  const baseTop = Math.max(HIGHEST, Math.min(suppliesBottom(potionSlots, itemCount) + 8, height - minSheet));
+  const tap = version.answerMode === 'tap';
+  const minSheet = (tap ? TAP_SHEET : MIN_SHEET) + (question.figure ? 150 : 0);
+  const baseTop = tap
+    ? Math.max(HIGHEST, height - minSheet)
+    : Math.max(HIGHEST, Math.min(suppliesBottom(potionSlots, itemCount) + 8, height - minSheet));
   const top = baseTop - grow;
 
   // When the steps no longer fit, raise the sheet by the overflow (never
@@ -155,6 +163,7 @@ export default function CastSheet({
 
         {panel ? (
           <SheetBody
+            onOverflow={onOverflow}
             header={<QuestionBox question={question} compact />}
             scroll={
               <>
@@ -196,7 +205,7 @@ export default function CastSheet({
 
   if (inline) return <View style={styles.inline}>{content}</View>;
   return (
-    <Modal visible transparent animationType="slide" statusBarTranslucent navigationBarTranslucent onRequestClose={lesson ? () => setLesson(false) : panel === 'wrong' ? onFizzled : onClose}>
+    <Modal visible transparent animationType={still ? 'none' : 'slide'} statusBarTranslucent navigationBarTranslucent onRequestClose={lesson ? () => setLesson(false) : panel === 'wrong' ? onFizzled : onClose}>
       {content}
     </Modal>
   );

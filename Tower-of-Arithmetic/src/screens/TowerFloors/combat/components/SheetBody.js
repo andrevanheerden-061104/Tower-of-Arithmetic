@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
+import { useReduceMotion } from '../../../../context/MotionContext';
 import { spacing } from '../../../../theme/theme';
 
 // Layout for the inside of the cast sheet:
@@ -12,6 +13,7 @@ import { spacing } from '../../../../theme/theme';
 // the space it has (negative when there's room to spare).
 export default function SheetBody({ header, scroll, footer, stickToEnd = false, onOverflow }) {
   const ref = useRef(null);
+  const still = useReduceMotion();
   const sizes = useRef({ content: 0, view: 0 });
   const report = () => {
     const { content, view } = sizes.current;
@@ -38,7 +40,7 @@ export default function SheetBody({ header, scroll, footer, stickToEnd = false, 
         onContentSizeChange={(w, h) => {
           sizes.current.content = h;
           report();
-          if (stickToEnd) ref.current?.scrollToEnd({ animated: true });
+          if (stickToEnd) ref.current?.scrollToEnd({ animated: !still });
         }}
       >
         {scroll}

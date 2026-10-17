@@ -7,6 +7,7 @@ import { currentRoom, runVersion } from '../../game/run';
 import { towerFloor, towerTop } from '../../game/tower';
 import { MAX_DECK } from '../../game/spells';
 import { colors, fonts, spacing } from '../../theme/theme';
+import { useReduceMotion } from '../../context/MotionContext';
 
 // The run menu that slides in from the left (hamburger button in the HUD).
 // The run stays in memory, so leaving to the main menu keeps it saved.
@@ -15,13 +16,14 @@ export default function MenuDrawer({ visible, onClose, run, navigate }) {
   const dungeon = getDungeonType(version, run.dungeonTypeId);
   const floor = Math.max(1, towerFloor(run, currentRoom(run).floor));
 
+  const still = useReduceMotion();
   const go = (screen) => {
     onClose();
     navigate(screen);
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={still ? 'none' : 'fade'} onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.panel}>
           <View style={styles.header}>

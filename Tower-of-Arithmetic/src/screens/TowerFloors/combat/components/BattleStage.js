@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, View, useWindowDimensions } from 'react-native';
 import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
+import { useReduceMotion } from '../../../../context/MotionContext';
 
 const HURT_RED = '#FF3B30';
 
 // Shakes and flashes red each time `hit` changes (a new number). With
-// Reduce motion on, only the red flash is shown, no shaking.
+// Reduce motion on there's no shaking and no flashing: just one slow,
+// soft red glow, so it's still clear who was hurt.
 function useHitAnimation(hit, reduceMotion) {
   const [shake] = useState(() => new Animated.Value(0));
   const [flash] = useState(() => new Animated.Value(0));
@@ -13,7 +15,9 @@ function useHitAnimation(hit, reduceMotion) {
     if (!hit) return;
     const strong = hit.crit ? 1.6 : 1;
     const pulse = (to, ms) => Animated.timing(flash, { toValue: to, duration: ms, useNativeDriver: true });
-    const flashes = Animated.sequence([pulse(0.85, 70), pulse(0.15, 110), pulse(0.75, 70), pulse(0, 260)]);
+    const flashes = reduceMotion
+      ? Animated.sequence([pulse(0.4, 250), pulse(0, 450)])
+      : Animated.sequence([pulse(0.85, 70), pulse(0.15, 110), pulse(0.75, 70), pulse(0, 260)]);
     const steps = [-10, 10, -8, 8, -5, 5, 0].map((x) =>
       Animated.timing(shake, { toValue: x * strong, duration: 50, easing: Easing.linear, useNativeDriver: true }),
     );
@@ -47,7 +51,8 @@ function Sprite({ source, style, label, hit, reduceMotion, extraTransform = [] }
 //
 // `hit` is { who: 'enemy' | 'player', n, crit }: each new n makes that
 // side shake and flash red (taking damage).
-export default function BattleStage({ character, enemy, boss, defeated, hit = null, reduceMotion = false }) {
+export default function BattleStage({ character, enemy, boss, defeated, hit = null, reduceMotion: forced = false }) {
+  const reduceMotion = useReduceMotion() || forced;
   const { width } = useWindowDimensions();
   const k = width / 402;
 
