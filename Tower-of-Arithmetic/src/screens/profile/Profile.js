@@ -1,4 +1,5 @@
 import { ScrollView, View } from 'react-native';
+import PrimaryButton from '../../components/PrimaryButton';
 import ScreenHeader from '../../components/ScreenHeader';
 import Shade from '../../components/Shade';
 import ScreenBackground from '../../components/ScreenBackground';
@@ -12,9 +13,10 @@ import styles from './Profile.styles';
 
 // The player's profile: level, a few stats, strengths by maths type
 // (accuracy per topic) and badges. Numbers come from the saved profile and
-// topic totals; badges unlock at milestones (src/data/badges.js).
-export default function Profile({ navigate, character, grade }) {
-  const player = usePlayerCard();
+// topic totals; badges unlock at milestones (src/data/badges.js). The
+// Account button opens the account options (src/screens/account).
+export default function Profile({ navigate, character, grade, settings }) {
+  const player = usePlayerCard(settings, grade);
   return (
     <View style={styles.screen}>
       <ScreenBackground opacity={0.35} />
@@ -31,6 +33,8 @@ export default function Profile({ navigate, character, grade }) {
         />
         <StrengthsHex strengths={player.strengths} />
         <BadgeRow badges={player.badges} total={player.badgesTotal} />
+        {/* Username, password, log out and delete account */}
+        <PrimaryButton label={player.guest ? 'Make an account' : 'Account'} variant="secondary" onPress={() => navigate('account')} />
       </ScrollView>
     </View>
   );

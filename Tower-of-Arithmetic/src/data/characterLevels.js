@@ -15,7 +15,10 @@
 //   },
 //
 // Bonuses that the game understands so far:
-//   maxHearts   extra hearts at the start of every run (and a higher max)
+//   maxHearts    extra hearts at the start of every run (and a higher max)
+//   bonusCard    1 = start every run with the character's level 10 card
+//                as well (`bonusCard` in characters.js)
+//   potionSlots  extra potion slots (4 to start with)
 // To add a new kind of bonus, add it to NO_BONUS and use it in createRun
 // (src/game/run.js).
 // ---------------------------------------------------------------------------
@@ -29,9 +32,21 @@ export const LEVEL_REWARDS = {
     description: 'Start every run with 1 extra heart.',
     bonus: { maxHearts: 1 },
   },
-  // 10: { title: '...', description: '...', bonus: { ... } },
-  // 15: { title: '...', description: '...', bonus: { ... } },
-  // 20: { title: '...', description: '...', bonus: { ... } },
+  10: {
+    title: 'New spell',
+    description: 'Start every run with a second, stronger spell card.',
+    bonus: { bonusCard: 1 },
+  },
+  15: {
+    title: '+1 potion slot',
+    description: 'Carry 5 potions instead of 4.',
+    bonus: { potionSlots: 1 },
+  },
+  20: {
+    title: '+1 heart',
+    description: 'Start every run with another extra heart.',
+    bonus: { maxHearts: 1 },
+  },
 };
 
 // Placeholder XP needed to go from `level` to the next one. Each level
@@ -40,7 +55,7 @@ export function xpToNextLevel(level) {
   return level >= MAX_LEVEL ? 0 : 400 + (level - 1) * 100;
 }
 
-const NO_BONUS = { maxHearts: 0 };
+const NO_BONUS = { maxHearts: 0, bonusCard: 0, potionSlots: 0 };
 
 // Every reward the character has reached, lowest level first.
 export function rewardsReached(level) {

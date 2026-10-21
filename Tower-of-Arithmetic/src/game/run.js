@@ -16,9 +16,18 @@ import { VERSIONS } from './versions';
 //
 // App.js keeps the run in state and hands it to the tower screens. Screens
 // never change it directly: they call updateRun(fn) with one of the helpers
-// below, which each return a NEW run object. Nothing is saved to the phone
-// or a server yet, so a run is lost when the app closes.
+// below, which each return a NEW run object. A logged-in player's run is
+// saved in Supabase (saved_runs) after each change, so it can be carried
+// on later (see App.js and resumeScreen).
 // ---------------------------------------------------------------------------
+
+// Potion slots everyone has (a character at level 15 gets one more)
+export const POTION_SLOTS = 4;
+
+// How many potions this run can carry
+export function potionSlots(run) {
+  return run.potionSlots ?? POTION_SLOTS;
+}
 
 export function createRun({ version, dungeonTypeId, character, grade }) {
   const seed = newSeed();
@@ -49,16 +58,20 @@ export function createRun({ version, dungeonTypeId, character, grade }) {
     // collects the rest on the way up. Up to 5 cards are in the deck (used
     // in fights); any more go to the stash and can be swapped in on the
     // Deck screen. Cards belong to this run only and are gone when it ends.
-    deck: [character?.starter ?? 'shadowShard'],
+    // (from level 10 also their bonus card, see characterLevels.js)
+    deck: [character?.starter ?? 'shadowShard', ...(bonus.bonusCard && character?.bonusCard ? [character.bonusCard] : [])],
     stash: [],
     offers: null,   // the spells on offer in the spell picker
     // Two healing potions to start with; items are found on the way up
     // (the trader, the ghost)
     potions: version.usesPotions ? ['minor', 'heal'] : [],
+    potionSlots: POTION_SLOTS + bonus.potionSlots, // 5 from character level 15
     items: [],
     phoenixUsed: false, // the Phoenix Feather Charm saves the player once
     cleansed: [],   // items whose curse was removed at a campfire
     stats: { solved: 0, hints: 0, errors: 0, streak: 0, bestStreak: 0, floors: [] },
+    // Things done this run that unlock badges (see runFeats)
+    feats: { perfectFloor: false, noHintFloor: false, bossesBeaten: [] },
     // Per maths topic: { attempts, correct, timeMs, hints } (for Orrin's
     // end-of-run summary)
     topicStats: {},
@@ -86,6 +99,16 @@ export function currentRoom(run) {
 // Which screen opens for a room type.
 export function screenForRoom(type) {
   return ROOMS[type]?.screen ?? 'pathMap';
+}
+
+// Where a saved run carries on: a room not finished yet starts again
+// (a fight starts over), a reward still waiting for its spell card or the
+// climb-on choice shows again, and otherwise the map.
+export function resumeScreen(run) {
+  if (!run.cleared.includes(run.currentId)) return screenForRoom(currentRoom(run).type);
+  const reward = run.reward;
+  if (reward && ((reward.spellChoice && !reward.spellTaken) || reward.climbOn)) return 'reward';
+  return 'pathMap';
 }
 
 // The boss on top of this climb.
@@ -207,7 +230,7 @@ export function drinkPotion(run, index) {
 }
 
 export function addPotion(run, potionId) {
-  return { ...run, potions: [...run.potions, potionId].slice(0, 4) };
+  return { ...run, potions: [...run.potions, potionId].slice(0, potionSlots(run)) };
 }
 
 // The item stays and keeps its power; only its curse is lifted.
@@ -249,8 +272,9 @@ export function recordAnswer(run, { correct, hintsUsed = 0, topic, timeMs = 0, q
   }
   const floors = [...stats.floors];
   const i = floors.findIndex((f) => f.floor === floor);
-  const entry = i >= 0 ? { ...floors[i] } : { floor, correct: 0, total: 0 };
+  const entry = i >= 0 ? { hints: 0, ...floors[i] } : { floor, correct: 0, total: 0, hints: 0 };
   entry.total += 1;
+  entry.hints += hintsUsed;
   if (correct) entry.correct += 1;
   if (i >= 0) floors[i] = entry;
   else floors.push(entry);
@@ -307,7 +331,24 @@ export function grantReward(run, roomType) {
     else if (next.offers.some(isLegendary)) next.reward = { ...reward, legendary: true };
   }
   if (reward.towerCleared && !reward.climbOn) next.status = 'won';
+  next.feats = runFeats(run, roomType);
   return next;
+}
+
+// Badge feats after winning a room on this floor: every sum on the floor
+// right (perfectFloor), no hints on it (noHintFloor), and the bosses beaten.
+function runFeats(run, roomType) {
+  const feats = { perfectFloor: false, noHintFloor: false, bossesBeaten: [], ...run.feats };
+  const floor = towerFloor(run, currentRoom(run).floor);
+  const entry = run.stats.floors.find((f) => f.floor === floor);
+  if (entry?.total) {
+    if (entry.correct === entry.total) feats.perfectFloor = true;
+    if (!entry.hints) feats.noHintFloor = true;
+  }
+  if (roomType === 'boss' && run.boss?.id && !feats.bossesBeaten.includes(run.boss.id)) {
+    feats.bossesBeaten = [...feats.bossesBeaten, run.boss.id];
+  }
+  return feats;
 }
 
 // After a boss: climb the next part of the tower. A new map (new rooms,

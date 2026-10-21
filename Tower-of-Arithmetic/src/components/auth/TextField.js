@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
   fieldFocused: { borderColor: colors.gold, borderWidth: 2 },
   input: {
     flex: 1,
+    minWidth: 0, // on the web, a narrow field mustn't squash the icon
     height: '100%',
     fontFamily: fonts.regular,
     fontSize: 15,

@@ -29,7 +29,7 @@ export default function Badge({ name, description, image, earned }) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, alignItems: 'center', gap: 4 },
+  wrap: { width: '31%', alignItems: 'center', gap: 4 },
   medal: { width: 84, height: 84, alignItems: 'center', justifyContent: 'center' },
   image: { width: 84, height: 84 },
   locked: { tintColor: '#2A2438', opacity: 0.9 },

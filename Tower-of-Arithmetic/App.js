@@ -36,6 +36,7 @@ import {
   moveToDeck,
   moveToStash,
   removeCurse,
+  resumeScreen,
   screenForRoom,
   runVersion,
   swapSpell,
@@ -44,7 +45,7 @@ import { mergePools, poolDisplays, unusedInPool } from './src/game/questionPool'
 import { topicsForRun } from './src/game/questions';
 import { versionForGrade } from './src/game/versions';
 import { usePlayer } from './src/hooks/usePlayer';
-import { BADGES, earnedBadgeIds, topCharacterLevel } from './src/data/badges';
+import { BADGES, badgeStats, earnedBadgeIds, newFeats } from './src/data/badges';
 import BadgeUnlocked from './src/components/BadgeUnlocked';
 import { fetchQuestionPool } from './src/services/ai';
 import Characters from './src/screens/characters/Characters';
@@ -53,6 +54,7 @@ import Lesson from './src/screens/lesson/Lesson';
 import Login from './src/screens/login/Login';
 import Onboarding from './src/screens/onboarding/Onboarding';
 import Profile from './src/screens/profile/Profile';
+import Account from './src/screens/account/Account';
 import Settings from './src/screens/settings/Settings';
 import Signup from './src/screens/signup/Signup';
 import Splash from './src/screens/splash/Splash';
@@ -87,6 +89,7 @@ const SCREENS = {
   home: Home,
   characters: Characters,
   profile: Profile,
+  account: Account,
   settings: Settings,
   tutorial: Tutorial,
   lesson: Lesson, // Spell School (src/components/lesson)
@@ -114,7 +117,7 @@ const SCREENS = {
 //   tower   Thunderbird       every other screen in the tower
 // Settings (and the tutorial opened from it) keeps whatever was already
 // playing, so opening it from the run menu doesn't switch the tower music off.
-const MENU_MUSIC = ['splash', 'signup', 'login', 'verifyEmail', 'forgotPassword', 'onboarding', 'home', 'characters', 'profile'];
+const MENU_MUSIC = ['splash', 'signup', 'login', 'verifyEmail', 'forgotPassword', 'onboarding', 'home', 'characters', 'profile', 'account'];
 const BATTLE_MUSIC = ['combat', 'boss'];
 
 // Screens opened from the run menu (and the tutorial from Settings). They
@@ -235,6 +238,36 @@ function Game() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runStatus, run?.seed]);
 
+  // Saved runs: a logged-in player's run is saved in Supabase after every
+  // change (a second after the last one) and deleted when it ends, so it
+  // carries on after the app or website is closed. When they log in, the
+  // saved run comes back and Home shows "Continue run". A guest's run is
+  // only kept while the app is open.
+  const userId = player.user?.id ?? null;
+  // (worked out while drawing, React's way of changing state when
+  // something it depends on changes: here, who is logged in)
+  const [restoredFor, setRestoredFor] = useState(null);
+  if (restoredFor !== userId && (!userId || player.profile)) {
+    setRestoredFor(userId);
+    if (!userId) {
+      // logged out: the last player's run goes with them
+      if (run?.ownerId) setRun(null);
+    } else if (run?.ownerId !== userId) {
+      setRun(player.savedRun?.status === 'active' ? { ...player.savedRun, ownerId: userId } : null);
+    }
+  }
+  useEffect(() => {
+    if (!userId || !run || run.ownerId !== userId) return undefined;
+    if (run.status !== 'active') {
+      player.clearSavedRun();
+      return undefined;
+    }
+    const wait = setTimeout(() => player.saveCurrentRun(run), 1000);
+    return () => clearTimeout(wait);
+    // Runs whenever the run changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [run, userId]);
+
   const finishRoomToMap = (change = (r) => r) => {
     updateRun((r) => clearRoom(change(r)));
     navigate('pathMap');
@@ -265,13 +298,26 @@ function Game() {
   const totals = profile
     ? { runsCompleted: profile.runs_completed ?? 0, highestFloor: profile.highest_floor ?? 0 }
     : { runsCompleted: player.guestStats.runs_completed, highestFloor: player.guestStats.highest_floor };
-  const badgeStats = {
+  const badgeInput = badgeStats({
     ...totals,
-    highestFloor: Math.max(totals.highestFloor, run ? floorsCleared(run) : 0),
-    topCharacterLevel: topCharacterLevel(player.characters),
-  };
+    characters: player.characters,
+    settings,
+    versionId: versionForGrade(grade).id,
+    run,
+    runFloor: run ? floorsCleared(run) : 0,
+  });
+  // Feats from the run (a perfect floor, a boss beaten) are kept in the
+  // settings so their badges stay unlocked after the run
+  const runFeats = run?.feats;
+  useEffect(() => {
+    const feats = newFeats(settings, run);
+    // saved just after this render, like any other setting change
+    if (feats) Promise.resolve().then(() => changeSetting('feats', feats));
+    // Runs when the run's feats change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runFeats]);
   const badgesSeen = settings.badgesSeen ?? [];
-  const unlocked = earnedBadgeIds(badgeStats);
+  const unlocked = earnedBadgeIds(badgeInput);
   const newBadge = BADGES.find((b) => unlocked.includes(b.id) && !badgesSeen.includes(b.id)) ?? null;
   const showBadge = Boolean(newBadge) && BADGE_SCREENS.includes(screen);
   const closeBadge = () => changeSetting('badgesSeen', [...badgesSeen, newBadge.id]);
@@ -295,7 +341,7 @@ function Game() {
     onStartRun: (dungeonTypeId) => {
       if (run?.status === 'active' && run.xp > 0) saveRun(run); // left unfinished
       const version = versionForGrade(grade);
-      const fresh = createRun({ version, dungeonTypeId, character, grade });
+      const fresh = { ...createRun({ version, dungeonTypeId, character, grade }), ownerId: userId };
       setRun(fresh);
       navigate('pathMap');
       loadQuestions(fresh);
@@ -434,6 +480,11 @@ function Game() {
     run,
     updateRun,
     onPlayAsGuest: () => navigate(grade ? 'home' : 'onboarding'),
+    // Home's "Continue run": back to the room the player was in
+    onContinueRun: () => {
+      navigate(resumeScreen(run));
+      loadQuestions(run);
+    },
     // After choosing a grade: the tutorial the first time, then Home
     afterGrade: needsTutorial ? 'tutorial' : 'home',
     onTutorialDone: () => setGuest((g) => ({ ...g, tutorialDone: true })),

@@ -7,7 +7,7 @@ import { createEnemyState, hearts, hitEnemy, rollForFirstTurn, spellDamage, take
 import { ITEMS } from '../../../game/encounters';
 import { attackBonus, blockAttack, canRevive, movesFirst } from '../../../game/items';
 import { isCorrect, pickQuestion } from '../../../game/questions';
-import { currentRoom, damage, drinkPotion, enemyForRun, heal, markQuestionUsed, recordAnswer, runVersion } from '../../../game/run';
+import { currentRoom, damage, drinkPotion, enemyForRun, heal, markQuestionUsed, potionSlots, recordAnswer, runVersion } from '../../../game/run';
 import { baseDamage, getSpell } from '../../../game/spells';
 import BattleStage from './components/BattleStage';
 import BattleToast from './components/BattleToast';
@@ -300,7 +300,7 @@ export default function Combat({
           question={question}
           spellDamage={castAmount}
           healing={healing}
-          potionSlots={version.usesPotions ? 4 : 0}
+          potionSlots={version.usesPotions ? potionSlots(run) : 0}
           itemCount={run.items.length}
           // The top bar, potions and items are drawn again on top of the
           // sheet's dark backdrop, in the same places, so nothing moves

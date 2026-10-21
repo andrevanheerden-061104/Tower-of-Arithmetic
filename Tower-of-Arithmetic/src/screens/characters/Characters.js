@@ -18,7 +18,7 @@ import styles from './Characters.styles';
 // `character` is the one currently chosen (kept in App.js).
 export default function Characters({ navigate, character, onCharacterChosen }) {
   // Every character, with the player's saved level for each
-  // and locked or not by the player's own level (Lumina: level 30)
+  // and locked or not by the player's own level (Lumina: level 10)
   const { characters: progress, profile } = usePlayer();
   const characters = CHARACTERS.map((c) => withUnlock(withProgress(c, progress), profile?.level ?? 1));
   // Which character is on screen right now (not chosen until confirmed)

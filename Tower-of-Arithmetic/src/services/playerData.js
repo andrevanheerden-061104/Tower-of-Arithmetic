@@ -1,11 +1,12 @@
 import { supabase } from '../lib/supabase';
 
 // ---------------------------------------------------------------------------
-// Reading and saving the player's data in Supabase. Only three tables (see
+// Reading and saving the player's data in Supabase. Four tables (see
 // Backend/supabase/schema.sql and the ERD):
 //   profiles            the player
 //   character_progress  each character's level and XP
 //   topic_progress      running totals per maths topic
+//   saved_runs          the run they are in the middle of
 // Each function throws a readable Error if Supabase says no.
 // ---------------------------------------------------------------------------
 
@@ -73,15 +74,18 @@ export async function signOut() {
 // --- reading -------------------------------------------------------------
 
 export async function loadPlayer(userId) {
-  const [profile, characters, topics] = await Promise.all([
+  const [profile, characters, topics, savedRun] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', userId).single(),
     supabase.from('character_progress').select('character_id, level, xp').eq('user_id', userId),
     supabase.from('topic_progress').select('topic, version, attempts, correct, time_ms_total, hints_total').eq('user_id', userId),
+    supabase.from('saved_runs').select('run').eq('user_id', userId).maybeSingle(),
   ]);
   return {
     profile: check(profile),
     characters: Object.fromEntries(check(characters).map((c) => [c.character_id, { level: c.level, xp: c.xp }])),
     topics: check(topics),
+    // (null if there's none, or the saved_runs table hasn't been made yet)
+    savedRun: savedRun.error ? null : savedRun.data?.run ?? null,
   };
 }
 
@@ -112,4 +116,29 @@ export async function finishRun({ floorsCleared, xp, characterId }) {
   return check(
     await supabase.rpc('finish_run', { p_floors_cleared: floorsCleared, p_xp: xp, p_character: characterId }),
   );
+}
+
+// --- saved run -----------------------------------------------------------
+
+// Save the run the player is in the middle of (replaces the last save).
+export async function saveRunState(userId, run) {
+  check(await supabase.from('saved_runs').upsert({ user_id: userId, run }));
+}
+
+// The run has ended: forget it.
+export async function deleteSavedRun(userId) {
+  check(await supabase.from('saved_runs').delete().eq('user_id', userId));
+}
+
+// --- account -------------------------------------------------------------
+
+// A new password for the player who is logged in.
+export async function changePassword(password) {
+  check(await supabase.auth.updateUser({ password }));
+}
+
+// Delete the player's account and everything saved for it, then log out.
+export async function deleteAccount() {
+  check(await supabase.rpc('delete_my_account'));
+  await supabase.auth.signOut().catch(() => {});
 }

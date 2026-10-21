@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BADGES, earnedBadgeIds, topCharacterLevel } from '../data/badges';
+import { BADGES, badgeStats, earnedBadgeIds } from '../data/badges';
 import { PLAYER } from '../data/player';
 import { rankFor, xpToNextLevel } from '../data/playerLevels';
 import { versionForGrade } from '../game/versions';
@@ -14,13 +14,19 @@ function badgeList(stats, seen = []) {
 
 // Everything Home and Profile show about the player, from the saved
 // profile and topic totals. A guest gets a fresh level 1 card with this
-// visit's runs (nothing of a guest's is saved).
-export function usePlayerCard() {
+// visit's runs (nothing of a guest's is saved). `settings` are the
+// player's settings (a guest's live only in App.js), for badge feats.
+export function usePlayerCard(settings, grade) {
   const { profile, topics, characters, guestStats } = usePlayer();
 
   return useMemo(() => {
     if (!profile) {
-      const stats = { runsCompleted: guestStats.runs_completed, highestFloor: guestStats.highest_floor, topCharacterLevel: 1 };
+      const stats = badgeStats({
+        runsCompleted: guestStats.runs_completed,
+        highestFloor: guestStats.highest_floor,
+        settings,
+        versionId: versionForGrade(grade).id,
+      });
       return {
         ...PLAYER,
         guest: true,
@@ -33,7 +39,7 @@ export function usePlayerCard() {
         runsCompleted: stats.runsCompleted,
         accuracy: 0,
         strengths: PLAYER.strengths.map((s) => ({ ...s, value: 0 })),
-        badges: badgeList(stats),
+        badges: badgeList(stats, settings?.badgesSeen),
         badgesTotal: BADGES.length,
       };
     }
@@ -44,7 +50,13 @@ export function usePlayerCard() {
       const t = topics.find((x) => x.topic === type.id);
       return { label: type.label, value: t && t.attempts ? Math.round((t.correct / t.attempts) * 100) : 0 };
     });
-    const stats = { runsCompleted: profile.runs_completed ?? 0, highestFloor: profile.highest_floor ?? 0, topCharacterLevel: topCharacterLevel(characters) };
+    const stats = badgeStats({
+      runsCompleted: profile.runs_completed ?? 0,
+      highestFloor: profile.highest_floor ?? 0,
+      characters,
+      settings: profile.settings,
+      versionId: version.id,
+    });
     return {
       ...PLAYER,
       guest: false,
@@ -60,5 +72,5 @@ export function usePlayerCard() {
       badges: badgeList(stats, profile.settings?.badgesSeen),
       badgesTotal: BADGES.length,
     };
-  }, [profile, topics, characters, guestStats]);
+  }, [profile, topics, characters, guestStats, settings, grade]);
 }

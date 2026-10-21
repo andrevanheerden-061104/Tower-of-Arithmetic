@@ -16,8 +16,8 @@ import styles from './Home.styles';
 // The main menu. Player numbers come from the saved profile (placeholders
 // for a guest). New run starts a climb; Continue run appears while a run
 // is going.
-export default function Home({ navigate, character, run }) {
-  const player = usePlayerCard();
+export default function Home({ navigate, character, run, settings, grade, onContinueRun }) {
+  const player = usePlayerCard(settings, grade);
   const savedRun = run && run.status === 'active'
     ? { floor: Math.max(1, floorsCleared(run)), totalFloors: towerTop(run), hearts: run.hearts, maxHearts: run.maxHearts }
     : null;
@@ -34,7 +34,7 @@ export default function Home({ navigate, character, run }) {
 
         <View style={styles.menu}>
           <RunStats highestFloor={player.highestFloor} runsCompleted={player.runsCompleted} />
-          {savedRun && <ContinueRunCard run={savedRun} onPress={() => navigate('pathMap')} />}
+          {savedRun && <ContinueRunCard run={savedRun} onPress={onContinueRun} />}
           <TutorialTarget id="newRun">
             <PrimaryButton label="New run" onPress={() => navigate('dungeonType')} />
           </TutorialTarget>

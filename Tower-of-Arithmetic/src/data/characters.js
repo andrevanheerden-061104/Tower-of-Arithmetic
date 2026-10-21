@@ -13,6 +13,7 @@
 // starter    the one spell card the character takes into the tower.
 //            Every other card is collected on the way up.
 // spell      how the starting spell is shown on the Characters screen
+// bonusCard  the card the character also starts with from level 10
 
 import { getSpell } from '../game/spells';
 
@@ -40,6 +41,7 @@ export const CHARACTERS = [
     xp: 0,
     locked: false,
     starter: 'shadowShard',
+    bonusCard: 'butterflyIllusion',
     spell: starterInfo('shadowShard'),
   },
   {
@@ -55,6 +57,7 @@ export const CHARACTERS = [
     xp: 0,
     locked: false,
     starter: 'flashflame',
+    bonusCard: 'azureBlaze',
     spell: starterInfo('flashflame'),
   },
   {
@@ -68,9 +71,10 @@ export const CHARACTERS = [
     face: { x: 0.54, y: 0.155 },
     level: 1,
     xp: 0,
-    unlockLevel: 30,
-    unlockHint: 'Reach player level 30 to unlock Lumina, the light sorceress.',
+    unlockLevel: 10,
+    unlockHint: 'Reach player level 10 to unlock Lumina, the light sorceress.',
     starter: 'flash',
+    bonusCard: 'verdantMend',
     spell: starterInfo('flash'),
   },
 ];

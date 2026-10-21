@@ -2,11 +2,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Text from '../../../../components/AppText';
 import ItemIcon from '../../../../components/run/ItemIcon';
 import { ITEMS, POTIONS } from '../../../../game/encounters';
-import { isCursed } from '../../../../game/run';
+import { isCursed, potionSlots } from '../../../../game/run';
 import TutorialTarget from '../../../../components/tutorial/TutorialTarget';
 import { colors, fonts, spacing } from '../../../../theme/theme';
-
-const POTION_SLOTS = 4;
 
 // Potions (left) or items (right) down the side of a fight. Tapping one
 // opens its popup (SupplyDetails), where a potion can be drunk.
@@ -19,7 +17,7 @@ export default function SupplyColumn({ side, title, kind, run, onOpen, tutorialI
       {tutorialId && <TutorialTarget id={tutorialId} />}
       <Text style={styles.title}>{title}</Text>
       {potions
-        ? Array.from({ length: POTION_SLOTS }, (_, i) => {
+        ? Array.from({ length: potionSlots(run) }, (_, i) => {
             const id = run.potions[i];
             if (!id) return <View key={i} style={styles.empty} accessibilityLabel="Empty potion slot" />;
             const potion = POTIONS[id];

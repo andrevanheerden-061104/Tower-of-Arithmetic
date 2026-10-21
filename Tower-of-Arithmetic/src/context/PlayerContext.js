@@ -1,8 +1,12 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import {
+  changePassword as savePassword,
+  deleteAccount as removeAccount,
+  deleteSavedRun,
   finishRun as saveRun,
   loadPlayer,
+  saveRunState,
   recordAnswer as saveAnswer,
   signIn as logIn,
   signOut as logOut,
@@ -28,19 +32,22 @@ export const LESSON_XP = 50;
 //   characters  { shadow: { level, xp }, ... }
 //   topics      [{ topic, attempts, correct, time_ms_total, hints_total }]
 //   pendingEmail  the email waiting for its confirmation code (or null)
+//   savedRun    the run they were in the middle of when they last played
+//               (null if none); App.js carries on with it
 //
 //   guestStats  a guest's runs and highest floor, kept only while the app
 //               is open (for badges); nothing of a guest's is saved
 //
 // and the actions: signUp, verifyCode, resendCode, signIn, signOut,
 // requestPasswordReset, resetPassword, updateProfile, recordAnswer,
-// finishRun, xpChanges, lessonXpFor. Saving never blocks the game: if it fails, the answer is kept
+// finishRun, xpChanges, lessonXpFor, saveCurrentRun, clearSavedRun,
+// changePassword, deleteAccount. Saving never blocks the game: if it fails, the answer is kept
 // and sent again with the next one.
 // ---------------------------------------------------------------------------
 
 export const PlayerContext = createContext(null);
 
-const EMPTY = { userId: null, profile: null, characters: {}, topics: [] };
+const EMPTY = { userId: null, profile: null, characters: {}, topics: [], savedRun: null };
 
 export function PlayerProvider({ children }) {
   const [session, setSession] = useState(null);
@@ -82,6 +89,43 @@ export function PlayerProvider({ children }) {
     const result = await createAccount(values);
     setPendingEmail(result.needsConfirmation ? values.email : null);
     return result;
+  }, []);
+
+  // Keep the run going now in Supabase (only the newest save counts), or
+  // forget it once it's over. Never blocks the game.
+  const runSaves = useRef({ busy: false, next: undefined });
+  const saveCurrentRun = useCallback(
+    (run) => {
+      if (!supabase || !userId) return;
+      const saves = runSaves.current;
+      saves.next = run; // null = delete
+      if (saves.busy) return;
+      saves.busy = true;
+      (async () => {
+        while (saves.next !== undefined) {
+          const now = saves.next;
+          saves.next = undefined;
+          try {
+            if (now) await saveRunState(userId, now);
+            else await deleteSavedRun(userId);
+          } catch (error) {
+            console.warn('Could not save the run:', error.message);
+          }
+        }
+        saves.busy = false;
+      })();
+    },
+    [userId],
+  );
+  const clearSavedRun = useCallback(() => saveCurrentRun(null), [saveCurrentRun]);
+
+  // Account screen: a new password, or delete the account for good
+  const changePassword = useCallback(async (password) => {
+    await savePassword(password);
+  }, []);
+  const deleteAccount = useCallback(async () => {
+    await removeAccount();
+    setData(EMPTY);
   }, []);
 
   // The 6-digit code from the email: confirms the account and logs in.
@@ -231,6 +275,11 @@ export function PlayerProvider({ children }) {
       characters: mine.characters,
       topics: mine.topics,
       pendingEmail,
+      savedRun: mine.savedRun,
+      saveCurrentRun,
+      clearSavedRun,
+      changePassword,
+      deleteAccount,
       signUp,
       verifyCode,
       resendCode,
@@ -245,7 +294,7 @@ export function PlayerProvider({ children }) {
       xpChanges,
       lessonXpFor,
     }),
-    [ready, userId, session, mine, pendingEmail, signUp, verifyCode, resendCode, signIn, signOut, requestPasswordReset, resetPassword, updateProfile, recordAnswer, finishRun, guestStats, xpChanges, lessonXpFor],
+    [ready, userId, session, mine, pendingEmail, saveCurrentRun, clearSavedRun, changePassword, deleteAccount, signUp, verifyCode, resendCode, signIn, signOut, requestPasswordReset, resetPassword, updateProfile, recordAnswer, finishRun, guestStats, xpChanges, lessonXpFor],
   );
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
