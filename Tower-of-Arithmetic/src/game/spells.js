@@ -8,6 +8,7 @@
 //            so a legendary can mix two elements (amount is in hearts)
 //   heal     hearts healed (heal spells)
 //   juniorOp the kind of sum the spell casts in a junior "mixed" dungeon
+//   cards    the card pictures: standard, junior (and a back, if it has one)
 
 export const SPELLS = {
   // --- Level 1 ---------------------------------------------------------
@@ -126,6 +127,46 @@ export const SPELLS = {
     },
   },
 
+  iceMist: {
+    id: 'iceMist',
+    name: 'Ice Mist',
+    kind: 'attack',
+    level: 2,
+    element: 'Ice',
+    hits: [{ element: 'ice', amount: 1 }],
+    juniorOp: 'takingAway',
+    cards: {
+      standard: require('../assets/cards/Cards-S/ice/ice-mist-front.png'),
+      junior: require('../assets/cards/Crads-J/ice/ice-mist-junior.png'),
+    },
+  },
+  divineLight: {
+    id: 'divineLight',
+    name: 'Divine Light',
+    kind: 'attack',
+    level: 2,
+    element: 'Light',
+    hits: [{ element: 'light', amount: 1 }],
+    juniorOp: 'patterns',
+    cards: {
+      standard: require('../assets/cards/Cards-S/light/divine-light-front.png'),
+      junior: require('../assets/cards/Crads-J/light/divine-light-junior.png'),
+    },
+  },
+  shadowWisp: {
+    id: 'shadowWisp',
+    name: 'Shadow Wisp',
+    kind: 'attack',
+    level: 2,
+    element: 'Shadow',
+    hits: [{ element: 'shadow', amount: 1 }],
+    juniorOp: 'times',
+    cards: {
+      standard: require('../assets/cards/Cards-S/shadow/shadow-wisp-front.png'),
+      junior: require('../assets/cards/Crads-J/shadow/shadow-wisp-junior.png'),
+    },
+  },
+
   // --- Level 3 (legendary) --------------------------------------------
   emberwing: {
     id: 'emberwing',
@@ -143,6 +184,40 @@ export const SPELLS = {
       standard: require('../assets/cards/Cards-S/legendary/shadowflame/emberwing-front.png'),
       junior: require('../assets/cards/Crads-J/legendary/shadowflame/emberwing-junior.png'),
       back: require('../assets/cards/Cards-S/legendary/shadowflame/shadowflame-back.png'),
+    },
+  },
+  blackHole: {
+    id: 'blackHole',
+    name: 'Black Hole',
+    kind: 'attack',
+    level: 3,
+    legendary: true,
+    element: 'Shadow + Light',
+    hits: [
+      { element: 'shadow', amount: 2 },
+      { element: 'light', amount: 2 },
+    ],
+    juniorOp: 'patterns',
+    cards: {
+      standard: require('../assets/cards/Cards-S/legendary/black-hole/black-hole-front.png'),
+      junior: require('../assets/cards/Crads-J/legendary/black-hole/black-hole-junior.png'),
+    },
+  },
+  holyFlame: {
+    id: 'holyFlame',
+    name: 'Holy Flame',
+    kind: 'attack',
+    level: 3,
+    legendary: true,
+    element: 'Fire + Light',
+    hits: [
+      { element: 'fire', amount: 1.5 },
+      { element: 'light', amount: 1 },
+    ],
+    juniorOp: 'adding',
+    cards: {
+      standard: require('../assets/cards/Cards-S/legendary/holy-flame/holy-flame-front.png'),
+      junior: require('../assets/cards/Crads-J/legendary/holy-flame/holy-flame-junior.png'),
     },
   },
 };
