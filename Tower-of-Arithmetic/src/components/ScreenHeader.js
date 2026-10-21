@@ -4,7 +4,9 @@ import Icon from './Icon';
 import { colors, fonts } from '../theme/theme';
 
 // Back button and screen title, used at the top of the menu screens.
-export default function ScreenHeader({ title, onBack }) {
+// `action` adds a button the same size on the right:
+//   { icon: 'pencil', label: 'Account', onPress }
+export default function ScreenHeader({ title, onBack, action }) {
   return (
     <View style={styles.wrap}>
       <Pressable
@@ -20,8 +22,19 @@ export default function ScreenHeader({ title, onBack }) {
         {title}
       </Text>
 
-      {/* Empty box the same size as the back button keeps the title centred */}
-      <View style={styles.spacer} />
+      {action ? (
+        <Pressable
+          onPress={action.onPress}
+          accessibilityRole="button"
+          accessibilityLabel={action.label}
+          style={({ pressed }) => [styles.back, pressed && styles.pressed]}
+        >
+          <Icon name={action.icon} size={20} />
+        </Pressable>
+      ) : (
+        // Empty box the same size as the back button keeps the title centred
+        <View style={styles.spacer} />
+      )}
     </View>
   );
 }
