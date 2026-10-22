@@ -114,11 +114,16 @@ export default function CastSheet({
     : Math.max(HIGHEST, Math.min(suppliesBottom(potionSlots, itemCount) + 8, height - minSheet));
   const top = baseTop - grow;
 
-  // When the steps no longer fit, raise the sheet by the overflow (never
-  // above HIGHEST, never below where it started). Past that they scroll.
+  // When the content no longer fits, raise the sheet by the overflow (never
+  // above HIGHEST, never below where it started). Past that it scrolls.
+  // The new height is worked out from the height the sheet had when it was
+  // measured (`grow` in this render), not added on top of a change still waiting to be
+  // drawn: two reports of the same measurement then ask for the same height
+  // instead of adding up, so the sheet can't overshoot and bounce up and down.
   const onOverflow = (extra) => {
-    if (Math.abs(extra) < 1) return;
-    setGrow((g) => Math.max(0, Math.min(baseTop - HIGHEST, g + extra)));
+    if (Math.abs(extra) < 2) return;
+    const next = Math.max(0, Math.min(baseTop - HIGHEST, grow + extra));
+    if (Math.abs(next - grow) >= 2) setGrow(next);
   };
   const Body = version.answerMode === 'tap' ? TapAnswer : version.answerMode === 'type' ? TypeAnswer : StepsAnswer;
 

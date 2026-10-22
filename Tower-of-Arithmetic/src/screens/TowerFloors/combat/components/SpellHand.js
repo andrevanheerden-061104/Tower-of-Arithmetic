@@ -1,13 +1,13 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import Text from '../../../../components/AppText';
 import SpellCardImage from '../../../../components/run/SpellCardImage';
 import { juniorOpLabel } from '../../../../game/questions';
 import { getSpell } from '../../../../game/spells';
-import { colors, fonts } from '../../../../theme/theme';
+import { colors } from '../../../../theme/theme';
 
 // The spell cards in hand. Tap a card to cast it.
 // Standard: three cards fanned out at the bottom, the chosen one raised.
-// Junior: three cards in a row, each with a tag saying what sum it casts.
+// Junior: three cards in a row, just the card pictures (a screen reader
+// still says what sum each one casts).
 export default function SpellHand({ hand, version, dungeonTypeId, selected, disabled, onPick }) {
   // Junior cards shrink a little when there are more than 3 so they fit
   const juniorWidth = Math.min(100, (360 - 12 * (hand.length - 1)) / hand.length);
@@ -29,13 +29,6 @@ export default function SpellHand({ hand, version, dungeonTypeId, selected, disa
               style={({ pressed }) => [styles.juniorCard, on && styles.juniorOn, disabled && styles.waiting, pressed && styles.pressed]}
             >
               <SpellCardImage spellId={id} cardSet="junior" width={juniorWidth} />
-              {op && (
-                <View style={[styles.tag, on && styles.tagOn]}>
-                  <Text style={[styles.tagText, on && styles.tagTextOn]} numberOfLines={1}>
-                    {op.label} {op.symbol}
-                  </Text>
-                </View>
-              )}
             </Pressable>
           );
         })}
@@ -98,18 +91,4 @@ const styles = StyleSheet.create({
   juniorRow: { flexDirection: 'row', justifyContent: 'center', gap: 12, paddingBottom: 28 },
   juniorCard: { borderRadius: 9, borderWidth: 3, borderColor: 'transparent' },
   juniorOn: { borderColor: colors.gold },
-  tag: {
-    position: 'absolute',
-    bottom: 8,
-    alignSelf: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.gold,
-    backgroundColor: 'rgba(13,13,13,0.9)',
-  },
-  tagOn: { backgroundColor: colors.gold },
-  tagText: { fontFamily: fonts.bold, fontSize: 12, color: colors.gold },
-  tagTextOn: { color: colors.bg },
 });

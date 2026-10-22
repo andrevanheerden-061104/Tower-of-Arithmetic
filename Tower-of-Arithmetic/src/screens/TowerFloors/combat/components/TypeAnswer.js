@@ -15,8 +15,9 @@ import { colors, fonts } from '../../../../theme/theme';
 // Intermediate: work it out, type the final answer: a whole number, a
 // fraction (3/4) or a decimal (2.5). The sum, answer box and
 // picture scroll; the keypad and Cast spell always stay at the bottom.
-// Speak or Draw fill in the answer box (just the final number).
-export default function TypeAnswer({ question, onSubmit, speech }) {
+// Speak or Draw fill in the answer box (just the final number). The sheet
+// rises (up to just under the menu button) until the answer box fits.
+export default function TypeAnswer({ question, onSubmit, speech, onOverflow }) {
   const [answer, setAnswer] = useState('');
   // Dyscalculia mode opens the picture straight away
   const [picture, setPicture] = useState(useDyscalculia());
@@ -35,6 +36,7 @@ export default function TypeAnswer({ question, onSubmit, speech }) {
 
   return (
     <SheetBody
+      onOverflow={onOverflow}
       header={tall ? null : box}
       scroll={
         <>
