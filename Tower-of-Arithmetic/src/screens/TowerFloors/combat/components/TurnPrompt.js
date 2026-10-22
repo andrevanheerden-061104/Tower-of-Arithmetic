@@ -7,7 +7,8 @@ import { colors, fonts, spacing } from '../../../../theme/theme';
 
 // "Your turn · choose a spell" above the hand (or "Slime's turn…" while the
 // enemy acts). Junior mode shows a bigger, friendlier "Pick a spell!" with a
-// read-aloud button that says it out loud.
+// read-aloud button that says it out loud, in a block styled like the name
+// tags (90% of the screen's width).
 export default function TurnPrompt({ version, deckSize, waiting, enemyName }) {
   const message = waiting ? `${enemyName}’s turn…` : null;
   if (version.id === 'junior') {
@@ -22,7 +23,11 @@ export default function TurnPrompt({ version, deckSize, waiting, enemyName }) {
           >
             <Icon name="volume" size={22} color={colors.bg} />
           </Pressable>
-          <Text style={[styles.juniorText, message && styles.messageText]}>{message ?? 'Pick a spell!'}</Text>
+          <Text style={[styles.juniorText, message && styles.messageText]} numberOfLines={1}>
+            {message ?? 'Pick a spell!'}
+          </Text>
+          {/* same width as the speaker, so the words sit in the middle */}
+          <View style={styles.balance} />
         </View>
       </View>
     );
@@ -52,17 +57,23 @@ const styles = StyleSheet.create({
   messageText: { color: colors.mute },
   juniorWrap: { alignItems: 'center' },
   juniorPill: {
+    width: '90%',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingLeft: 8,
-    paddingRight: 20,
+    paddingHorizontal: 8,
     height: 58,
-    borderRadius: 29,
-    borderWidth: 2,
+    borderRadius: 10,
+    borderWidth: 1.5,
     borderColor: colors.gold,
-    backgroundColor: 'rgba(13,13,13,0.9)',
+    backgroundColor: 'rgba(13,13,13,0.85)',
+    shadowColor: colors.gold,
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 6,
   },
+  balance: { width: 44 },
   speaker: {
     width: 44,
     height: 44,
@@ -71,5 +82,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.gold,
   },
-  juniorText: { fontFamily: fonts.bold, fontSize: 22, color: colors.white },
+  juniorText: { flex: 1, textAlign: 'center', fontFamily: fonts.bold, fontSize: 22, color: colors.white },
 });
