@@ -261,7 +261,7 @@ The design changed during research and testing. These were deliberate decisions,
 
 <img src="Documentation/images/readme/prototype-qr.jpg" alt="Scan to play the live prototype" width="560" />
 
-**[tower-of-arithmetic.vercel.app](https://tower-of-arithmetic.vercel.app)**
+[![Play the live prototype](https://img.shields.io/badge/▶_Play_the_live_prototype-tower--of--arithmetic.vercel.app-F2EA79?style=for-the-badge&labelColor=14101F)](https://tower-of-arithmetic.vercel.app)
 
 </div>
 
