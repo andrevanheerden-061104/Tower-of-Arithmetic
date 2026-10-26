@@ -20,8 +20,18 @@ test('API answers with fake login and fake AI', { skip: !createApp && 'run npm i
   try {
     assert.deepEqual(await (await fetch(`${base}/health`)).json(), { ok: true });
 
-    const noLogin = await fetch(`${base}/api/hint`, { method: 'POST' });
-    assert.equal(noLogin.status, 401);
+    // A broken login is refused, so the app can ask the player to log in again
+    const badLogin = await fetch(`${base}/api/hint`, { method: 'POST', headers: { Authorization: 'Bearer expired' } });
+    assert.equal(badLogin.status, 401);
+
+    // A guest (no login at all) can still use the AI
+    const guest = await fetch(`${base}/api/hint`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ version: 'senior', question: { display: '2x − 4 = 10', answer: 'x=7' }, givenAnswer: 'x=3' }),
+    });
+    assert.equal(guest.status, 200);
+    assert.deepEqual(await guest.json(), { hint: 'Did you add 4 to both sides?' });
 
     const res = await fetch(`${base}/api/hint`, {
       method: 'POST',

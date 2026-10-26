@@ -1,6 +1,6 @@
 import cors from 'cors';
 import express from 'express';
-import { requireUser } from './middleware/auth.js';
+import { identifyPlayer } from './middleware/auth.js';
 import { aiRoutes } from './routes/ai.js';
 
 // The web server. `userFromToken`, `ask` and `media` are passed in so the
@@ -8,6 +8,9 @@ import { aiRoutes } from './routes/ai.js';
 export function createApp({ userFromToken, ask, media = null, allowedOrigins = ['*'] }) {
   const app = express();
   app.disable('x-powered-by');
+  // Render sits in front of the server, so trust its forwarded IP: guests
+  // are rate-limited per device, not all together as one IP.
+  app.set('trust proxy', 1);
   app.use(cors({ origin: allowedOrigins.includes('*') ? true : allowedOrigins }));
   // Handwriting sends pen strokes, which can be bigger than other requests
   app.use('/api/handwriting', express.json({ limit: '300kb' }));
@@ -16,7 +19,8 @@ export function createApp({ userFromToken, ask, media = null, allowedOrigins = [
   // Render pings this to check the server is up
   app.get('/health', (req, res) => res.json({ ok: true }));
 
-  app.use('/api', requireUser(userFromToken), aiRoutes(ask, media));
+  // Signed-in players and guests can both use the AI (guests get a lower limit)
+  app.use('/api', identifyPlayer(userFromToken), aiRoutes(ask, media));
 
   app.use((req, res) => res.status(404).json({ error: 'Not found.' }));
 

@@ -12,9 +12,13 @@ does the three AI jobs:
 | `POST /api/handwriting` | "Draw" on the answer keypad: the app sends the pen strokes, the server draws them as a PNG (`src/maths/sketch.js`, no extra packages) and a vision model reads the maths. |
 | `POST /api/run-summary` | Orrin's end-of-run message. The strength and the topic to practise are worked out by code from the run's results; the AI words it and reads the missed sums. A message with made-up numbers is thrown away. |
 
-Every `/api` call needs the player's Supabase login token
-(`Authorization: Bearer …`); the app sends it for you. Each player is
-limited to a few calls a minute so the free Groq allowance lasts.
+A signed-in player's `/api` calls carry their Supabase login token
+(`Authorization: Bearer …`); the app sends it for you. **Guests** (playing
+without an account) send no token and can still use every AI feature,
+including Speak and Draw answers. Everyone is limited to a few calls a
+minute so the free Groq allowance lasts: signed-in players per account,
+guests per device (about half the signed-in limit). An expired or broken
+login is refused with a 401 so the app can ask the player to log in again.
 
 The backend never touches the database. The app reads and saves the
 player's data in Supabase directly, and the database's privacy rules make

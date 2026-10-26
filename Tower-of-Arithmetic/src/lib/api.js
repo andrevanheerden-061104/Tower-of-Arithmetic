@@ -2,8 +2,10 @@ import { supabase } from './supabase';
 
 // ---------------------------------------------------------------------------
 // Calls to our own backend (the Backend folder): AI questions, hints and
-// run summaries. The address comes from EXPO_PUBLIC_API_URL in .env. Every
-// call sends the player's login so the backend knows who is asking.
+// run summaries. The address comes from EXPO_PUBLIC_API_URL in .env. A
+// signed-in player's call sends their login so the backend knows who is
+// asking; a guest's call goes without one (the backend gives guests a
+// smaller rate limit instead).
 // ---------------------------------------------------------------------------
 
 const API_URL = (process.env.EXPO_PUBLIC_API_URL || '').replace(/\/$/, '');
@@ -19,13 +21,15 @@ export function apiUpload(path, form, { timeoutMs = 30000 } = {}) {
   return send(path, { body: form }, timeoutMs);
 }
 
+// The player's login token, or null for a guest.
 async function loginToken() {
-  if (!API_URL || !supabase) throw new ApiError('The game server is not set up.');
-  const { data } = await supabase.auth.getSession();
-  const token = data?.session?.access_token;
-  if (!token) throw new ApiError('Please log in first.');
-  return token;
+  if (!API_URL) throw new ApiError('The game server is not set up.');
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getSession().catch(() => ({ data: null }));
+  return data?.session?.access_token ?? null;
 }
+
+const authHeader = (token) => (token ? { Authorization: `Bearer ${token}` } : {});
 
 // Send a file from the phone ({ uri, name, type }) with React Native's own
 // XMLHttpRequest. Expo's fetch can't send a file by its address
@@ -37,7 +41,7 @@ export async function apiUploadFile(path, file, { timeoutMs = 30000 } = {}) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${API_URL}${path}`);
-    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
     xhr.timeout = timeoutMs;
     xhr.onload = () => {
       let json = {};
@@ -67,7 +71,7 @@ async function send(path, { headers = {}, body }, timeoutMs) {
     const res = await fetch(`${API_URL}${path}`, {
       method: 'POST',
       signal: controller.signal,
-      headers: { Authorization: `Bearer ${token}`, ...headers },
+      headers: { ...authHeader(token), ...headers },
       body,
     });
     const json = await res.json().catch(() => ({}));

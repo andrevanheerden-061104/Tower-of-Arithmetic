@@ -1,15 +1,18 @@
 // A simple limit per player, so one player can't use up the free Groq
 // allowance (about 30 requests a minute for the whole app).
-//   limit     requests allowed
-//   windowMs  in this many milliseconds
-export function rateLimit({ limit, windowMs }) {
-  const hits = new Map(); // user id -> times of recent requests
+//   limit       requests allowed for a signed-in player
+//   guestLimit  requests allowed for a guest (counted per device / IP);
+//               defaults to half of `limit`
+//   windowMs    in this many milliseconds
+export function rateLimit({ limit, guestLimit = Math.max(3, Math.ceil(limit / 2)), windowMs }) {
+  const hits = new Map(); // player id or guest IP -> times of recent requests
 
   return (req, res, next) => {
-    const key = req.user?.id ?? req.ip;
+    const key = req.user?.id ? `user:${req.user.id}` : `guest:${req.ip}`;
+    const max = req.user?.id ? limit : guestLimit;
     const now = Date.now();
     const recent = (hits.get(key) ?? []).filter((t) => now - t < windowMs);
-    if (recent.length >= limit) {
+    if (recent.length >= max) {
       const wait = Math.ceil((windowMs - (now - recent[0])) / 1000);
       res.set('Retry-After', String(wait));
       return res.status(429).json({ error: `Slow down a little: try again in ${wait} seconds.` });
