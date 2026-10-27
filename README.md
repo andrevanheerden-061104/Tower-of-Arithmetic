@@ -281,7 +281,7 @@ The design changed during research and testing. These were deliberate decisions,
 
 [![Play the live prototype](https://img.shields.io/badge/▶_Play_the_live_prototype-tower--of--arithmetic.vercel.app-F2EA79?style=for-the-badge&labelColor=14101F)](https://tower-of-arithmetic.vercel.app)
 [![Download the Android APK](https://img.shields.io/badge/⬇_Download_the_Android_APK-v1.0.0-6EE7A0?style=for-the-badge&labelColor=14101F)](https://github.com/andrevanheerden-061104/Tower-of-Arithmetic/releases/tag/v1.0.0)
-[![Watch the promo video](https://img.shields.io/badge/🎬_Watch_the_promo_video-1%3A20-FF7EB6?style=for-the-badge&labelColor=14101F)](https://drive.google.com/drive/u/0/folders/1TjKOfMs45CiM3OMkqjtkwWjDyOvdpA4a)
+[![Watch the promo video](https://img.shields.io/badge/🎬_Watch_the_promo_video-1%3A20-FF7EB6?style=for-the-badge&labelColor=14101F)](https://drive.google.com/file/d/1e1PH91GJSoeerZ_bB7YAKemQQIKog9nA/view?usp=sharing)
 
 </div>
 
