@@ -3,6 +3,8 @@
 <img src="Documentation/images/readme/hero.jpg" alt="Tower of Arithmetic: every spell is an equation" width="100%" />
 
 [![Play the live prototype](https://img.shields.io/badge/▶_Play_the_live_prototype-tower--of--arithmetic.vercel.app-F2EA79?style=for-the-badge&labelColor=14101F)](https://tower-of-arithmetic.vercel.app)
+[![Download the Android APK](https://img.shields.io/badge/⬇_Download_the_Android_APK-v1.0.0-6EE7A0?style=for-the-badge&labelColor=14101F)](https://github.com/andrevanheerden-061104/Tower-of-Arithmetic/releases/tag/v1.0.0)
+[![Watch the promo video](https://img.shields.io/badge/🎬_Watch_the_promo_video-1%3A20-FF7EB6?style=for-the-badge&labelColor=14101F)](Documentation/video/Tower%20of%20Arithmetic%20-%20Promo%20video.mp4)
 
 ![Expo](https://img.shields.io/badge/Expo_SDK_57-14101F?style=flat-square&logo=expo&logoColor=white)
 ![React Native](https://img.shields.io/badge/React_Native_0.86-4C33A6?style=flat-square&logo=react&logoColor=white)
@@ -22,23 +24,24 @@
 ### Contents
 
 <a href="#about"><img src="https://img.shields.io/badge/01-About-F2EA79?style=for-the-badge&labelColor=14101F" alt="01 About" /></a>
-<a href="#problem"><img src="https://img.shields.io/badge/02-The%20problem-6FC3FF?style=for-the-badge&labelColor=14101F" alt="02 The problem" /></a>
-<a href="#research"><img src="https://img.shields.io/badge/03-Research-6EE7A0?style=for-the-badge&labelColor=14101F" alt="03 Research" /></a>
-<a href="#define"><img src="https://img.shields.io/badge/04-Who%20we%20design%20for-FF9F43?style=for-the-badge&labelColor=14101F" alt="04 Who we design for" /></a>
-<a href="#wireflow"><img src="https://img.shields.io/badge/05-Wire%20flow-FF7EB6?style=for-the-badge&labelColor=14101F" alt="05 Wire flow" /></a>
-<a href="#style"><img src="https://img.shields.io/badge/06-Style%20guide-B794FF?style=for-the-badge&labelColor=14101F" alt="06 Style guide" /></a>
-<a href="#features"><img src="https://img.shields.io/badge/07-Features-F2EA79?style=for-the-badge&labelColor=14101F" alt="07 Features" /></a>
-<a href="#mockups"><img src="https://img.shields.io/badge/08-Mockups-6FC3FF?style=for-the-badge&labelColor=14101F" alt="08 Mockups" /></a>
-<a href="#tech"><img src="https://img.shields.io/badge/09-Tech%20stack-6EE7A0?style=for-the-badge&labelColor=14101F" alt="09 Tech stack" /></a>
-<a href="#database"><img src="https://img.shields.io/badge/10-Database-FF9F43?style=for-the-badge&labelColor=14101F" alt="10 Database" /></a>
-<a href="#ai"><img src="https://img.shields.io/badge/11-AI%20integration-FF7EB6?style=for-the-badge&labelColor=14101F" alt="11 AI integration" /></a>
-<a href="#deployment"><img src="https://img.shields.io/badge/12-Deployment-B794FF?style=for-the-badge&labelColor=14101F" alt="12 Deployment" /></a>
-<a href="#structure"><img src="https://img.shields.io/badge/13-Project%20structure-F2EA79?style=for-the-badge&labelColor=14101F" alt="13 Project structure" /></a>
-<a href="#changes"><img src="https://img.shields.io/badge/14-Changes%20from%20the%20pitch-6FC3FF?style=for-the-badge&labelColor=14101F" alt="14 Changes from the pitch" /></a>
-<a href="#future"><img src="https://img.shields.io/badge/15-Future%20work-6EE7A0?style=for-the-badge&labelColor=14101F" alt="15 Future work" /></a>
-<a href="#play"><img src="https://img.shields.io/badge/16-Play%20it-FF9F43?style=for-the-badge&labelColor=14101F" alt="16 Play it" /></a>
-<a href="#credits"><img src="https://img.shields.io/badge/17-Credits-FF7EB6?style=for-the-badge&labelColor=14101F" alt="17 Credits" /></a>
-<a href="#references"><img src="https://img.shields.io/badge/18-References-B794FF?style=for-the-badge&labelColor=14101F" alt="18 References" /></a>
+<a href="#promo"><img src="https://img.shields.io/badge/02-Promo%20video-6FC3FF?style=for-the-badge&labelColor=14101F" alt="02 Promo video" /></a>
+<a href="#problem"><img src="https://img.shields.io/badge/03-The%20problem-6EE7A0?style=for-the-badge&labelColor=14101F" alt="03 The problem" /></a>
+<a href="#research"><img src="https://img.shields.io/badge/04-Research-FF9F43?style=for-the-badge&labelColor=14101F" alt="04 Research" /></a>
+<a href="#define"><img src="https://img.shields.io/badge/05-Who%20we%20design%20for-FF7EB6?style=for-the-badge&labelColor=14101F" alt="05 Who we design for" /></a>
+<a href="#wireflow"><img src="https://img.shields.io/badge/06-Wire%20flow-B794FF?style=for-the-badge&labelColor=14101F" alt="06 Wire flow" /></a>
+<a href="#style"><img src="https://img.shields.io/badge/07-Style%20guide-F2EA79?style=for-the-badge&labelColor=14101F" alt="07 Style guide" /></a>
+<a href="#features"><img src="https://img.shields.io/badge/08-Features-6FC3FF?style=for-the-badge&labelColor=14101F" alt="08 Features" /></a>
+<a href="#mockups"><img src="https://img.shields.io/badge/09-Mockups-6EE7A0?style=for-the-badge&labelColor=14101F" alt="09 Mockups" /></a>
+<a href="#tech"><img src="https://img.shields.io/badge/10-Tech%20stack-FF9F43?style=for-the-badge&labelColor=14101F" alt="10 Tech stack" /></a>
+<a href="#database"><img src="https://img.shields.io/badge/11-Database-FF7EB6?style=for-the-badge&labelColor=14101F" alt="11 Database" /></a>
+<a href="#ai"><img src="https://img.shields.io/badge/12-AI%20integration-B794FF?style=for-the-badge&labelColor=14101F" alt="12 AI integration" /></a>
+<a href="#deployment"><img src="https://img.shields.io/badge/13-Deployment-F2EA79?style=for-the-badge&labelColor=14101F" alt="13 Deployment" /></a>
+<a href="#structure"><img src="https://img.shields.io/badge/14-Project%20structure-6FC3FF?style=for-the-badge&labelColor=14101F" alt="14 Project structure" /></a>
+<a href="#changes"><img src="https://img.shields.io/badge/15-Changes%20from%20the%20pitch-6EE7A0?style=for-the-badge&labelColor=14101F" alt="15 Changes from the pitch" /></a>
+<a href="#future"><img src="https://img.shields.io/badge/16-Future%20work-FF9F43?style=for-the-badge&labelColor=14101F" alt="16 Future work" /></a>
+<a href="#play"><img src="https://img.shields.io/badge/17-Play%20it-FF7EB6?style=for-the-badge&labelColor=14101F" alt="17 Play it" /></a>
+<a href="#credits"><img src="https://img.shields.io/badge/18-Credits-B794FF?style=for-the-badge&labelColor=14101F" alt="18 Credits" /></a>
+<a href="#references"><img src="https://img.shields.io/badge/19-References-F2EA79?style=for-the-badge&labelColor=14101F" alt="19 References" /></a>
 
 </div>
 
@@ -55,13 +58,30 @@
 | **Category** | Education & EdTech (game-based learning) |
 | **Audience** | Learners in Grades 1–11 (ages 6–17), especially those with maths anxiety |
 | **Curriculum** | South African CAPS, three grade modes (Junior, Intermediate, Senior) |
-| **Platforms** | Android (APK) and web |
+| **Platforms** | Android (APK) and web · [![Download APK](https://img.shields.io/badge/⬇_Download_APK-v1.0.0-6EE7A0?style=flat-square&labelColor=14101F)](https://github.com/andrevanheerden-061104/Tower-of-Arithmetic/releases/tag/v1.0.0) |
 | **App** | React Native + Expo SDK 57 |
 | **AI** | Groq API: `openai/gpt-oss-20b` (questions, hints, run advice), Whisper (speech answers), a vision model (handwritten answers) |
 | **Database & login** | Supabase (PostgreSQL + Auth, row-level security) |
 | **Backend** | Node.js + Express, hosted on Render |
 | **Web hosting** | Vercel |
-| **Live prototype** | **[tower-of-arithmetic.vercel.app](https://tower-of-arithmetic.vercel.app)**: sign up or play as a guest |
+| **Live prototype** | [![tower-of-arithmetic.vercel.app](https://img.shields.io/badge/▶_tower--of--arithmetic.vercel.app-F2EA79?style=flat-square&labelColor=14101F)](https://tower-of-arithmetic.vercel.app) sign up or play as a guest |
+
+---
+
+<a id="promo"></a>
+
+<div align="center">
+
+## 🎬 Promo video
+
+<a href="Documentation/video/Tower%20of%20Arithmetic%20-%20Promo%20video.mp4"><img src="Documentation/images/readme/promo-poster.jpg" alt="Watch the Tower of Arithmetic promo video" width="100%" /></a>
+
+<!-- PLAYABLE VIDEO: on github.com, edit README.md and drag "tower of arithmetic promo - small for GitHub.mp4" onto the empty line below. GitHub turns it into a video player. -->
+
+
+[![Watch the promo video](https://img.shields.io/badge/🎬_Watch_the_promo_video-1%3A20-FF7EB6?style=for-the-badge&labelColor=14101F)](Documentation/video/Tower%20of%20Arithmetic%20-%20Promo%20video.mp4)
+
+</div>
 
 ---
 
@@ -187,7 +207,8 @@
 
 | Part | Hosted on | Link / details |
 |---|---|---|
-| **Web app** | Vercel | **[tower-of-arithmetic.vercel.app](https://tower-of-arithmetic.vercel.app)** |
+| **Web app** | Vercel | [![tower-of-arithmetic.vercel.app](https://img.shields.io/badge/▶_tower--of--arithmetic.vercel.app-F2EA79?style=flat-square&labelColor=14101F)](https://tower-of-arithmetic.vercel.app) |
+| **Android app** | EAS Build → GitHub Releases | [![Download APK](https://img.shields.io/badge/⬇_Download_APK-v1.0.0-6EE7A0?style=flat-square&labelColor=14101F)](https://github.com/andrevanheerden-061104/Tower-of-Arithmetic/releases/tag/v1.0.0) |
 | **Backend API** | Render | Node + Express web service (root `Backend`, health check `/health`) |
 | **Database & login** | Supabase | PostgreSQL with row-level security |
 | **AI** | Groq | Called only from the backend, so the key never reaches the phone |
@@ -262,6 +283,8 @@ The design changed during research and testing. These were deliberate decisions,
 <img src="Documentation/images/readme/prototype-qr.jpg" alt="Scan to play the live prototype" width="560" />
 
 [![Play the live prototype](https://img.shields.io/badge/▶_Play_the_live_prototype-tower--of--arithmetic.vercel.app-F2EA79?style=for-the-badge&labelColor=14101F)](https://tower-of-arithmetic.vercel.app)
+[![Download the Android APK](https://img.shields.io/badge/⬇_Download_the_Android_APK-v1.0.0-6EE7A0?style=for-the-badge&labelColor=14101F)](https://github.com/andrevanheerden-061104/Tower-of-Arithmetic/releases/tag/v1.0.0)
+[![Watch the promo video](https://img.shields.io/badge/🎬_Watch_the_promo_video-1%3A20-FF7EB6?style=for-the-badge&labelColor=14101F)](Documentation/video/Tower%20of%20Arithmetic%20-%20Promo%20video.mp4)
 
 </div>
 
@@ -273,9 +296,9 @@ The design changed during research and testing. These were deliberate decisions,
 
 | Role | Name |
 |---|---|
-| **Designer & developer** | Andre van Heerden · UX Design & Interactive Development, Open Window |
-| **Development lecturer** | Tsunga · *email* |
-| **UX lecturer** | Laudette Sass · *email* |
+| **Designer & developer** | Andre van Heerden · UX Design & Interactive Development student, Open Window University, Centurion |
+| **Development lecturer** | Tsungai · Third-year Interactive Development (DV300) lecturer, Open Window University, Centurion <!-- TODO: add Tsungai's GitHub button here --> |
+| **UX lecturer** | Laudette Sass · Third-year UX Design (UX300) lecturer, Open Window University, Centurion |
 
 ---
 
