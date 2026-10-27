@@ -4,7 +4,7 @@
 
 [![Play the live prototype](https://img.shields.io/badge/▶_Play_the_live_prototype-tower--of--arithmetic.vercel.app-F2EA79?style=for-the-badge&labelColor=14101F)](https://tower-of-arithmetic.vercel.app)
 [![Download the Android APK](https://img.shields.io/badge/⬇_Download_the_Android_APK-v1.0.0-6EE7A0?style=for-the-badge&labelColor=14101F)](https://github.com/andrevanheerden-061104/Tower-of-Arithmetic/releases/tag/v1.0.0)
-[![Watch the promo video](https://img.shields.io/badge/🎬_Watch_the_promo_video-1%3A20-FF7EB6?style=for-the-badge&labelColor=14101F)](Documentation/video/Tower%20of%20Arithmetic%20-%20Promo%20video.mp4)
+[![Watch the promo video](https://img.shields.io/badge/🎬_Watch_the_promo_video-1%3A20-FF7EB6?style=for-the-badge&labelColor=14101F)](https://drive.google.com/drive/u/0/folders/1TjKOfMs45CiM3OMkqjtkwWjDyOvdpA4a)
 
 ![Expo](https://img.shields.io/badge/Expo_SDK_57-14101F?style=flat-square&logo=expo&logoColor=white)
 ![React Native](https://img.shields.io/badge/React_Native_0.86-4C33A6?style=flat-square&logo=react&logoColor=white)
@@ -74,12 +74,9 @@
 
 ## 🎬 Promo video
 
-<a href="Documentation/video/Tower%20of%20Arithmetic%20-%20Promo%20video.mp4"><img src="Documentation/images/readme/promo-poster.jpg" alt="Watch the Tower of Arithmetic promo video" width="100%" /></a>
+<a href="https://drive.google.com/drive/u/0/folders/1TjKOfMs45CiM3OMkqjtkwWjDyOvdpA4a"><img src="Documentation/images/readme/promo-poster.jpg" alt="Watch the Tower of Arithmetic promo video" width="100%" /></a>
 
-<!-- PLAYABLE VIDEO: on github.com, edit README.md and drag "tower of arithmetic promo - small for GitHub.mp4" onto the empty line below. GitHub turns it into a video player. -->
-
-
-[![Watch the promo video](https://img.shields.io/badge/🎬_Watch_the_promo_video-1%3A20-FF7EB6?style=for-the-badge&labelColor=14101F)](Documentation/video/Tower%20of%20Arithmetic%20-%20Promo%20video.mp4)
+[![Watch the promo video](https://img.shields.io/badge/🎬_Watch_the_promo_video-1%3A20-FF7EB6?style=for-the-badge&labelColor=14101F)](https://drive.google.com/drive/u/0/folders/1TjKOfMs45CiM3OMkqjtkwWjDyOvdpA4a)
 
 </div>
 
@@ -284,7 +281,7 @@ The design changed during research and testing. These were deliberate decisions,
 
 [![Play the live prototype](https://img.shields.io/badge/▶_Play_the_live_prototype-tower--of--arithmetic.vercel.app-F2EA79?style=for-the-badge&labelColor=14101F)](https://tower-of-arithmetic.vercel.app)
 [![Download the Android APK](https://img.shields.io/badge/⬇_Download_the_Android_APK-v1.0.0-6EE7A0?style=for-the-badge&labelColor=14101F)](https://github.com/andrevanheerden-061104/Tower-of-Arithmetic/releases/tag/v1.0.0)
-[![Watch the promo video](https://img.shields.io/badge/🎬_Watch_the_promo_video-1%3A20-FF7EB6?style=for-the-badge&labelColor=14101F)](Documentation/video/Tower%20of%20Arithmetic%20-%20Promo%20video.mp4)
+[![Watch the promo video](https://img.shields.io/badge/🎬_Watch_the_promo_video-1%3A20-FF7EB6?style=for-the-badge&labelColor=14101F)](https://drive.google.com/drive/u/0/folders/1TjKOfMs45CiM3OMkqjtkwWjDyOvdpA4a)
 
 </div>
 
