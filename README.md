@@ -24,25 +24,26 @@
 ### Contents
 
 <a href="#about"><img src="https://img.shields.io/badge/01-About-F2EA79?style=for-the-badge&labelColor=14101F" alt="01 About" /></a>
-<a href="#promo"><img src="https://img.shields.io/badge/02-Promo%20video-6FC3FF?style=for-the-badge&labelColor=14101F" alt="02 Promo video" /></a>
-<a href="#problem"><img src="https://img.shields.io/badge/03-The%20problem-6EE7A0?style=for-the-badge&labelColor=14101F" alt="03 The problem" /></a>
-<a href="#research"><img src="https://img.shields.io/badge/04-Research-FF9F43?style=for-the-badge&labelColor=14101F" alt="04 Research" /></a>
-<a href="#define"><img src="https://img.shields.io/badge/05-Who%20we%20design%20for-FF7EB6?style=for-the-badge&labelColor=14101F" alt="05 Who we design for" /></a>
-<a href="#wireflow"><img src="https://img.shields.io/badge/06-Wire%20flow-B794FF?style=for-the-badge&labelColor=14101F" alt="06 Wire flow" /></a>
-<a href="#style"><img src="https://img.shields.io/badge/07-Style%20guide-F2EA79?style=for-the-badge&labelColor=14101F" alt="07 Style guide" /></a>
-<a href="#features"><img src="https://img.shields.io/badge/08-Features-6FC3FF?style=for-the-badge&labelColor=14101F" alt="08 Features" /></a>
-<a href="#mockups"><img src="https://img.shields.io/badge/09-Mockups-6EE7A0?style=for-the-badge&labelColor=14101F" alt="09 Mockups" /></a>
-<a href="#tech"><img src="https://img.shields.io/badge/10-Tech%20stack-FF9F43?style=for-the-badge&labelColor=14101F" alt="10 Tech stack" /></a>
-<a href="#database"><img src="https://img.shields.io/badge/11-Database-FF7EB6?style=for-the-badge&labelColor=14101F" alt="11 Database" /></a>
-<a href="#ai"><img src="https://img.shields.io/badge/12-AI%20integration-B794FF?style=for-the-badge&labelColor=14101F" alt="12 AI integration" /></a>
-<a href="#deployment"><img src="https://img.shields.io/badge/13-Deployment-F2EA79?style=for-the-badge&labelColor=14101F" alt="13 Deployment" /></a>
-<a href="#structure"><img src="https://img.shields.io/badge/14-Project%20structure-6FC3FF?style=for-the-badge&labelColor=14101F" alt="14 Project structure" /></a>
-<a href="#changes"><img src="https://img.shields.io/badge/15-Changes%20from%20the%20pitch-6EE7A0?style=for-the-badge&labelColor=14101F" alt="15 Changes from the pitch" /></a>
-<a href="#future"><img src="https://img.shields.io/badge/16-Future%20work-FF9F43?style=for-the-badge&labelColor=14101F" alt="16 Future work" /></a>
-<a href="#play"><img src="https://img.shields.io/badge/17-Prototype-FF7EB6?style=for-the-badge&labelColor=14101F" alt="17 Prototype" /></a>
-<a href="#demo"><img src="https://img.shields.io/badge/18-Demo%20video-B794FF?style=for-the-badge&labelColor=14101F" alt="18 Demo video" /></a>
-<a href="#credits"><img src="https://img.shields.io/badge/19-Credits-F2EA79?style=for-the-badge&labelColor=14101F" alt="19 Credits" /></a>
-<a href="#references"><img src="https://img.shields.io/badge/20-References-6FC3FF?style=for-the-badge&labelColor=14101F" alt="20 References" /></a>
+<a href="#presentation"><img src="https://img.shields.io/badge/02-Presentation%20video-6FC3FF?style=for-the-badge&labelColor=14101F" alt="02 Presentation video" /></a>
+<a href="#promo"><img src="https://img.shields.io/badge/03-Promo%20video-6EE7A0?style=for-the-badge&labelColor=14101F" alt="03 Promo video" /></a>
+<a href="#problem"><img src="https://img.shields.io/badge/04-The%20problem-FF9F43?style=for-the-badge&labelColor=14101F" alt="04 The problem" /></a>
+<a href="#research"><img src="https://img.shields.io/badge/05-Research-FF7EB6?style=for-the-badge&labelColor=14101F" alt="05 Research" /></a>
+<a href="#define"><img src="https://img.shields.io/badge/06-Who%20we%20design%20for-B794FF?style=for-the-badge&labelColor=14101F" alt="06 Who we design for" /></a>
+<a href="#wireflow"><img src="https://img.shields.io/badge/07-Wire%20flow-F2EA79?style=for-the-badge&labelColor=14101F" alt="07 Wire flow" /></a>
+<a href="#style"><img src="https://img.shields.io/badge/08-Style%20guide-6FC3FF?style=for-the-badge&labelColor=14101F" alt="08 Style guide" /></a>
+<a href="#features"><img src="https://img.shields.io/badge/09-Features-6EE7A0?style=for-the-badge&labelColor=14101F" alt="09 Features" /></a>
+<a href="#mockups"><img src="https://img.shields.io/badge/10-Mockups-FF9F43?style=for-the-badge&labelColor=14101F" alt="10 Mockups" /></a>
+<a href="#tech"><img src="https://img.shields.io/badge/11-Tech%20stack-FF7EB6?style=for-the-badge&labelColor=14101F" alt="11 Tech stack" /></a>
+<a href="#database"><img src="https://img.shields.io/badge/12-Database-B794FF?style=for-the-badge&labelColor=14101F" alt="12 Database" /></a>
+<a href="#ai"><img src="https://img.shields.io/badge/13-AI%20integration-F2EA79?style=for-the-badge&labelColor=14101F" alt="13 AI integration" /></a>
+<a href="#deployment"><img src="https://img.shields.io/badge/14-Deployment-6FC3FF?style=for-the-badge&labelColor=14101F" alt="14 Deployment" /></a>
+<a href="#structure"><img src="https://img.shields.io/badge/15-Project%20structure-6EE7A0?style=for-the-badge&labelColor=14101F" alt="15 Project structure" /></a>
+<a href="#changes"><img src="https://img.shields.io/badge/16-Changes%20from%20the%20pitch-FF9F43?style=for-the-badge&labelColor=14101F" alt="16 Changes from the pitch" /></a>
+<a href="#future"><img src="https://img.shields.io/badge/17-Future%20work-FF7EB6?style=for-the-badge&labelColor=14101F" alt="17 Future work" /></a>
+<a href="#play"><img src="https://img.shields.io/badge/18-Prototype-B794FF?style=for-the-badge&labelColor=14101F" alt="18 Prototype" /></a>
+<a href="#demo"><img src="https://img.shields.io/badge/19-Demo%20video-F2EA79?style=for-the-badge&labelColor=14101F" alt="19 Demo video" /></a>
+<a href="#credits"><img src="https://img.shields.io/badge/20-Credits-6FC3FF?style=for-the-badge&labelColor=14101F" alt="20 Credits" /></a>
+<a href="#references"><img src="https://img.shields.io/badge/21-References-6EE7A0?style=for-the-badge&labelColor=14101F" alt="21 References" /></a>
 
 </div>
 
@@ -66,6 +67,20 @@
 | **Backend** | Node.js + Express, hosted on Render |
 | **Web hosting** | Vercel |
 | **Live prototype** | [![tower-of-arithmetic.vercel.app](https://img.shields.io/badge/▶_tower--of--arithmetic.vercel.app-F2EA79?style=flat-square&labelColor=14101F)](https://tower-of-arithmetic.vercel.app) sign up or play as a guest |
+
+---
+
+<a id="presentation"></a>
+
+## 🎤 Presentation Video
+
+<div align="center">
+
+<a href="https://drive.google.com/drive/u/0/folders/1TjKOfMs45CiM3OMkqjtkwWjDyOvdpA4a"><img src="Documentation/images/readme/presentation-poster.jpg" alt="Watch the Tower of Arithmetic DV presentation video" width="100%" /></a>
+
+[![Watch the presentation video](https://img.shields.io/badge/▶_Watch_the_presentation_video-19%3A40-6EE7A0?style=for-the-badge&labelColor=14101F)](https://drive.google.com/drive/u/0/folders/1TjKOfMs45CiM3OMkqjtkwWjDyOvdpA4a)
+
+</div>
 
 ---
 
